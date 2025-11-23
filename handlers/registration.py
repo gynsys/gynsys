@@ -115,7 +115,12 @@ def register_all_handlers(application: Application):
     )
     application.add_handler(add_doctor_conv_handler)
     
-    # ConversationHandler para solicitar bot
+    # ⚠️ IMPORTANTE: ConversationHandler para solicitar bot
+    # Este handler es CRÍTICO para el flujo de onboarding de nuevos inquilinos.
+    # NO modificar sin revisar cuidadosamente:
+    # - receive_full_name DEBE retornar REQUEST_WAITING_TELEGRAM_ID
+    # - receive_telegram_id DEBE retornar ConversationHandler.END
+    # - El orden de los handlers es importante (debe ir antes de handlers genéricos)
     request_bot_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(start_request_bot, pattern="^request_bot$")],
         states={
@@ -132,6 +137,7 @@ def register_all_handlers(application: Application):
         name="request_bot_conversation",
         persistent=False,
     )
+    # ⚠️ Este handler debe registrarse ANTES de handlers genéricos de mensajes
     application.add_handler(request_bot_conv)
     
     # ConversationHandler para edición de contacto
