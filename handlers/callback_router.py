@@ -37,11 +37,12 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
         await show_inactive_doctor_message(update, context)
         return
     
-    if callback_data == "faq_menu":
+    # Handlers específicos de FAQs (deben ir antes de la redirección por rol)
+    if callback_data in {"faq_menu", "doctor_faq", "patient_faq", "faq"}:
         from features.faqs.user_handlers import show_faqs_menu
         await show_faqs_menu(update, context)
         return
-    
+
     if callback_data == "main_menu":
         if user_role == 'superadmin':
             await send_marketing_menu(update, context, is_superadmin=True)
