@@ -70,63 +70,87 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
             except (ValueError, IndexError):
                 page = 0
     
-    # Usar admin_service para obtener todos los doctores (activos e inactivos)
-    from features.admin.services.admin_service import AdminService
-    admin_service = AdminService()
-    all_doctors = await admin_service.get_all_doctors()
-    logger.info(f"[list_doctors_for_modules] Doctores activos obtenidos: {len(all_doctors)}")
-    
-    # También obtener doctores inactivos
-    inactive_doctors = await admin_service.get_inactive_doctors()
-    logger.info(f"[list_doctors_for_modules] Doctores inactivos obtenidos: {len(inactive_doctors)}")
-    
-    # Combinar todos los doctores (excepto SuperAdmin id=1)
-    all_doctors_list = [d for d in all_doctors if d[0] != 1] + [d for d in inactive_doctors if d[0] != 1]
-    logger.info(f"[list_doctors_for_modules] Total doctores (sin SuperAdmin): {len(all_doctors_list)}")
-    
-    if not all_doctors_list:
-        text = (
-            "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
-            "❌ No hay doctores registrados en el sistema."
-        )
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🏠 Menú Principal", callback_data="main_menu")]
-        ])
-    else:
-        # Construir lista de doctores con sus módulos
-        doctors_with_modules = []
-        for doctor in all_doctors_list:
-            doctor_id = doctor[0]
-            doctor_name = doctor[1]
-            telegram_id = doctor[2]
-            
-            # Obtener módulos activos para este doctor
-            active_modules = await extra_modules_db.get_active_modules_for_doctor(doctor_id)
-            
-            doctors_with_modules.append({
-                'doctor_id': doctor_id,
-                'name': doctor_name,
-                'telegram_id': telegram_id,
-                'modules': active_modules
-            })
-        
-        text = (
-            "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
-            f"Total: {len(doctors_with_modules)} doctores\n\n"
-            "Selecciona un médico para gestionar sus módulos:\n"
-            "• 🖼️ Galería\n"
-            "• 📞 Contacto\n"
-            "• 💰 Precios\n"
-            "• ❓ FAQs\n"
-            "• 📅 Citas\n"
-            "• 📍 Ubicaciones\n"
-            "• 🧪 Test Endometriosis\n"
-            "• 🎮 Aprende Jugando"
-        )
-        keyboard = get_doctors_list_keyboard(doctors_with_modules, page=page, return_to="doctors_menu")
+    # Inicializar lista vacía
+    doctors_with_modules = []
     
     try:
-        logger.info(f"[list_doctors_for_modules] Intentando editar mensaje. Doctores encontrados: {len(doctors_with_modules) if 'doctors_with_modules' in locals() else 0}")
+        # Usar admin_service para obtener todos los doctores (activos e inactivos)
+        from features.admin.services.admin_service import AdminService
+        admin_service = AdminService()
+        
+        logger.info("[list_doctors_for_modules] Obteniendo doctores activos...")
+        all_doctors = await admin_service.get_all_doctors()
+        logger.info(f"[list_doctors_for_modules] Doctores activos obtenidos: {len(all_doctors)}")
+        if all_doctors:
+            logger.info(f"[list_doctors_for_modules] Primer doctor activo: ID={all_doctors[0][0]}, Nombre={all_doctors[0][1]}")
+        
+        # También obtener doctores inactivos
+        logger.info("[list_doctors_for_modules] Obteniendo doctores inactivos...")
+        inactive_doctors = await admin_service.get_inactive_doctors()
+        logger.info(f"[list_doctors_for_modules] Doctores inactivos obtenidos: {len(inactive_doctors)}")
+        
+        # Combinar todos los doctores (excepto SuperAdmin id=1)
+        all_doctors_list = [d for d in all_doctors if d[0] != 1] + [d for d in inactive_doctors if d[0] != 1]
+        logger.info(f"[list_doctors_for_modules] Total doctores (sin SuperAdmin): {len(all_doctors_list)}")
+        
+        if not all_doctors_list:
+            logger.warning("[list_doctors_for_modules] No se encontraron doctores (excepto SuperAdmin)")
+            text = (
+                "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
+                "❌ No hay doctores registrados en el sistema."
+            )
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Volver", callback_data="extra_modules_hub")],
+                [InlineKeyboardButton("🏠 Menú Principal", callback_data="main_menu")]
+            ])
+        else:
+            # Construir lista de doctores con sus módulos
+            logger.info(f"[list_doctors_for_modules] Construyendo lista de doctores con módulos...")
+            for doctor in all_doctors_list:
+                doctor_id = doctor[0]
+                doctor_name = doctor[1]
+                telegram_id = doctor[2]
+                
+                # Obtener módulos activos para este doctor
+                active_modules = await extra_modules_db.get_active_modules_for_doctor(doctor_id)
+                logger.info(f"[list_doctors_for_modules] Doctor {doctor_name} (ID: {doctor_id}): {len(active_modules)} módulos activos")
+                
+                doctors_with_modules.append({
+                    'doctor_id': doctor_id,
+                    'name': doctor_name,
+                    'telegram_id': telegram_id,
+                    'modules': active_modules
+                })
+            
+            logger.info(f"[list_doctors_for_modules] Total doctores con módulos: {len(doctors_with_modules)}")
+            
+            text = (
+                "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
+                f"Total: {len(doctors_with_modules)} doctores\n\n"
+                "Selecciona un médico para gestionar sus módulos:\n"
+                "• 🖼️ Galería\n"
+                "• 📞 Contacto\n"
+                "• 💰 Precios\n"
+                "• ❓ FAQs\n"
+                "• 📅 Citas\n"
+                "• 📍 Ubicaciones\n"
+                "• 🧪 Test Endometriosis\n"
+                "• 🎮 Aprende Jugando"
+            )
+            keyboard = get_doctors_list_keyboard(doctors_with_modules, page=page, return_to="doctors_menu")
+    except Exception as e:
+        logger.error(f"[list_doctors_for_modules] Error obteniendo doctores: {e}", exc_info=True)
+        text = (
+            "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
+            f"❌ Error al obtener la lista de doctores: {str(e)}"
+        )
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Volver", callback_data="extra_modules_hub")],
+            [InlineKeyboardButton("🏠 Menú Principal", callback_data="main_menu")]
+        ])
+    
+    try:
+        logger.info(f"[list_doctors_for_modules] Intentando editar mensaje. Doctores encontrados: {len(doctors_with_modules)}")
         await query.edit_message_text(
             text,
             reply_markup=keyboard,
