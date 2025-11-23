@@ -136,7 +136,7 @@ async def _show_faq_by_index(update: Update, context: ContextTypes.DEFAULT_TYPE,
                     question = faq.question
                     answer = faq.answer
                     texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
-                    reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+                    reply_markup = await _get_faq_navigation_keyboard(item_id, bot_id, index, len(items))
                     logger.info(f"[_show_faq_by_index] FAQ mostrada correctamente: {question[:50]}...")
                 else:
                     logger.error(f"[_show_faq_by_index] FAQ no encontrada: item_id={item_id}, bot_id={bot_id}")
@@ -146,7 +146,7 @@ async def _show_faq_by_index(update: Update, context: ContextTypes.DEFAULT_TYPE,
                         question = item_details.get('title', 'Pregunta')
                         answer = item_details.get('content', 'Respuesta no disponible')
                         texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
-                        reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+                        reply_markup = await _get_faq_navigation_keyboard(item_id, bot_id, index, len(items))
                     else:
                         texto = "❌ Contenido no encontrado."
                         reply_markup = InlineKeyboardMarkup([
@@ -160,15 +160,18 @@ async def _show_faq_by_index(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 question = item_details.get('title', 'Pregunta')
                 answer = item_details.get('content', 'Respuesta no disponible')
                 texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
-                reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+                reply_markup = await _get_faq_navigation_keyboard(item_id, bot_id, index, len(items))
             else:
                 texto = "❌ Contenido no encontrado."
                 reply_markup = InlineKeyboardMarkup([
                     [InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
                 ])
     
-    # Actualizar el índice actual
+    # Actualizar el índice actual y la lista (para compatibilidad, aunque ya no dependemos de esto)
     context.user_data['faq_current_index'] = index
+    # Asegurar que la lista esté en user_data (por si se perdió)
+    if 'faqs_list' not in context.user_data or not context.user_data['faqs_list']:
+        context.user_data['faqs_list'] = items
     
     # Editar o enviar el mensaje
     query = update.callback_query
@@ -204,22 +207,24 @@ async def _show_faq_by_index(update: Update, context: ContextTypes.DEFAULT_TYPE,
             parse_mode=ParseMode.HTML
         )
 
-async def _get_faq_navigation_keyboard(current_index: int, total_items: int):
-    """Crea el teclado de navegación para FAQs"""
+async def _get_faq_navigation_keyboard(current_item_id: int, bot_id: int, current_index: int, total_items: int):
+    """Crea el teclado de navegación para FAQs usando item_id en callback_data para mayor robustez"""
     keyboard = []
     
     # Fila 1: Botones de navegación (Anterior | Siguiente)
     nav_buttons = []
     
     # Botón Anterior (solo si no es la primera)
+    # Incluir bot_id e item_id en el callback para no depender de user_data
     if current_index > 0:
-        nav_buttons.append(InlineKeyboardButton("⬅️ Anterior", callback_data="faq_prev"))
+        nav_buttons.append(InlineKeyboardButton("⬅️ Anterior", callback_data=f"faq_prev_{bot_id}_{current_item_id}"))
     else:
         nav_buttons.append(InlineKeyboardButton("⬅️", callback_data="faq_ignore"))  # Deshabilitado
     
     # Botón Siguiente (solo si no es la última)
+    # Incluir bot_id e item_id en el callback para no depender de user_data
     if current_index < total_items - 1:
-        nav_buttons.append(InlineKeyboardButton("Siguiente ➡️", callback_data="faq_next"))
+        nav_buttons.append(InlineKeyboardButton("Siguiente ➡️", callback_data=f"faq_next_{bot_id}_{current_item_id}"))
     else:
         nav_buttons.append(InlineKeyboardButton("➡️", callback_data="faq_ignore"))  # Deshabilitado
     
@@ -231,59 +236,115 @@ async def _get_faq_navigation_keyboard(current_index: int, total_items: int):
     return InlineKeyboardMarkup(keyboard)
 
 async def navigate_faq_previous(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Navega a la pregunta anterior"""
+    """Navega a la pregunta anterior - Versión robusta que obtiene datos desde BD"""
     query = update.callback_query
     await query.answer()
     
-    current_index = context.user_data.get('faq_current_index', 0)
-    items = context.user_data.get('faqs_list', [])
+    # Parsear bot_id e item_id del callback_data si está disponible
+    callback_data = query.data
+    bot_id = None
+    current_item_id = None
     
-    logger.info(f"[navigate_faq_previous] current_index={current_index}, total_items={len(items) if items else 0}")
+    if callback_data.startswith("faq_prev_"):
+        parts = callback_data.split("_")
+        if len(parts) >= 4:
+            try:
+                bot_id = int(parts[2])
+                current_item_id = int(parts[3])
+            except (ValueError, IndexError):
+                pass
+    
+    # Si no se pudo obtener del callback, usar métodos alternativos
+    if not bot_id:
+        bot_id = await get_tenant_id(update, context)
+        if not bot_id:
+            bot_id = 1
+            logger.warning(f"[navigate_faq_previous] No se obtuvo bot_id, usando fallback bot_id=1")
+    
+    # Obtener todas las FAQs desde la BD (más robusto que depender de user_data)
+    items = await content_db.get_all_items(bot_id, 'faqs', 'question')
     
     if not items:
-        logger.error("[navigate_faq_previous] No hay items en user_data")
+        logger.error(f"[navigate_faq_previous] No se encontraron FAQs para bot_id={bot_id}")
         await query.answer("Error: No se encontraron preguntas.", show_alert=True)
         return
+    
+    # Actualizar user_data con la lista actualizada (por si cambió)
+    context.user_data['faqs_list'] = items
+    
+    # Encontrar el índice actual basándose en el item_id
+    current_index = 0
+    if current_item_id:
+        for i, item in enumerate(items):
+            if item['id'] == current_item_id:
+                current_index = i
+                break
+    else:
+        # Fallback: usar user_data si no hay item_id en callback
+        current_index = context.user_data.get('faq_current_index', 0)
     
     if current_index <= 0:
         await query.answer("Ya estás en la primera pregunta.", show_alert=True)
         return
     
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        bot_id = 1
-        logger.warning(f"[navigate_faq_previous] No se obtuvo bot_id, usando fallback bot_id=1")
-    
     new_index = current_index - 1
-    logger.info(f"[navigate_faq_previous] Navegando de índice {current_index} a {new_index}")
+    logger.info(f"[navigate_faq_previous] Navegando de índice {current_index} a {new_index} (bot_id={bot_id})")
     await _show_faq_by_index(update, context, new_index, bot_id)
 
 async def navigate_faq_next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Navega a la siguiente pregunta"""
+    """Navega a la siguiente pregunta - Versión robusta que obtiene datos desde BD"""
     query = update.callback_query
     await query.answer()
     
-    current_index = context.user_data.get('faq_current_index', 0)
-    items = context.user_data.get('faqs_list', [])
+    # Parsear bot_id e item_id del callback_data si está disponible
+    callback_data = query.data
+    bot_id = None
+    current_item_id = None
     
-    logger.info(f"[navigate_faq_next] current_index={current_index}, total_items={len(items) if items else 0}")
+    if callback_data.startswith("faq_next_"):
+        parts = callback_data.split("_")
+        if len(parts) >= 4:
+            try:
+                bot_id = int(parts[2])
+                current_item_id = int(parts[3])
+            except (ValueError, IndexError):
+                pass
+    
+    # Si no se pudo obtener del callback, usar métodos alternativos
+    if not bot_id:
+        bot_id = await get_tenant_id(update, context)
+        if not bot_id:
+            bot_id = 1
+            logger.warning(f"[navigate_faq_next] No se obtuvo bot_id, usando fallback bot_id=1")
+    
+    # Obtener todas las FAQs desde la BD (más robusto que depender de user_data)
+    items = await content_db.get_all_items(bot_id, 'faqs', 'question')
     
     if not items:
-        logger.error("[navigate_faq_next] No hay items en user_data")
+        logger.error(f"[navigate_faq_next] No se encontraron FAQs para bot_id={bot_id}")
         await query.answer("Error: No se encontraron preguntas.", show_alert=True)
         return
+    
+    # Actualizar user_data con la lista actualizada (por si cambió)
+    context.user_data['faqs_list'] = items
+    
+    # Encontrar el índice actual basándose en el item_id
+    current_index = 0
+    if current_item_id:
+        for i, item in enumerate(items):
+            if item['id'] == current_item_id:
+                current_index = i
+                break
+    else:
+        # Fallback: usar user_data si no hay item_id en callback
+        current_index = context.user_data.get('faq_current_index', 0)
     
     if current_index >= len(items) - 1:
         await query.answer("Ya estás en la última pregunta.", show_alert=True)
         return
     
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        bot_id = 1
-        logger.warning(f"[navigate_faq_next] No se obtuvo bot_id, usando fallback bot_id=1")
-    
     new_index = current_index + 1
-    logger.info(f"[navigate_faq_next] Navegando de índice {current_index} a {new_index}")
+    logger.info(f"[navigate_faq_next] Navegando de índice {current_index} a {new_index} (bot_id={bot_id})")
     await _show_faq_by_index(update, context, new_index, bot_id)
 
 async def faq_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -366,9 +427,9 @@ async def cancel_question_conv(update: Update, context: ContextTypes.DEFAULT_TYP
 def register(app: Application):
     # Handler principal para mostrar FAQs (nuevo sistema con navegación)
     app.add_handler(CallbackQueryHandler(show_faqs_menu, pattern='^(faq|faq_menu|doctor_faq|patient_faq)$'))
-    # Handlers de navegación
-    app.add_handler(CallbackQueryHandler(navigate_faq_previous, pattern='^faq_prev$'))
-    app.add_handler(CallbackQueryHandler(navigate_faq_next, pattern='^faq_next$'))
+    # Handlers de navegación - soportan tanto formato antiguo como nuevo (con bot_id e item_id)
+    app.add_handler(CallbackQueryHandler(navigate_faq_previous, pattern='^faq_prev(_\d+_\d+)?$'))
+    app.add_handler(CallbackQueryHandler(navigate_faq_next, pattern='^faq_next(_\d+_\d+)?$'))
     app.add_handler(CallbackQueryHandler(faq_ignore, pattern='^faq_ignore$'))
     # Handler legacy (por compatibilidad)
     app.add_handler(CallbackQueryHandler(show_faq_content, pattern='^faq_item_'))

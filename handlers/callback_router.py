@@ -44,11 +44,12 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
         return
     
     # Handlers de navegación de FAQs (deben ir antes de la redirección por rol)
-    if callback_data in {"faq_next", "faq_prev", "faq_ignore"}:
+    # Soporta tanto el formato antiguo (faq_next, faq_prev) como el nuevo (faq_next_bot_id_item_id)
+    if callback_data.startswith("faq_next") or callback_data.startswith("faq_prev") or callback_data == "faq_ignore":
         from features.faqs.user_handlers import navigate_faq_next, navigate_faq_previous, faq_ignore
-        if callback_data == "faq_next":
+        if callback_data.startswith("faq_next"):
             await navigate_faq_next(update, context)
-        elif callback_data == "faq_prev":
+        elif callback_data.startswith("faq_prev"):
             await navigate_faq_previous(update, context)
         elif callback_data == "faq_ignore":
             await faq_ignore(update, context)
