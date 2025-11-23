@@ -66,7 +66,6 @@ async def faqs_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
         [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
         [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton(f"🔄 Reordenar {CONFIG['plural']}", callback_data=f"{CONFIG['prefix']}_reorder_list")],
         [InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel'), InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
     ]
     
@@ -172,27 +171,7 @@ async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
     fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})()
     await list_items_for_action(fake_update, context)
 
-@admin_required
-async def list_items_for_reorder(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer()
-    bot_id = await get_tenant_id(update, context)
-    reply_markup = await admin_keyboards.get_faqs_reorder_keyboard(bot_id)
-    if not reply_markup:
-        await query.answer("No hay suficientes elementos para reordenar.", show_alert=True); return
-    await query.edit_message_text(f"🔄 <b>Reordenar {CONFIG['plural']}</b>", reply_markup=reply_markup, parse_mode="HTML")
-
-@admin_required
-async def execute_reorder_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer(cache_time=1)
-    _, _, direction, item_id_str = query.data.split('_')
-    item_id = int(item_id_str)
-    bot_id = await get_tenant_id(update, context)
-    if await content_db.reorder_item(bot_id, CONFIG['table'], item_id, direction):
-        fake_query = type('obj', (object,), {'data': f"{CONFIG['prefix']}_reorder_list", 'message': query.message, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': query.message.edit_text, 'edit_message_reply_markup': query.message.edit_reply_markup})()
-        fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user, 'effective_chat': query.message.chat})()
-        await list_items_for_reorder(fake_update, context)
-    else:
-        await query.answer("❌ No se pudo mover.", show_alert=True)
+# Funciones de reordenar eliminadas - ya no se usan
 
 # --- CONVERSATION HANDLERS (Añadir y Modificar) ---
 @admin_required
@@ -340,25 +319,36 @@ async def save_modified_item(update: Update, context: ContextTypes.DEFAULT_TYPE)
     bot_id = ud.get('bot_id')
     
     if not original_item or not item_id or not bot_id:
+        logger.error(f"❌ Datos faltantes: original_item={original_item is not None}, item_id={item_id}, bot_id={bot_id}")
         await update.message.reply_text("❌ Error: Datos de modificación no encontrados.")
         return ConversationHandler.END
     
-    # Obtener nuevos valores
+    # Obtener nuevos valores de manera más robusta
     new_question = ud.get('new_title')
-    new_answer = update.message.text_html if hasattr(update.message, 'text_html') and update.message.text_html != '.' else None
     
-    if update.message.text_html == '.':
+    # Obtener nueva respuesta - usar text_html si está disponible, sino text
+    user_text = update.message.text if update.message.text else ""
+    if hasattr(update.message, 'text_html') and update.message.text_html:
+        new_answer = update.message.text_html if update.message.text_html != '.' else None
+    else:
+        new_answer = user_text if user_text != '.' else None
+    
+    # Si el usuario envió '.', mantener el valor original
+    if user_text == '.':
         new_answer = None
     
     # Si no se proporcionó nuevo valor, mantener el original
     final_question = new_question if new_question else original_item['title']
     final_answer = new_answer if new_answer else original_item['content']
     
+    logger.info(f"🔧 Actualizando FAQ: id={item_id}, bot_id={bot_id}, question={final_question[:50] if final_question else None}..., answer={final_answer[:50] if final_answer else None}...")
+    
     try:
         # Usar función específica para FAQs
         success = await update_faq_direct(item_id, bot_id, final_question, final_answer)
         
         if not success:
+            logger.error(f"❌ update_faq_direct retornó False para item_id={item_id}, bot_id={bot_id}")
             await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}.")
             return ConversationHandler.END
         
@@ -393,7 +383,7 @@ async def save_modified_item(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
     except Exception as e:
         logger.error(f"❌ Error en save_modified_item: {e}", exc_info=True)
-        await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}.")
+        await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}: {str(e)}")
         return ConversationHandler.END
 
 def register(app: Application):
@@ -431,5 +421,4 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(list_items_for_action, pattern=f"^{CONFIG['prefix']}_(modify|delete)_list$"))
     app.add_handler(CallbackQueryHandler(confirm_delete_item, pattern=f"^{CONFIG['prefix']}_delete_\\d+$"))
     app.add_handler(CallbackQueryHandler(execute_delete_item, pattern=f"^{CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
-    app.add_handler(CallbackQueryHandler(list_items_for_reorder, pattern=f"^{CONFIG['prefix']}_reorder_list$"))
-    app.add_handler(CallbackQueryHandler(execute_reorder_item, pattern=f"^{CONFIG['prefix']}_reorder_(up|down)_\\d+$"))
+    # Handlers de reordenar eliminados - ya no se usan
