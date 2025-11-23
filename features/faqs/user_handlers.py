@@ -7,6 +7,7 @@ from telegram.ext import (
 )
 from telegram.error import BadRequest
 from database import content_db, user_db
+from database.models.user import Doctor
 from common.helpers import escape_html
 from common import texts, helpers
 from common.context_manager import get_tenant_id
@@ -21,12 +22,46 @@ async def show_faqs_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     """Muestra directamente la primera pregunta con navegación por flechas"""
     query = update.callback_query
     await query.answer()
+    
+    user_id = update.effective_user.id
     bot_id = await get_tenant_id(update, context)
+    
+    # Logging para diagnóstico
+    logger.info(f"[show_faqs_menu] Usuario: {user_id}, bot_id obtenido: {bot_id}")
+    
+    # Si no hay bot_id, intentar obtenerlo de otra manera para doctores
+    if not bot_id:
+        logger.warning(f"[show_faqs_menu] No se obtuvo bot_id, intentando método alternativo...")
+        from utils.role_manager import RoleManager
+        from config import DB_PATH
+        role_manager = RoleManager(DB_PATH)
+        doctor = await role_manager.get_doctor_by_telegram_id(user_id)
+        if doctor:
+            doctor_id = doctor[0]
+            # Obtener bot_id desde el doctor_id
+            from database.session import get_session
+            from database.models.bot import Bot
+            from sqlalchemy import select
+            async with get_session() as session:
+                stmt = select(Bot.id).join(
+                    Doctor, Bot.admin_user_id == Doctor.telegram_id
+                ).where(
+                    Doctor.id == doctor_id,
+                    Bot.is_active == True
+                ).limit(1)
+                result = await session.execute(stmt)
+                bot_id = result.scalar_one_or_none()
+                logger.info(f"[show_faqs_menu] bot_id obtenido desde doctor_id: {bot_id}")
+    
     if not bot_id:
         bot_id = 1  # Fallback a SuperAdmin
+        logger.warning(f"[show_faqs_menu] Usando fallback bot_id=1 (SuperAdmin)")
+    
+    logger.info(f"[show_faqs_menu] Usando bot_id={bot_id} para obtener FAQs")
     
     # Obtener todas las FAQs
     items = await content_db.get_all_items(bot_id, 'faqs', 'question')
+    logger.info(f"[show_faqs_menu] FAQs encontradas: {len(items) if items else 0}")
     
     if not items:
         # Si no hay FAQs, mostrar mensaje
@@ -80,23 +115,57 @@ async def _show_faq_by_index(update: Update, context: ContextTypes.DEFAULT_TYPE,
         item = items[index]
         item_id = item['id']
         
-        # Obtener el contenido completo de la FAQ
-        item_details = await content_db.get_item_details(item_id, 'faqs', 'question', 'answer')
+        logger.info(f"[_show_faq_by_index] Mostrando FAQ index={index}, item_id={item_id}, bot_id={bot_id}")
         
-        if not item_details:
-            texto = "❌ Contenido no encontrado."
-            reply_markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
-            ])
-        else:
-            question = item_details.get('title', 'Pregunta')
-            answer = item_details.get('content', 'Respuesta no disponible')
+        # Obtener el contenido directamente desde el modelo SQLAlchemy filtrando por bot_id
+        # Esto asegura que obtenemos la FAQ correcta del bot_id correcto
+        try:
+            from database.session import get_session
+            from database.models.content import FAQ
+            from sqlalchemy import select
             
-            # Formatear el mensaje con pregunta y respuesta
-            texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
-            
-            # Crear teclado con flechas de navegación
-            reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+            async with get_session() as session:
+                stmt = select(FAQ).where(
+                    FAQ.id == item_id,
+                    FAQ.bot_id == bot_id
+                )
+                result = await session.execute(stmt)
+                faq = result.scalar_one_or_none()
+                
+                if faq:
+                    question = faq.question
+                    answer = faq.answer
+                    texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
+                    reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+                    logger.info(f"[_show_faq_by_index] FAQ mostrada correctamente: {question[:50]}...")
+                else:
+                    logger.error(f"[_show_faq_by_index] FAQ no encontrada: item_id={item_id}, bot_id={bot_id}")
+                    # Fallback: intentar con get_item_details (sin filtro de bot_id)
+                    item_details = await content_db.get_item_details(item_id, 'faqs', 'question', 'answer')
+                    if item_details:
+                        question = item_details.get('title', 'Pregunta')
+                        answer = item_details.get('content', 'Respuesta no disponible')
+                        texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
+                        reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+                    else:
+                        texto = "❌ Contenido no encontrado."
+                        reply_markup = InlineKeyboardMarkup([
+                            [InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
+                        ])
+        except Exception as e:
+            logger.error(f"[_show_faq_by_index] Error obteniendo FAQ: {e}", exc_info=True)
+            # Fallback a método original
+            item_details = await content_db.get_item_details(item_id, 'faqs', 'question', 'answer')
+            if item_details:
+                question = item_details.get('title', 'Pregunta')
+                answer = item_details.get('content', 'Respuesta no disponible')
+                texto = f"❓ <b>{escape_html(question)}</b>\n\n{answer}\n\n<i>Pregunta {index + 1} de {len(items)}</i>"
+                reply_markup = await _get_faq_navigation_keyboard(index, len(items))
+            else:
+                texto = "❌ Contenido no encontrado."
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
+                ])
     
     # Actualizar el índice actual
     context.user_data['faq_current_index'] = index
