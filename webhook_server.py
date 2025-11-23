@@ -72,32 +72,42 @@ def init_bot():
     if bot_application is not None:
         return bot_application
     
-    logger.info("Inicializando bot...")
-    
-    # Limpiar asociaciones incorrectas al iniciar
-    cleanup_on_start()
-    
-    # Crear aplicación
-    bot_application = Application.builder().token(BOT_TOKEN).build()
-    
-    # Registrar error handler
-    bot_application.add_error_handler(error_handler)
-    
-    # Registrar todos los handlers
-    register_all_handlers(bot_application)
-    
-    # Inicializar base de datos
-    logger.info("Inicializando base de datos...")
-    asyncio.run(init_db())
-    logger.info("Base de datos inicializada.")
-    
-    # Inicializar engine SQLAlchemy
-    logger.info("Inicializando SQLAlchemy engine...")
-    asyncio.run(init_engine())
-    logger.info("SQLAlchemy engine inicializado.")
-    
-    logger.info("Bot inicializado correctamente.")
-    return bot_application
+    try:
+        logger.info("Inicializando bot...")
+        
+        # Limpiar asociaciones incorrectas al iniciar
+        cleanup_on_start()
+        
+        # Crear aplicación
+        bot_application = Application.builder().token(BOT_TOKEN).build()
+        
+        # Registrar error handler
+        bot_application.add_error_handler(error_handler)
+        
+        # Registrar todos los handlers
+        register_all_handlers(bot_application)
+        
+        # Inicializar base de datos
+        logger.info("Inicializando base de datos...")
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        loop.run_until_complete(init_db())
+        logger.info("Base de datos inicializada.")
+        
+        # Inicializar engine SQLAlchemy
+        logger.info("Inicializando SQLAlchemy engine...")
+        loop.run_until_complete(init_engine())
+        logger.info("SQLAlchemy engine inicializado.")
+        
+        logger.info("Bot inicializado correctamente.")
+        return bot_application
+    except Exception as e:
+        logger.error(f"Error inicializando bot: {e}", exc_info=True)
+        raise
 
 
 @app.route('/', methods=['GET'])
@@ -117,6 +127,10 @@ def webhook():
         # Asegurar que el bot esté inicializado
         ensure_bot_initialized()
         
+        if bot_application is None:
+            logger.error("Bot application no está inicializado")
+            return jsonify({"ok": False, "error": "Bot not initialized"}), 500
+        
         # Obtener el update del request
         update_data = request.get_json()
         
@@ -125,23 +139,28 @@ def webhook():
             return jsonify({"ok": False, "error": "No data"}), 400
         
         # Crear objeto Update
-        update = Update.de_json(update_data, bot_application.bot)
+        try:
+            update = Update.de_json(update_data, bot_application.bot)
+        except Exception as e:
+            logger.error(f"Error creando objeto Update: {e}")
+            return jsonify({"ok": False, "error": f"Invalid update data: {str(e)}"}), 400
         
         # Procesar el update de forma asíncrona
-        # Usar create_task para no bloquear
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
         
+        # Procesar el update
         loop.run_until_complete(bot_application.process_update(update))
         
         return jsonify({"ok": True}), 200
         
     except Exception as e:
         logger.error(f"Error procesando webhook: {e}", exc_info=True)
-        return jsonify({"ok": False, "error": str(e)}), 500
+        # Retornar 200 para que Telegram no reintente, pero loguear el error
+        return jsonify({"ok": False, "error": "Internal server error"}), 200
 
 
 @app.route('/set_webhook', methods=['GET', 'POST'])
