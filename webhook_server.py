@@ -75,9 +75,6 @@ def init_bot():
     try:
         logger.info("Inicializando bot...")
         
-        # Limpiar asociaciones incorrectas al iniciar
-        cleanup_on_start()
-        
         # Crear aplicación
         bot_application = Application.builder().token(BOT_TOKEN).build()
         
@@ -87,7 +84,7 @@ def init_bot():
         # Registrar todos los handlers
         register_all_handlers(bot_application)
         
-        # Inicializar base de datos
+        # Inicializar base de datos (legacy)
         logger.info("Inicializando base de datos...")
         try:
             loop = asyncio.get_event_loop()
@@ -98,10 +95,15 @@ def init_bot():
         loop.run_until_complete(init_db())
         logger.info("Base de datos inicializada.")
         
-        # Inicializar engine SQLAlchemy
+        # Inicializar engine SQLAlchemy (esto crea las tablas)
         logger.info("Inicializando SQLAlchemy engine...")
         loop.run_until_complete(init_engine())
         logger.info("SQLAlchemy engine inicializado.")
+        
+        # Limpiar asociaciones incorrectas al iniciar (DESPUÉS de crear tablas)
+        logger.info("Limpiando asociaciones incorrectas...")
+        cleanup_on_start()
+        logger.info("Limpieza completada.")
         
         logger.info("Bot inicializado correctamente.")
         return bot_application
