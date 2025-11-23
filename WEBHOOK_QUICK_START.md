@@ -17,7 +17,7 @@ git clone https://github.com/tu-usuario/gynsys.git
 cd gynsys
 python3.10 -m venv venv
 source venv/bin/activate
-pip install --user -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 2. Crear archivo `.env`
@@ -39,9 +39,10 @@ DB_PATH=database/medical_bot.db
 1. Ir a pestaña **"Web"** en PythonAnywhere
 2. Click **"Add a new web app"**
 3. Seleccionar **Flask** y Python 3.10
-4. Editar **WSGI configuration file** y pegar contenido de `wsgi.py` (ajustar ruta)
-5. **Source code:** `/home/tu-usuario/gynsys`
-6. **Working directory:** `/home/tu-usuario/gynsys`
+4. **Virtualenv:** `/home/tu-usuario/gynsys/venv` ⚠️ **MUY IMPORTANTE**
+5. Editar **WSGI configuration file** y pegar contenido de `wsgi.py` (ajustar ruta)
+6. **Source code:** `/home/tu-usuario/gynsys`
+7. **Working directory:** `/home/tu-usuario/gynsys`
 
 ### 4. Configurar Webhook
 
@@ -67,7 +68,7 @@ python scripts/setup_webhook.py set https://tu-usuario.pythonanywhere.com/webhoo
 cd ~/gynsys
 git pull origin main
 source venv/bin/activate
-pip install --user -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Luego en PythonAnywhere Web → Click **"Reload"**

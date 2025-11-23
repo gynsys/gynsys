@@ -29,11 +29,11 @@ python3.10 -m venv venv
 # Activar entorno virtual
 source venv/bin/activate
 
-# Instalar dependencias
-pip install --user -r requirements.txt
+# Instalar dependencias (sin --user cuando estás dentro de un venv)
+pip install -r requirements.txt
 ```
 
-**Nota:** En PythonAnywhere, a veces necesitas usar `pip install --user` para instalar paquetes.
+**Nota:** Cuando estás dentro de un entorno virtual, NO uses `--user`. Solo usa `--user` si instalas paquetes globalmente (sin venv).
 
 ---
 
@@ -76,10 +76,18 @@ Guardar: `Ctrl+O`, `Enter`, `Ctrl+X`
 import sys
 import os
 
+# ⚠️ IMPORTANTE: Reemplaza 'tu-usuario' con tu usuario real
+path = '/home/tu-usuario/gynsys'
+venv_path = os.path.join(path, 'venv')
+
 # Agregar el directorio del proyecto al path
-path = '/home/tu-usuario/gynsys'  # CAMBIAR con tu usuario
 if path not in sys.path:
     sys.path.insert(0, path)
+
+# Agregar site-packages del venv (backup si no se configuró Virtualenv en Web)
+venv_site_packages = os.path.join(venv_path, 'lib', 'python3.10', 'site-packages')
+if os.path.exists(venv_site_packages) and venv_site_packages not in sys.path:
+    sys.path.insert(0, venv_site_packages)
 
 # Cambiar al directorio del proyecto
 os.chdir(path)
@@ -91,9 +99,17 @@ from webhook_server import app
 application = app
 ```
 
+**⚠️ IMPORTANTE:** Asegúrate de configurar también el **Virtualenv** en la pestaña Web (ver paso 4.3).
+
 **⚠️ IMPORTANTE:** Reemplaza `tu-usuario` con tu usuario real de PythonAnywhere.
 
-### 4.3. Configurar Source code y Working directory
+### 4.3. Configurar Virtualenv (⚠️ MUY IMPORTANTE)
+
+En la pestaña "Web", busca el campo **"Virtualenv"**:
+- Ingresa: `/home/tu-usuario/gynsys/venv`
+- Esto le dice a PythonAnywhere que use tu entorno virtual donde están instaladas las dependencias
+
+### 4.4. Configurar Source code y Working directory
 
 En la pestaña "Web":
 - **Source code:** `/home/tu-usuario/gynsys`
@@ -187,7 +203,7 @@ Cuando hagas cambios y los subas a GitHub:
 cd ~/gynsys
 git pull origin main
 source venv/bin/activate
-pip install --user -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Luego, en la pestaña "Web" de PythonAnywhere, click en el botón **"Reload"** para reiniciar la aplicación.
