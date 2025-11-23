@@ -43,45 +43,85 @@ async def init_tenant_data(bot_id: int, doctor_name: str = None):
         
         # 1. Cargar FAQs
         if 'faqs' in defaults:
-            await _load_faqs(bot_id, defaults['faqs'])
-            logger.info(f"✅ FAQs cargadas: {len(defaults['faqs'])}")
+            try:
+                await _load_faqs(bot_id, defaults['faqs'])
+                logger.info(f"✅ FAQs cargadas: {len(defaults['faqs'])}")
+            except Exception as e:
+                logger.error(f"❌ Error cargando FAQs: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'faqs' en defaults")
         
         # 2. Cargar Ubicaciones
         if 'locations' in defaults:
-            await _load_locations(bot_id, defaults['locations'])
-            logger.info(f"✅ Ubicaciones cargadas: {len(defaults['locations'])}")
+            try:
+                await _load_locations(bot_id, defaults['locations'])
+                logger.info(f"✅ Ubicaciones cargadas: {len(defaults['locations'])}")
+            except Exception as e:
+                logger.error(f"❌ Error cargando ubicaciones: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'locations' en defaults")
         
         # 3. Cargar Información de Contacto
         if 'contact_info' in defaults:
-            await _load_contact_info(bot_id, defaults['contact_info'])
-            logger.info(f"✅ Información de contacto cargada")
+            try:
+                await _load_contact_info(bot_id, defaults['contact_info'])
+                logger.info(f"✅ Información de contacto cargada")
+            except Exception as e:
+                logger.error(f"❌ Error cargando información de contacto: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'contact_info' en defaults")
         
         # 4. Cargar Precios
         if 'prices' in defaults:
-            await _load_prices(bot_id, defaults['prices'])
-            logger.info(f"✅ Precios cargados: {len(defaults['prices'])}")
+            try:
+                await _load_prices(bot_id, defaults['prices'])
+                logger.info(f"✅ Precios cargados: {len(defaults['prices'])}")
+            except Exception as e:
+                logger.error(f"❌ Error cargando precios: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'prices' en defaults")
         
         # 5. Cargar Galería
         if 'gallery' in defaults:
-            await _load_gallery(bot_id, defaults['gallery'])
-            logger.info(f"✅ Galería cargada: {len(defaults['gallery'])}")
+            try:
+                await _load_gallery(bot_id, defaults['gallery'])
+                logger.info(f"✅ Galería cargada: {len(defaults['gallery'])}")
+            except Exception as e:
+                logger.error(f"❌ Error cargando galería: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'gallery' en defaults")
         
         # 6. Cargar Configuración PDF
         if 'pdf_settings' in defaults:
-            await _load_pdf_settings(bot_id, defaults['pdf_settings'], doctor_name)
-            logger.info(f"✅ Configuración PDF cargada")
+            try:
+                await _load_pdf_settings(bot_id, defaults['pdf_settings'], doctor_name)
+                logger.info(f"✅ Configuración PDF cargada")
+            except Exception as e:
+                logger.error(f"❌ Error cargando configuración PDF: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'pdf_settings' en defaults")
         
         # 7. Activar Módulos Extra
         if 'extra_modules' in defaults and 'default_active' in defaults['extra_modules']:
-            await _activate_extra_modules(bot_id, defaults['extra_modules']['default_active'])
-            logger.info(f"✅ Módulos extra activados: {defaults['extra_modules']['default_active']}")
+            try:
+                await _activate_extra_modules(bot_id, defaults['extra_modules']['default_active'])
+                logger.info(f"✅ Módulos extra activados: {defaults['extra_modules']['default_active']}")
+            except Exception as e:
+                logger.error(f"❌ Error activando módulos extra: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'extra_modules' o 'default_active' en defaults")
         
         # 8. Cargar Mensaje de Bienvenida
         if 'welcome_message' in defaults:
-            await _load_welcome_message(bot_id, defaults['welcome_message']['text'])
-            logger.info(f"✅ Mensaje de bienvenida cargado")
+            try:
+                await _load_welcome_message(bot_id, defaults['welcome_message']['text'])
+                logger.info(f"✅ Mensaje de bienvenida cargado")
+            except Exception as e:
+                logger.error(f"❌ Error cargando mensaje de bienvenida: {e}", exc_info=True)
+        else:
+            logger.warning("⚠️ No se encontró 'welcome_message' en defaults")
         
-        logger.info(f"✅ Datos por defecto inicializados correctamente para bot_id={bot_id}")
+        logger.info(f"✅ Proceso de inicialización completado para bot_id={bot_id}")
         return True
         
     except FileNotFoundError:

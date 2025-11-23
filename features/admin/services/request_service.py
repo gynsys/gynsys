@@ -76,20 +76,39 @@ class RequestService:
         
         # Agregar o reactivar médico
         doctor_id, is_new = await admin_service.add_or_reactivate_doctor(full_name, telegram_id)
+        self.logger.info(f"📋 Doctor procesado: ID={doctor_id}, is_new={is_new}, telegram_id={telegram_id}")
         
         # Inicializar datos por defecto solo si es nuevo doctor
         if is_new:
             self.logger.info(f"🆕 Doctor nuevo creado (ID: {doctor_id}), inicializando datos por defecto...")
-            bot_id = await admin_service.get_bot_id_for_doctor(telegram_id)
+            
+            # Esperar un momento para asegurar que el bot se haya creado
+            import asyncio
+            await asyncio.sleep(0.5)
+            
+            # Intentar obtener bot_id (puede requerir múltiples intentos)
+            bot_id = None
+            for attempt in range(3):
+                bot_id = await admin_service.get_bot_id_for_doctor(telegram_id)
+                if bot_id:
+                    self.logger.info(f"📦 Bot_id encontrado en intento {attempt + 1}: {bot_id}")
+                    break
+                else:
+                    self.logger.warning(f"⚠️ Intento {attempt + 1}: No se encontró bot_id, esperando...")
+                    await asyncio.sleep(0.5)
+            
             if bot_id:
                 self.logger.info(f"📦 Bot_id encontrado: {bot_id}, iniciando carga de datos...")
-                success = await admin_service.initialize_tenant_data(bot_id, full_name)
-                if success:
-                    self.logger.info(f"✅ Datos inicializados correctamente para bot_id={bot_id}")
-                else:
-                    self.logger.warning(f"⚠️ Error al inicializar datos para bot_id={bot_id}")
+                try:
+                    success = await admin_service.initialize_tenant_data(bot_id, full_name)
+                    if success:
+                        self.logger.info(f"✅ Datos inicializados correctamente para bot_id={bot_id}")
+                    else:
+                        self.logger.error(f"❌ Error al inicializar datos para bot_id={bot_id} (retornó False)")
+                except Exception as e:
+                    self.logger.error(f"❌ Excepción al inicializar datos para bot_id={bot_id}: {e}", exc_info=True)
             else:
-                self.logger.warning(f"⚠️ No se encontró bot_id para telegram_id={telegram_id} después de crear doctor")
+                self.logger.error(f"❌ No se encontró bot_id para telegram_id={telegram_id} después de 3 intentos")
         else:
             self.logger.info(f"♻️ Doctor existente reactivado (ID: {doctor_id}), no se inicializan datos")
         
