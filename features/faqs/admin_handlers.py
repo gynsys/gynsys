@@ -235,6 +235,7 @@ async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text("❌ Error: No se encontró el mensaje a editar. Por favor, inicia nuevamente.")
         return ConversationHandler.END
     
+    # Editar mensaje - igual que el código que funcionaba
     try:
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
@@ -245,9 +246,9 @@ async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYP
             ),
             parse_mode="HTML"
         )
-        logger.info(f"[receive_mod_question] Mensaje editado correctamente, retornando estado {WorkflowState.AWAITING_MOD_ANSWER}")
+        logger.info(f"[receive_mod_question] Mensaje editado, retornando {WorkflowState.AWAITING_MOD_ANSWER}")
     except Exception as e:
-        logger.error(f"[receive_mod_question] Error editando mensaje: {e}", exc_info=True)
+        logger.error(f"[receive_mod_question] Error editando: {e}")
         # Si falla, enviar nuevo mensaje
         new_msg = await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -258,9 +259,8 @@ async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYP
             parse_mode="HTML"
         )
         context.user_data['main_message_id'] = new_msg.message_id
-        logger.info(f"[receive_mod_question] Nuevo mensaje enviado, actualizado main_message_id a {new_msg.message_id}")
     
-    logger.info(f"[receive_mod_question] Retornando estado: {WorkflowState.AWAITING_MOD_ANSWER} (tipo: {type(WorkflowState.AWAITING_MOD_ANSWER)})")
+    # Retornar el estado - el ConversationHandler lo manejará
     return WorkflowState.AWAITING_MOD_ANSWER
 
 
@@ -562,6 +562,7 @@ def register(app: Application):
     )
     
     # ConversationHandler para modificar
+    # IMPORTANTE: per_chat=True, per_user=True para que el estado se guarde correctamente
     modify_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(start_modify, pattern='^faq_modify_\\d+$')],
         states={
@@ -573,7 +574,10 @@ def register(app: Application):
             ]
         },
         fallbacks=cancel_handlers,
-        allow_reentry=True
+        allow_reentry=True,
+        per_chat=True,
+        per_user=True,
+        per_message=False
     )
     
     # ConversationHandler para editar encabezado
