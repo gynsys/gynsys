@@ -247,6 +247,8 @@ async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYP
             parse_mode="HTML"
         )
         logger.info(f"[receive_mod_question] Mensaje editado, retornando {WorkflowState.AWAITING_MOD_ANSWER}")
+        # Pequeño delay para asegurar que el ConversationHandler actualice su estado
+        await asyncio.sleep(0.3)
     except Exception as e:
         logger.error(f"[receive_mod_question] Error editando: {e}")
         # Si falla, enviar nuevo mensaje
@@ -259,6 +261,8 @@ async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYP
             parse_mode="HTML"
         )
         context.user_data['main_message_id'] = new_msg.message_id
+        # Pequeño delay también cuando se envía nuevo mensaje
+        await asyncio.sleep(0.3)
     
     # Retornar el estado - el ConversationHandler lo manejará
     return WorkflowState.AWAITING_MOD_ANSWER
@@ -266,11 +270,16 @@ async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def receive_mod_answer_and_save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Recibe la nueva respuesta y guarda los cambios - Simplificado"""
+    logger.info(f"[receive_mod_answer_and_save] Inicio. Usuario: {update.effective_user.id}, Texto: {update.message.text[:50] if update.message.text else 'None'}...")
+    
     ud = context.user_data
     original_faq = ud.get('original_faq')
     faq_id = ud.get('faq_id')
     
+    logger.info(f"[receive_mod_answer_and_save] Datos en user_data: original_faq={'presente' if original_faq else 'ausente'}, faq_id={faq_id}")
+    
     if not original_faq or not faq_id:
+        logger.error("[receive_mod_answer_and_save] Datos faltantes en user_data")
         await update.message.reply_text("❌ Error: Datos no encontrados.")
         return ConversationHandler.END
     
