@@ -231,7 +231,7 @@ async def show_delete_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, p
     query = update.callback_query
     await query.answer()
     
-    doctors = admin_service.get_all_doctors()
+    doctors = await admin_service.get_all_doctors()
     if not doctors:
         texto = "🗑️ No hay médicos activos para eliminar."
         keyboard = get_back_to_doctors_keyboard()
@@ -254,7 +254,7 @@ async def show_simple_restrict_menu(update: Update, context: ContextTypes.DEFAUL
     query = update.callback_query
     await query.answer()
     
-    doctors = admin_service.get_all_doctors()
+    doctors = await admin_service.get_all_doctors()
     if not doctors:
         texto = "🔒 No hay médicos activos para restringir."
         keyboard = get_back_to_doctors_keyboard()
