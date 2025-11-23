@@ -1,0 +1,75 @@
+{
+  "faqs": [
+    {
+      "question": "¿Cómo puedo agendar una cita?",
+      "answer": "Puedes agendar una cita presionando el botón '📅 Citas' en el menú principal. Selecciona la fecha y hora que mejor se adapte a tu disponibilidad.",
+      "display_order": 1
+    },
+    {
+      "question": "¿Cuáles son los horarios de atención?",
+      "answer": "Los horarios de atención están disponibles en la sección '📍 Ubicaciones' del menú principal. Allí encontrarás toda la información sobre nuestros horarios y ubicaciones.",
+      "display_order": 2
+    },
+    {
+      "question": "¿Cómo puedo contactar directamente?",
+      "answer": "Puedes contactarnos directamente a través del botón '📞 Contacto' en el menú principal, donde encontrarás nuestros números de teléfono y canales de comunicación.",
+      "display_order": 3
+    },
+    {
+      "question": "¿Dónde están ubicadas las consultas?",
+      "answer": "Nuestras ubicaciones están disponibles en la sección '📍 Ubicaciones' del menú principal. Allí encontrarás direcciones, mapas y horarios de cada consultorio.",
+      "display_order": 4
+    },
+    {
+      "question": "¿Cuáles son los precios de las consultas?",
+      "answer": "Los precios de nuestras consultas y servicios están disponibles en la sección '💰 Precios' del menú principal. Puedes consultar los costos de cada tipo de consulta.",
+      "display_order": 5
+    }
+  ],
+  "locations": [
+    {
+      "name": "📋 Configura tu Ubicación",
+      "address": "Aquí puedes agregar la dirección de tu consultorio",
+      "schedule": "Lunes a Viernes: 9:00 AM - 6:00 PM\nSábados: 9:00 AM - 1:00 PM",
+      "maps_url": "https://maps.google.com",
+      "display_order": 1,
+      "is_active": true
+    }
+  ],
+  "contact_info": {
+    "header": "📞 Información de Contacto",
+    "description": "Configura tu información de contacto desde el Panel Admin. Aquí podrás agregar:\n\n• Números de teléfono\n• Correo electrónico\n• Horarios de atención\n• Redes sociales\n\nVe a Panel Admin > Contacto para personalizar esta información."
+  },
+  "prices": [
+    {
+      "title": "💰 Configura tus Precios",
+      "content": "Personaliza los precios de tus servicios desde el Panel Admin.\n\nVe a Panel Admin > Precios para agregar y editar los costos de tus consultas y servicios médicos.",
+      "display_order": 1
+    }
+  ],
+  "gallery": [
+    {
+      "title": "🖼️ Configura tu Galería",
+      "content": "Agrega imágenes y contenido a tu galería desde el Panel Admin.\n\nVe a Panel Admin > Galería para subir fotos, videos y contenido visual que quieras compartir con tus pacientes.",
+      "display_order": 1
+    }
+  ],
+  "pdf_settings": {
+    "clinic_name": "Nombre de tu Consultorio",
+    "doctor_name": "Tu Nombre",
+    "clinic_address": "Dirección de tu consultorio",
+    "clinic_phone": "Teléfono de contacto",
+    "clinic_email": "correo@ejemplo.com",
+    "show_logo": true,
+    "show_signature": true,
+    "footer_text": "Información confidencial - Solo uso médico"
+  },
+  "extra_modules": {
+    "default_active": ["test", "quiz"],
+    "description": "Los módulos 'test' (Test Endometriosis) y 'quiz' (Aprende Jugando) están activados por defecto. Puedes gestionarlos desde Panel Admin > Módulos Extras."
+  },
+  "welcome_message": {
+    "text": "Bienvenido/a a mi consulta. Estoy aquí para ayudarte con tus necesidades de salud ginecológica. Puedes agendar citas, consultar información y contactarme cuando lo necesites."
+  }
+}
+

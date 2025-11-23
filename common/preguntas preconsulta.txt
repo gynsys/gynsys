@@ -1,0 +1,62 @@
+PREGUNTAS DE PRECONSULTA MÉDICA
+
+🧍 INFORMACIÓN PERSONAL
+1. ¿Cuál es tu nombre y apellido?
+2. ¿Cuál es tu edad?
+3. ¿Cuál es tu número de Cédula de Identidad?
+4. ¿Cuál es tu número de teléfono?
+5. ¿Cuál es tu dirección o localidad donde resides?
+6. ¿Cuál es tu ocupación?
+
+🩺 ANTECEDENTES MÉDICOS
+7. ¿Tu madre padece de alguna enfermedad de base?
+8. ¿Tu padre padece de alguna enfermedad de base?
+9. ¿Padeces alguna patología de base?
+10. ¿Tomas algún suplemento o vitamina actualmente?
+11. ¿Has tenido cirugías previas?
+
+👩‍⚕️ ANTECEDENTES OBSTÉTRICOS Y GINECOLÓGICOS
+12. ¿A qué edad tuviste tu primera menstruación (Menarquia)?
+13. ¿A qué edad tuviste tu primera relación sexual?
+14. ¿Has tenido otros embarazos (partos o abortos) anteriormente?
+15. ¿Has estado embarazada alguna vez (incluyendo partos o abortos)?
+16. ¿Eres sexualmente activa actualmente?
+17. ¿Has estado buscando un embarazo por más de un año?
+18. ¿Tus ciclos menstruales son regulares?
+19. ¿Cuál es la duración de tus ciclos?
+20. ¿Cuál es la frecuencia de tus ciclos?
+21. ¿Sientes dolor durante la menstruación (dismenorrea)?
+22. ¿Qué tan intenso es el dolor menstrual (escala 0–10)?
+23. ¿Cuál es la fecha de tu última menstruación (FUM)?
+24. ¿Usas algún método anticonceptivo (MAC) actualmente?
+25. ¿Cuál es la fecha de tu último control ginecológico?
+26. ¿Cuál es la fecha de tu última citología (PAP)?
+
+🔬 EXAMEN FUNCIONAL
+27. ¿Presentas dolor al tener relaciones sexuales (dispareunia)?
+28. ¿El dolor es superficial o profundo?
+29. ¿Qué tan intenso es el dolor profundo (escala 0–10)?
+30. ¿Presentas dolor en piernas durante la menstruación?
+31. ¿Cómo es el dolor en piernas?
+32. ¿En qué zona sientes el dolor en piernas?
+33. ¿Presentas síntomas gastrointestinales antes de la menstruación?
+34. ¿Presentas síntomas gastrointestinales durante la menstruación?
+35. ¿Tienes dolor para evacuar (dischezia)?
+36. ¿Qué tan intenso es el dolor al evacuar (escala 0–10)?
+37. ¿Cuál es tu hábito evacuatorio (frecuencia)?
+38. ¿Presentas algún problema al orinar?
+39. ¿Tienes dolor para orinar?
+40. ¿Qué tan intenso es el dolor al orinar (escala 0–10)?
+41. ¿Presentas irritación constante al orinar?
+42. ¿Presentas escape de orina?
+43. ¿Te despiertas más de 3 veces para orinar?
+
+🏃‍♀️ HÁBITOS PSICOBIOLÓGICOS
+44. ¿Realizas actividad física regularmente?
+45. ¿Cuántos días a la semana realizas actividad física?
+46. ¿Cuánto tiempo dura cada sesión de actividad física?
+47. ¿Desde hace cuánto tiempo mantienes este hábito?
+48. ¿Cuál es el objetivo de tu actividad física?
+49. ¿Fumas actualmente?
+50. ¿Consumes alcohol?
+51. ¿Consume alguna sustancia ilícita?

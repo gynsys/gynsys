@@ -1,0 +1,1055 @@
+[
+    
+    {
+        "id": 1,
+        "category": "Higiene y Cuidados",
+        "statement": "Es necesario usar duchas vaginales para mantener la vagina 'limpia'.",
+        "is_truth": false,
+        "explanation": "¡Mito! La vagina se limpia sola. Las duchas vaginales pueden eliminar las bacterias buenas y aumentar el riesgo de infecciones."
+    },
+    {
+        "id": 2,
+        "category": "Higiene y Cuidados",
+        "statement": "Dormir sin ropa interior es beneficioso para la salud vaginal.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Permitir que la zona genital 'respire' por la noche puede reducir la humedad y disminuir el riesgo de infecciones por hongos."
+    },
+    {
+        "id": 3,
+        "category": "Menstruación",
+        "statement": "Es normal sentir un dolor menstrual tan fuerte que te impide hacer tus actividades diarias.",
+        "is_truth": false,
+        "explanation": "¡Mito! Un dolor leve es común, pero un dolor incapacitante (dismenorrea) puede ser señal de condiciones como la endometriosis. ¡Siempre debes consultarlo!"
+    },
+    {
+        "id": 4,
+        "category": "Menstruación",
+        "statement": "Es posible quedar embarazada durante la menstruación.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Aunque es raro, es posible. El esperma puede sobrevivir varios días en el cuerpo y la ovulación puede ocurrir justo después del periodo."
+    },
+    {
+        "id": 5,
+        "category": "ETS",
+        "statement": "El Virus del Papiloma Humano (VPH) se puede contagiar al sentarse en un inodoro público.",
+        "is_truth": false,
+        "explanation": "¡Mito! El VPH es un virus de transmisión principalmente sexual. No sobrevive bien en superficies como los inodoros."
+    },
+    {
+        "id": 6,
+        "category": "Infecciones",
+        "statement": "Si una mujer tiene una infección por hongos recurrente, su pareja masculina no necesita tratamiento.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque no se considera una ETS, un hombre puede portar el hongo sin síntomas y re-infectar a su pareja. Si las infecciones son recurrentes, ¡ambos deberían consultarlo!"
+    },
+    {
+        "id": 7,
+        "category": "ETS",
+        "statement": "Tener VPH significa que inevitablemente desarrollarás cáncer de cuello uterino.",
+        "is_truth": false,
+        "explanation": "¡Mito muy importante! La gran mayoría de las infecciones por VPH son eliminadas por el propio sistema inmune. Solo unas pocas cepas de 'alto riesgo' persistentes pueden causar cáncer."
+    },
+    {
+        "id": 8,
+        "category": "Anticoncepción",
+        "statement": "Usar anticonceptivos hormonales durante mucho tiempo causa infertilidad en el futuro.",
+        "is_truth": false,
+        "explanation": "¡Mito! La fertilidad generalmente regresa a su estado natural poco después de suspender los anticonceptivos. La edad es un factor mucho más determinante."
+    },
+    {
+        "id": 9,
+        "category": "Anticoncepción",
+        "statement": "La 'marcha atrás' (coito interrumpido) es un método anticonceptivo eficaz si se hace bien.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! Es uno de los métodos menos efectivos. El líquido preeyaculatorio puede contener espermatozoides y requiere un autocontrol que a menudo falla."
+    },
+    {
+        "id": 10,
+        "category": "Menstruación",
+        "statement": "Todas las mujeres ovulan exactamente el día 14 de su ciclo menstrual.",
+        "is_truth": false,
+        "explanation": "¡Mito! El 'día 14' es solo un promedio para un ciclo ideal de 28 días. La ovulación varía mucho entre mujeres y según la duración de su ciclo."
+    },
+    {
+        "id": 11,
+        "category": "Chequeos",
+        "statement": "Solo necesito hacerme una citología (Papanicolau) si tengo síntomas o soy sexualmente activa.",
+        "is_truth": false,
+        "explanation": "¡Mito! Las guías recomiendan iniciar los chequeos regulares a partir de los 21-25 años, independientemente de la actividad sexual, para la detección temprana."
+    },
+    {
+        "id": 12,
+        "category": "Cáncer",
+        "statement": "El cáncer de mama solo afecta a mujeres con antecedentes familiares de la enfermedad.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque tener antecedentes familiares aumenta el riesgo, la mayoría de las mujeres diagnosticadas con cáncer de mama no tienen historial familiar."
+    },
+    {
+        "id": 13,
+        "category": "Endometriosis",
+        "statement": "La endometriosis es simplemente un 'dolor menstrual muy fuerte'.",
+        "is_truth": false,
+        "explanation": "¡Mito! Es una enfermedad inflamatoria crónica donde tejido similar al del útero crece fuera de él, causando dolor crónico, no solo durante la menstruación."
+    },
+    {
+        "id": 14,
+        "category": "Endometriosis",
+        "statement": "Un embarazo cura la endometriosis.",
+        "is_truth": false,
+        "explanation": "¡Mito! El embarazo puede suprimir los síntomas temporalmente debido a los cambios hormonales, pero la enfermedad sigue presente y los síntomas suelen regresar después."
+    },
+    {
+        "id": 15,
+        "category": "Embarazo",
+        "statement": "Una mujer embarazada debe 'comer por dos' en términos de cantidad.",
+        "is_truth": false,
+        "explanation": "¡Mito! Solo se necesita un aumento moderado de calorías (unas 300-400 más al día) de alimentos nutritivos, no el doble de cantidad de comida."
+    },
+    {
+        "id": 16,
+        "category": "Embarazo",
+        "statement": "Hacer ejercicio durante un embarazo normal es peligroso para el bebé.",
+        "is_truth": false,
+        "explanation": "¡Mito! Salvo contraindicación médica, el ejercicio moderado como caminar o nadar es muy beneficioso tanto para la madre como para el bebé."
+    },
+    {
+        "id": 17,
+        "category": "Embarazo",
+        "statement": "La forma de la barriga de una embarazada puede predecir el sexo del bebé.",
+        "is_truth": false,
+        "explanation": "¡Mito! La forma de la barriga depende de la musculatura de la madre, la posición del bebé y la estructura corporal, no de su sexo."
+    },
+    {
+        "id": 18,
+        "category": "ETS",
+        "statement": "Las píldoras anticonceptivas ofrecen protección contra las Enfermedades de Transmisión Sexual (ETS).",
+        "is_truth": false,
+        "explanation": "¡Mito fundamental! Los anticonceptivos hormonales NO ofrecen ninguna protección contra las ETS. Solo los métodos de barrera como el preservativo lo hacen."
+    },
+    {
+        "id": 19,
+        "category": "ETS",
+        "statement": "Si no tengo síntomas, es imposible que tenga una ETS.",
+        "is_truth": false,
+        "explanation": "¡Mito muy peligroso! Muchas de las ETS más comunes, como la clamidia, gonorrea o el VPH, a menudo no presentan ningún síntoma."
+    },
+    {
+        "id": 20,
+        "category": "ETS",
+        "statement": "Usar dos preservativos a la vez ofrece doble protección.",
+        "is_truth": false,
+        "explanation": "¡Mito! Usar dos condones a la vez crea fricción entre ellos, lo que de hecho aumenta la probabilidad de que se rompan. ¡Usa solo uno correctamente!"
+    },
+    {
+        "id": 21,
+        "category": "Fertilidad",
+        "statement": "La infertilidad es un problema que afecta principalmente a las mujeres.",
+        "is_truth": false,
+        "explanation": "¡Mito! Las causas de la infertilidad se distribuyen casi por igual: un tercio por factores femeninos, un tercio por masculinos y un tercio por una combinación o causas desconocidas."
+    },
+    {
+        "id": 22,
+        "category": "Fertilidad",
+        "statement": "Si tengo ciclos menstruales regulares cada mes, mi fertilidad está garantizada.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque es una buena señal, no garantiza la fertilidad. Puede haber otros problemas como obstrucción de las trompas o la calidad de los óvulos."
+    },
+    {
+        "id": 23,
+        "category": "Menopausia",
+        "statement": "La vida sexual de una mujer termina con la llegada de la menopausia.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque pueden aparecer desafíos como la sequedad (que tiene tratamiento), muchas mujeres reportan una vida sexual plena y satisfactoria después de la menopausia."
+    },
+    {
+        "id": 24,
+        "category": "Menopausia",
+        "statement": "Después de la menopausia, ya no es necesario visitar al ginecólogo.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! El riesgo de cánceres ginecológicos y de mama aumenta con la edad. Los chequeos regulares son más importantes que nunca."
+    },
+    {
+        "id": 25,
+        "category": "Mitos Generales",
+        "statement": "Orinar después de tener relaciones sexuales previene un embarazo.",
+        "is_truth": false,
+        "explanation": "¡Mito! Orinar después del sexo es excelente para prevenir infecciones urinarias, pero no tiene absolutamente ningún efecto anticonceptivo."
+    },
+    {
+        "id": 26,
+        "category": "Higiene y Cuidados",
+        "statement": "El flujo vaginal es siempre un signo de que algo anda mal o de una infección.",
+        "is_truth": false,
+        "explanation": "¡Mito! El flujo vaginal normal cambia durante el ciclo y es el mecanismo de autolimpieza del cuerpo. Solo si cambia de color, olor o causa picazón, es motivo de consulta."
+    },
+    {
+        "id": 27,
+        "category": "SOP",
+        "statement": "Tener Ovarios Poliquísticos (SOP) significa que es imposible quedar embarazada de forma natural.",
+        "is_truth": false,
+        "explanation": "¡Mito! El SOP es una de las principales causas de infertilidad, pero muchas mujeres con SOP conciben de forma natural. Otras pueden necesitar tratamientos para inducir la ovulación."
+    },
+    {
+        "id": 28,
+        "category": "Fibromas",
+        "statement": "Tener fibromas (miomas) uterinos significa que tengo cáncer.",
+        "is_truth": false,
+        "explanation": "¡Mito! Los fibromas son tumores benignos (no cancerosos) extremadamente comunes. La probabilidad de que un fibroma sea maligno es muy, muy baja."
+    },
+    {
+        "id": 29,
+        "category": "Mitos Generales",
+        "statement": "El estrés no puede afectar o retrasar el ciclo menstrual.",
+        "is_truth": false,
+        "explanation": "¡Mito! El estrés físico o emocional intenso puede alterar las hormonas que regulan la ovulación y, en consecuencia, retrasar o incluso hacer que se salte un period"
+    },
+    {
+        "id": 30,
+        "category": "Anticoncepción",
+        "statement": "La píldora del día después puede usarse como un método anticonceptivo regular.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! Es un método de EMERGENCIA con una alta dosis hormonal. No es tan efectiva como los métodos regulares y puede causar irregularidades si se usa con frecuencia."
+    },
+    {
+        "id": 31,
+        "category": "Endometriosis",
+        "statement": "La endometriosis solo afecta al útero y los ovarios.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque es más común en la pelvis, se han encontrado implantes de endometriosis en casi todos los órganos del cuerpo, incluyendo intestinos, vejiga y hasta pulmones."
+    },
+    {
+        "id": 32,
+        "category": "Endometriosis",
+        "statement": "Una histerectomía (extirpación del útero) siempre cura la endometriosis.",
+        "is_truth": false,
+        "explanation": "¡Mito! Si bien puede aliviar síntomas relacionados con el útero, si quedan implantes de endometriosis en otras partes del cuerpo, el dolor y los síntomas pueden persistir."
+    },
+    {
+        "id": 33,
+        "category": "Endometriosis",
+        "statement": "Una ecografía normal descarta por completo la endometriosis.",
+        "is_truth": false,
+        "explanation": "¡Mito! La ecografía puede detectar quistes grandes (endometriomas), pero los implantes pequeños y superficiales a menudo no se ven. El diagnóstico definitivo a veces requiere una laparoscopia."
+    },
+    {
+        "id": 34,
+        "category": "Embarazo",
+        "statement": "Si tuve una cesárea, todos mis futuros partos también deberán ser por cesárea.",
+        "is_truth": false,
+        "explanation": "¡Mito! Muchas mujeres pueden tener un parto vaginal exitoso después de una cesárea (PVDC). Depende de la razón de la primera cesárea y de la evaluación médica."
+    },
+    {
+        "id": 35,
+        "category": "Embarazo",
+        "statement": "Las náuseas matutinas del embarazo solo ocurren por la mañana.",
+        "is_truth": false,
+        "explanation": "¡Mito! El nombre es engañoso. Las náuseas del embarazo pueden aparecer en cualquier momento, ¡día o noche!"
+    },
+    {
+        "id": 36,
+        "category": "Embarazo",
+        "statement": "Es normal no sentir al bebé moverse por un día entero en el tercer trimestre.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! Una disminución significativa en los movimientos fetales siempre es motivo para contactar a tu médico o ir a urgencias para una revisión."
+    },
+    {
+        "id": 37,
+        "category": "Embarazo",
+        "statement": "Es crucial tomar ácido fólico solo una vez que ya se ha confirmado el embarazo.",
+        "is_truth": false,
+        "explanation": "¡Mito! El ácido fólico es vital en las primeras semanas para prevenir defectos del tubo neural. Se recomienda empezar a tomarlo antes de intentar concebir."
+    },
+    {
+        "id": 38,
+        "category": "Embarazo",
+        "statement": "Hay una correlación científicamente observada entre la acidez estomacal de la madre y la cantidad de pelo del bebé.",
+        "is_truth": true,
+        "explanation": "¡Sorprendentemente, Verdad! Se cree que las mismas hormonas que relajan el esfínter esofágico (causando acidez) también influyen en el crecimiento del pelo del feto."
+    },
+    {
+        "id": 39,
+        "category": "ETS",
+        "statement": "El sexo oral es una práctica completamente segura y libre del riesgo de contraer ETS.",
+        "is_truth": false,
+        "explanation": "¡Mito! Se pueden transmitir ETS como herpes, VPH, gonorrea y sífilis a través del sexo oral. El uso de barreras de protección reduce el riesgo."
+    },
+    {
+        "id": 40,
+        "category": "ETS",
+        "statement": "Ducharse o lavarse los genitales inmediatamente después del sexo previene eficazmente las ETS.",
+        "is_truth": false,
+        "explanation": "¡Mito! Lavarse después del sexo no previene el contagio. Las bacterias y virus se transmiten durante el contacto y no se pueden 'lavar' después."
+    },
+    {
+        "id": 41,
+        "category": "ETS",
+        "statement": "Una vez que te curas de una ETS bacteriana como la clamidia, te vuelves inmune a ella.",
+        "is_truth": false,
+        "explanation": "¡Mito! Curarse de ETS bacterianas como la clamidia o la gonorrea no genera inmunidad. Puedes volver a contraerlas si te expones de nuevo."
+    },
+    {
+        "id": 42,
+        "category": "Fertilidad",
+        "statement": "Adoptar un bebé aumenta las probabilidades de que una pareja infértil quede embarazada después.",
+        "is_truth": false,
+        "explanation": "¡Mito! No hay ninguna base científica para esta creencia. Las historias que se escuchan son coincidencias. La adopción es un camino para formar una familia, no un tratamiento de fertilidad."
+    },
+    {
+        "id": 43,
+        "category": "Fertilidad",
+        "statement": "Ciertos lubricantes de venta libre pueden dificultar la concepción al dañar el esperma.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Muchos lubricantes comerciales pueden afectar la motilidad de los espermatozoides. Si estás intentando concebir, es mejor usar lubricantes específicos 'favorables a la fertilidad'."
+    },
+    {
+        "id": 44,
+        "category": "Fertilidad",
+        "statement": "La fertilidad masculina no disminuye significativamente con la edad.",
+        "is_truth": false,
+        "explanation": "¡Mito! Si bien el descenso es más pronunciado en las mujeres, la fertilidad masculina también disminuye con la edad, con una menor calidad y cantidad de esperma a partir de los 40-45 años."
+    },
+    {
+        "id": 45,
+        "category": "Cáncer",
+        "statement": "El uso de desodorantes antitranspirantes está directamente relacionado con el cáncer de mama.",
+        "is_truth": false,
+        "explanation": "¡Mito! Las principales organizaciones de salud a nivel mundial no han encontrado ninguna evidencia científica sólida que relacione el uso de desodorantes con el cáncer de mama."
+    },
+    {
+        "id": 46,
+        "category": "Cáncer",
+        "statement": "El cáncer de ovario es fácil de detectar en sus etapas iniciales con un Papanicolau.",
+        "is_truth": false,
+        "explanation": "¡Mito! Es conocido como el 'asesino silencioso' porque sus síntomas iniciales son vagos. La citología detecta problemas en el cuello uterino, no en los ovarios."
+    },
+    {
+        "id": 47,
+        "category": "Cáncer",
+        "statement": "La vacuna contra el VPH es peligrosa y puede causar problemas de fertilidad.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! La vacuna no contiene virus vivos. Numerosos estudios han demostrado que es extremadamente segura y no tiene ningún impacto en la fertilidad."
+    },
+    {
+        "id": 48,
+        "category": "Menopausia",
+        "statement": "La menopausia es un evento que ocurre de un día para otro.",
+        "is_truth": false,
+        "explanation": "¡Mito! Está precedida por la 'perimenopausia', una transición que puede durar varios años con ciclos irregulares y síntomas fluctuantes."
+    },
+    {
+        "id": 49,
+        "category": "Mitos Generales",
+        "statement": "Es posible que un tampón se 'pierda' dentro del cuerpo y viaje a otros órganos.",
+        "is_truth": false,
+        "explanation": "¡Mito! La vagina es un canal cerrado; un tampón no puede 'perderse'. Si no puedes extraerlo, debes buscar ayuda médica para evitar infecciones, pero no viajará a otro lugar."
+    },
+    {
+        "id": 50,
+        "category": "Mitos Generales",
+        "statement": "Es posible ser alérgica al semen.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Se llama hipersensibilidad al plasma seminal. Es una condición alérgica rara pero real que puede causar enrojecimiento, picazón e hinchazón en la zona de contacto."
+    },
+    {
+        "id": 51,
+        "category": "Mitos Generales",
+        "statement": "Tener pechos pequeños significa que la mujer producirá menos leche materna.",
+        "is_truth": false,
+        "explanation": "¡Mito! El tamaño de los senos está determinado por el tejido graso, no por el tejido glandular productor de leche. Mujeres de todos los tamaños pueden amamantar con éxito."
+    },
+    {
+        "id": 52,
+        "category": "Mitos Generales",
+        "statement": "La primera relación sexual siempre es dolorosa y debe haber sangrado.",
+        "is_truth": false,
+        "explanation": "¡Mito! El dolor a menudo se debe a la tensión y la falta de lubricación. Además, no todas las mujeres tienen un himen que se rompa o sangre durante la primera relación."
+    },
+    {
+        "id": 53,
+        "category": "SOP",
+        "statement": "La única forma de tratar el Síndrome de Ovario Poliquístico (SOP) es con pastillas anticonceptivas.",
+        "is_truth": false,
+        "explanation": "¡Mito! Si bien los anticonceptivos ayudan a regular los ciclos, el tratamiento de primera línea para el SOP a menudo incluye cambios en el estilo de vida (dieta, ejercicio)."
+    },
+    {
+        "id": 54,
+        "category": "SOP",
+        "statement": "Todas las mujeres con SOP tienen sobrepeso y exceso de vello.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque son síntomas comunes, existe un fenotipo conocido como 'SOP delgado' donde las mujeres no tienen sobrepeso. El diagnóstico se basa en un conjunto de criterios."
+    },
+    {
+        "id": 55,
+        "category": "Fibromas",
+        "statement": "Si una mujer tiene fibromas, siempre necesitará cirugía para extirparlos.",
+        "is_truth": false,
+        "explanation": "¡Mito! El tratamiento depende de los síntomas. Si los fibromas son pequeños y no causan problemas, a menudo solo se vigilan."
+    },
+    {
+        "id": 56,
+        "category": "Mitos Generales",
+        "statement": "Los ciclos menstruales de las mujeres que viven o trabajan juntas se sincronizan.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque es una creencia popular, estudios científicos rigurosos no han encontrado evidencia de este fenómeno. La 'sincronización' percibida es resultado de la probabilidad matemática."
+    },
+    {
+        "id": 57,
+        "category": "Mitos Generales",
+        "statement": "Una mujer nace con todos los óvulos que tendrá en su vida.",
+        "is_truth": true,
+        "explanation": "¡Verdad! A diferencia de los hombres que producen esperma continuamente, las mujeres nacen con una reserva ovárica finita que disminuye con el tiempo."
+    },
+    {
+        "id": 58,
+        "category": "Higiene y Cuidados",
+        "statement": "La vaginosis bacteriana es una infección que se contrae por falta de higiene.",
+        "is_truth": false,
+        "explanation": "¡Mito! La vaginosis bacteriana es un desequilibrio de la flora, no una infección por 'suciedad'. De hecho, las duchas vaginales y el lavado excesivo son factores de riesgo comunes."
+    },
+    {
+        "id": 59,
+        "category": "Mitos Generales",
+        "statement": "Tener relaciones sexuales en una piscina o en el mar previene el embarazo.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque el cloro o la sal pueden afectar al esperma, si la penetración ocurre, el esperma se deposita directamente en el canal vaginal. No es un método anticonceptivo."
+    },
+    {
+        "id": 60,
+        "category": "Mitos Generales",
+        "statement": "El deseo sexual de una mujer debe ser siempre constante y alto para ser considerado 'normal'.",
+        "is_truth": false,
+        "explanation": "¡Mito! Es completamente normal que el deseo sexual (libido) varíe. Fluctúa con el ciclo hormonal, el estrés, el cansancio y muchos otros factores de la vida."
+    },
+    {
+        "id": 61,
+        "category": "Postparto",
+        "statement": "Después de dar a luz, el cuerpo de la mujer vuelve a la normalidad en un par de semanas.",
+        "is_truth": false,
+        "explanation": "¡Mito! La recuperación postparto, conocida como puerperio o 'cuarentena', es un proceso que dura al menos 6-8 semanas, y a menudo mucho más tiempo. El cuerpo necesita tiempo para sanar."
+    },
+    {
+        "id": 62,
+        "category": "Postparto",
+        "statement": "Es normal sentirse triste o abrumada después del parto.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El 'baby blues' es muy común debido a los enormes cambios hormonales. Sin embargo, si estos sentimientos son intensos o duran más de dos semanas, podría ser depresión postparto y es crucial buscar ayuda."
+    },
+    {
+        "id": 63,
+        "category": "Postparto",
+        "statement": "Si tuviste una episiotomía o desgarro, no debes moverte de la cama para que sane bien.",
+        "is_truth": false,
+        "explanation": "¡Mito! El movimiento suave, como caminar, es importante para la circulación y la recuperación. El reposo absoluto no es recomendable a menos que lo indique un médico."
+    },
+    {
+        "id": 64,
+        "category": "Postparto",
+        "statement": "No puedes quedar embarazada de nuevo mientras estás amamantando.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! La lactancia puede retrasar el regreso de la ovulación (método MELA), pero no es un anticonceptivo 100% fiable, especialmente si el bebé empieza a dormir más o a tomar otros alimentos."
+    },
+    {
+        "id": 65,
+        "category": "Postparto",
+        "statement": "Es normal que la barriga siga pareciendo de embarazada durante un tiempo después del parto.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El útero tarda varias semanas en contraerse y volver a su tamaño original. Además, los músculos abdominales necesitan tiempo para recuperarse. ¡Sé paciente con tu cuerpo!"
+    },
+    {
+        "id": 66,
+        "category": "Lactancia",
+        "statement": "Si tus pechos son pequeños, no producirás suficiente leche para tu bebé.",
+        "is_truth": false,
+        "explanation": "¡Mito! El tamaño de los senos está determinado por el tejido graso, no por la capacidad de producir leche. La producción de leche funciona por 'oferta y demanda'."
+    },
+    {
+        "id": 67,
+        "category": "Lactancia",
+        "statement": "Es necesario darle al bebé un horario estricto para amamantar (ej. cada 3 horas).",
+        "is_truth": false,
+        "explanation": "¡Mito! La recomendación actual es la lactancia 'a demanda'. Debes alimentar a tu bebé siempre que muestre señales de hambre, lo que estimula una producción de leche adecuada."
+    },
+    {
+        "id": 68,
+        "category": "Lactancia",
+        "statement": "La leche de los primeros días (calostro) es de 'mala calidad' y no alimenta.",
+        "is_truth": false,
+        "explanation": "¡Mito gravísimo! El calostro es 'oro líquido'. Es extremadamente rico en anticuerpos y nutrientes, y es todo lo que un recién nacido necesita en sus primeros días."
+    },
+    {
+        "id": 69,
+        "category": "Lactancia",
+        "statement": "Dar el pecho duele, es algo que hay que 'aguantar'.",
+        "is_truth": false,
+        "explanation": "¡Mito! Una ligera sensibilidad al principio puede ser normal, pero el dolor persistente o intenso suele ser un signo de un mal agarre del bebé. Es crucial corregirlo para evitar grietas."
+    },
+    {
+        "id": 70,
+        "category": "Lactancia",
+        "statement": "No se debe despertar a un recién nacido para alimentarlo.",
+        "is_truth": false,
+        "explanation": "¡Mito! Durante las primeras semanas, es vital despertar al bebé si han pasado más de 3-4 horas sin comer, incluso por la noche, para asegurar que gane peso y estimular la producción de leche."
+    },
+    {
+        "id": 71,
+        "category": "Lactancia",
+        "statement": "Si la madre está enferma (con un resfriado o gripe), debe dejar de amamantar.",
+        "is_truth": false,
+        "explanation": "¡Mito! Al contrario, ¡debe continuar! Tu leche materna le pasará al bebé los anticuerpos que tu cuerpo está produciendo para combatir la enfermedad, protegiéndolo."
+    },
+    {
+        "id": 72,
+        "category": "Cuidados del Bebé",
+        "statement": "Hay que bañar al recién nacido todos los días para mantenerlo limpio.",
+        "is_truth": false,
+        "explanation": "¡Mito! Bañar al bebé a diario puede resecar su piel delicada. Con 2-3 baños a la semana es suficiente, limpiando la zona del pañal en cada cambio."
+    },
+    {
+        "id": 73,
+        "category": "Cuidados del Bebé",
+        "statement": "Se debe limpiar el cordón umbilical con alcohol en cada cambio de pañal.",
+        "is_truth": false,
+        "explanation": "¡Mito! Las recomendaciones actuales indican que es mejor mantener la zona del cordón limpia y seca. El alcohol puede irritar la piel y retrasar la caída."
+    },
+    {
+        "id": 74,
+        "category": "Cuidados del Bebé",
+        "statement": "Si 'coges mucho en brazos' a un recién nacido, lo malcriarás.",
+        "is_truth": false,
+        "explanation": "¡Mito! No se puede malcriar a un recién nacido. El contacto físico, los abrazos y el consuelo son esenciales para su desarrollo neurológico y para crear un vínculo seguro."
+    },
+    {
+        "id": 75,
+        "category": "Cuidados del Bebé",
+        "statement": "La 'costra láctea' en la cabeza del bebé es un signo de mala higiene.",
+        "is_truth": false,
+        "explanation": "¡Mito! La costra láctea es una dermatitis seborreica infantil muy común e inofensiva. No está relacionada con la falta de limpieza y suele desaparecer por sí sola."
+    },
+    {
+        "id": 76,
+        "category": "Cuidados del Bebé",
+        "statement": "Los recién nacidos deben dormir boca arriba para reducir el riesgo de muerte súbita.",
+        "is_truth": true,
+        "explanation": "¡Verdad fundamental! La campaña 'Back to Sleep' ha demostrado que acostar a los bebés boca arriba (en decúbito supino) es la medida más eficaz para prevenir el Síndrome de Muerte Súbita del Lactante (SMSL)."
+    },
+    {
+        "id": 77,
+        "category": "Cuidados del Bebé",
+        "statement": "No es necesario cortar las uñas de un recién nacido porque son muy blandas.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque son blandas, pueden ser muy afiladas. Los bebés pueden arañarse la cara, por lo que es importante mantenerlas cortas con cuidado."
+    },
+    {
+        "id": 78,
+        "category": "Alimentación del Bebé",
+        "statement": "Se le debe dar agua a un bebé lactante en días de mucho calor para que no se deshidrate.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! Los bebés menores de 6 meses que toman leche materna o de fórmula no necesitan agua. La leche ya les proporciona toda la hidratación que necesitan."
+    },
+    {
+        "id": 79,
+        "category": "Alimentación del Bebé",
+        "statement": "Añadir cereales al biberón del bebé por la noche le ayudará a dormir más tiempo.",
+        "is_truth": false,
+        "explanation": "¡Mito! No hay evidencia de que ayude a dormir más y puede presentar riesgos de atragantamiento y sobrealimentación. La alimentación complementaria debe iniciarse con cuchara."
+    },
+    {
+        "id": 80,
+        "category": "Alimentación del Bebé",
+        "statement": "Los alimentos sólidos deben introducirse a los 4 meses de edad.",
+        "is_truth": false,
+        "explanation": "¡Mito! La OMS y la mayoría de las asociaciones pediátricas recomiendan la lactancia materna exclusiva hasta los 6 meses, y solo entonces iniciar la alimentación complementaria."
+    },
+    {
+        "id": 81,
+        "category": "Alimentación del Bebé",
+        "statement": "El hipo en los recién nacidos es un signo de que tienen frío.",
+        "is_truth": false,
+        "explanation": "¡Mito! El hipo es muy común en los bebés y se debe a la inmadurez de su diafragma. No significa que tengan frío ni que les moleste."
+    },
+    {
+        "id": 82,
+        "category": "Desarrollo del Bebé",
+        "statement": "Los bebés recién nacidos no ven nada, solo bultos borrosos.",
+        "is_truth": false,
+        "explanation": "¡Mito! Los recién nacidos pueden ver, pero su visión es limitada. Enfocan mejor a una distancia de 20-30 cm, ¡justo la distancia entre su cara y la de su madre al amamantar!"
+    },
+    {
+        "id": 83,
+        "category": "Ginecología",
+        "statement": "Las mujeres solo pueden quedar embarazadas el día exacto de la ovulación.",
+        "is_truth": false,
+        "explanation": "El óvulo sobrevive 12-24 h, pero el esperma hasta 5 días. El día FERTIL abarca 5-6 días."
+    },
+    {
+        "id": 84,
+        "category": "Ginecología",
+        "statement": "La menstruación puede durar entre 2 y 7 días y seguir siendo normal.",
+        "is_truth": true,
+        "explanation": "Cada ciclo es único; 2-7 días de sangrado se considera dentro de lo normal."
+    },
+    {
+        "id": 85,
+        "category": "Ginecología",
+        "statement": "Usar tampones puede romper el himen.",
+        "is_truth": false,
+        "explanation": "El himen es elástico y tiene un orificio central; los tampones NO lo rompen si se usan bien."
+    },
+    {
+        "id": 86,
+        "category": "Ginecología",
+        "statement": "El flujo vaginal cambia según la fase del ciclo.",
+        "is_truth": true,
+        "explanation": "Es hormonal: antes de la ovulación es claro y elástico (tipo clara de huevo)."
+    },
+    {
+        "id": 87,
+        "category": "Ginecología",
+        "statement": "Ducharse con agua y jabón íntimo varias veces al día previene infecciones.",
+        "is_truth": false,
+        "explanation": "Lavarse excesivamente altera la flora y aumenta riesgo de infecciones; 1 vez al día es suficiente."
+    },
+    {
+        "id": 88,
+        "category": "Ginecología",
+        "statement": "Los quistes de ovario siempre requieren cirugía.",
+        "is_truth": false,
+        "explanation": "Muchos son funcionales y desaparecen solos; solo se operan si crecen o generan dolor."
+    },
+    {
+        "id": 89,
+        "category": "Ginecología",
+        "statement": "El anticonceptivo deja de actuar apenas se olvida una pastilla.",
+        "is_truth": false,
+        "explanation": "Una pastilla olvidada NO anula todo el mes, pero sí baja la eficacia; hay pasos a seguir."
+    },
+    {
+        "id": 90,
+        "category": "Ginecología",
+        "statement": "La regla puede retrasarse por estrés.",
+        "is_truth": true,
+        "explanation": "El cortisol altera la señal hipotálamo-hipófisis y retrasa la ovulación."
+    },
+    {
+        "id": 91,
+        "category": "Ginecología",
+        "statement": "La píldora causa infertilidad.",
+        "is_truth": false,
+        "explanation": "Tras dejarla la mayoría de mujeres recuperan la ovulación en 1-3 meses; no genera esterilidad."
+    },
+    {
+        "id": 92,
+        "category": "Ginecología",
+        "statement": "El cáncer de cuello uterino se previene con vacuna y citología.",
+        "is_truth": true,
+        "explanation": "La vacuna VPH + tamizaje reducen hasta el 90 % de casos."
+    },
+    {
+        "id": 93,
+        "category": "Anticoncepción",
+        "statement": "El DIU puede usarse en nulíparas.",
+        "is_truth": true,
+        "explanation": "La OMS avala su uso en mujeres sin hijos; solo aumenta un poco dolor al colocar."
+    },
+    {
+        "id": 94,
+        "category": "Anticoncepción",
+        "statement": "La píldora del día después aborta.",
+        "is_truth": false,
+        "explanation": "Retarda o evita ovulación; si el óvulo ya fue fecundado NO actúa."
+    },
+    {
+        "id": 95,
+        "category": "Anticoncepción",
+        "statement": "El parche anticonceptivo se cambia cada semana 3 semanas seguidas.",
+        "is_truth": true,
+        "explanation": "1 parche/7 días × 3; 4.ª semana sin parche para menstruar."
+    },
+    {
+        "id": 96,
+        "category": "Anticoncepción",
+        "statement": "Los anillos vaginales liberan estrógenos y se cambian cada 3 meses.",
+        "is_truth": false,
+        "explanation": "El anillo mensual (NuvaRing) se retira a los 21 días; el anillo anual (Annovera) sí dura 1 año."
+    },
+    {
+        "id": 97,
+        "category": "Anticoncepción",
+        "statement": "El DIU hormonal disminuye la menstruación.",
+        "is_truth": true,
+        "explanation": "50 % de usuarias tienen amenorrea a los 12 meses por levonorgestrel local."
+    },
+    {
+        "id": 98,
+        "category": "Anticoncepción",
+        "statement": "La regla se puede saltar tomando pastillas activas sin descanso.",
+        "is_truth": true,
+        "explanation": "Método «continuous-use» avalado; no hay riesgo médico en omitir sangrado."
+    },
+    {
+        "id": 99,
+        "category": "Anticoncepción",
+        "statement": "Los antibióticos siempre anulan la píldora.",
+        "is_truth": false,
+        "explanation": "Solo rifampicina y rifabutina inducen enzimas; el resto NO afectan."
+    },
+    {
+        "id": 100,
+        "category": "Anticoncepción",
+        "statement": "El preservativo femenino se coloca dentro de la vagina antes del sexo.",
+        "is_truth": true,
+        "explanation": "Anillo interno se inserta contra cuello uterino; cubre paredes vaginales."
+    },
+    {
+        "id": 101,
+        "category": "Anticoncepción",
+        "statement": "La lactancia es anticonceptiva efectiva durante 6 meses.",
+        "is_truth": false,
+        "explanation": "Solo si es exclusiva y menstruación no ha regresado; eficacia 98 % pero con reglas estrictas."
+    },
+    {
+        "id": 102,
+        "category": "Anticoncepción",
+        "statement": "Las pastillas de solo progestágeno se deben tomar en la misma hora ±3 h.",
+        "is_truth": true,
+        "explanation": "El margen es estrecho; fuera de 3 h hay que usar preservativo 48 h."
+    },
+    {
+        "id": 103,
+        "category": "Ginecología",
+        "statement": "El endometriosis solo duele durante la regla.",
+        "is_truth": false,
+        "explanation": "Dolor crónico pélvico, dispareunia y síntomas intestinales pueden aparecer todo el mes."
+    },
+    {
+        "id": 104,
+        "category": "Ginecología",
+        "statement": "La regla dura exactamente 28 días.",
+        "is_truth": false,
+        "explanation": "Ciclo normal = 21-35 días; la duración varía por edad, estrés y enfermedades."
+    },
+    {
+        "id": 105,
+        "category": "Ginecología",
+        "statement": "Los fibromas siempre requieren histerectomía.",
+        "is_truth": false,
+        "explanation": "Solo se opera si causan sangrado excesivo o compresión; hay embolización o miomectomía."
+    },
+
+   
+    {
+        "id": 106,
+        "category": "Prenatal",
+        "statement": "Las embarazadas no pueden viajar en avión después del séptimo mes.",
+        "is_truth": false,
+        "explanation": "¡Mito! La mayoría de las aerolíneas permiten volar hasta la semana 36 en embarazos sin complicaciones. Siempre consulta con tu médico antes de viajar."
+    },
+    {
+        "id": 107,
+        "category": "Prenatal",
+        "statement": "Es peligroso tener relaciones sexuales durante el embarazo.",
+        "is_truth": false,
+        "explanation": "¡Mito! En embarazos normales, el sexo es seguro durante todo el embarazo. El bebé está protegido por el líquido amniótico y el útero."
+    },
+    {
+        "id": 108,
+        "category": "Prenatal",
+        "statement": "Los antojos no satisfechos pueden dejar marcas en la piel del bebé.",
+        "is_truth": false,
+        "explanation": "¡Mito! No hay evidencia científica que relacione los antojos no satisfechos con marcas en el bebé. Es una creencia popular sin fundamento."
+    },
+    {
+        "id": 109,
+        "category": "Prenatal",
+        "statement": "La diabetes gestacional desaparece automáticamente después del parto.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque suele desaparecer después del parto, las mujeres que han tenido diabetes gestacional tienen mayor riesgo de desarrollar diabetes tipo 2 más adelante."
+    },
+    {
+        "id": 110,
+        "category": "Prenatal",
+        "statement": "Es normal tener contracciones leves (Braxton Hicks) desde el segundo trimestre.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Estas contracciones de práctica son normales y ayudan a preparar el útero para el parto. Son irregulares y no dolorosas."
+    },
+    {
+        "id": 111,
+        "category": "Postnatal",
+        "statement": "La depresión postparto solo ocurre en las primeras semanas después del parto.",
+        "is_truth": false,
+        "explanation": "¡Mito! La depresión postparto puede aparecer hasta un año después del parto. Es importante estar atenta a los síntomas y buscar ayuda cuando sea necesario."
+    },
+    {
+        "id": 112,
+        "category": "Postnatal",
+        "statement": "Es normal perder mucho cabello en los meses posteriores al parto.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Esto se llama efluvio telógeno y es normal debido a los cambios hormonales. El cabello suele recuperarse en 6-12 meses."
+    },
+    {
+        "id": 113,
+        "category": "Postnatal",
+        "statement": "Si tuve cesárea, no debo levantar peso durante 3 meses.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Después de una cesárea, se recomienda evitar levantar pesos mayores al del bebé durante 6-8 semanas para permitir la cicatrización adecuada."
+    },
+    {
+        "id": 114,
+        "category": "Postnatal",
+        "statement": "La faja postparto es necesaria para que el útero regrese a su tamaño.",
+        "is_truth": false,
+        "explanation": "¡Mito! El útero se contrae naturalmente. Las fajas pueden dar soporte temporal pero no son necesarias para la recuperación y pueden ser incómodas."
+    },
+    {
+        "id": 115,
+        "category": "Fertilidad",
+        "statement": "La posición sexual influye en la probabilidad de concebir.",
+        "is_truth": false,
+        "explanation": "¡Mito! No hay evidencia científica que demuestre que alguna posición sexual específica aumente las probabilidades de concepción."
+    },
+    {
+        "id": 116,
+        "category": "Fertilidad",
+        "statement": "El consumo excesivo de café reduce la fertilidad femenina.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El alto consumo de cafeína (más de 300 mg/día) puede afectar la fertilidad. Se recomienda moderación al intentar concebir."
+    },
+    {
+        "id": 117,
+        "category": "Fertilidad",
+        "statement": "Los tratamientos de fertilidad como la FIV siempre resultan en embarazos múltiples.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque el riesgo de embarazos múltiples es mayor, muchos tratamientos de fertilidad resultan en embarazos únicos."
+    },
+    {
+        "id": 118,
+        "category": "Fertilidad",
+        "statement": "El tabaquismo reduce significativamente la fertilidad tanto en hombres como en mujeres.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Fumar afecta la calidad del esperma y los óvulos, y reduce las tasas de éxito de los tratamientos de fertilidad."
+    },
+    {
+        "id": 119,
+        "category": "Métodos Anticonceptivos",
+        "statement": "El DIU de cobre puede usarse como anticoncepción de emergencia.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El DIU de cobre insertado dentro de los 5 días después de una relación sexual sin protección es el método anticonceptivo de emergencia más efectivo."
+    },
+    {
+        "id": 120,
+        "category": "Métodos Anticonceptivos",
+        "statement": "Los anticonceptivos hormonales causan aumento de peso significativo en todas las mujeres.",
+        "is_truth": false,
+        "explanation": "¡Mito! Los estudios no muestran un aumento de peso significativo constante. Algunas mujeres pueden retener líquidos temporalmente, pero no es una regla general."
+    },
+    {
+        "id": 121,
+        "category": "Métodos Anticonceptivos",
+        "statement": "El implante anticonceptivo subdérmico es efectivo por 3 años.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El implante de etonogestrel es efectivo hasta por 3 años, y algunas versiones más nuevas hasta por 5 años."
+    },
+    {
+        "id": 122,
+        "category": "Métodos Anticonceptivos",
+        "statement": "Los anticonceptivos orales protegen contra el cáncer de ovario.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El uso prolongado de anticonceptivos orales combinados reduce el riesgo de cáncer de ovario hasta en un 50%."
+    },
+    {
+        "id": 123,
+        "category": "Endometriosis",
+        "statement": "La endometriosis siempre causa infertilidad.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque la endometriosis puede afectar la fertilidad, muchas mujeres con endometriosis leve a moderada logran embarazarse de forma natural."
+    },
+    {
+        "id": 124,
+        "category": "Endometriosis",
+        "statement": "El diagnóstico definitivo de endometriosis requiere cirugía.",
+        "is_truth": true,
+        "explanation": "¡Verdad! La laparoscopia con biopsia sigue siendo el estándar de oro para el diagnóstico definitivo de endometriosis."
+    },
+    {
+        "id": 125,
+        "category": "Endometriosis",
+        "statement": "La endometriosis solo afecta a mujeres en edad reproductiva.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque es más común en mujeres en edad reproductiva, la endometriosis puede persistir después de la menopausia y ocasionalmente afectar a adolescentes."
+    },
+    {
+        "id": 126,
+        "category": "Dolor Pélvico",
+        "statement": "El dolor pélvico crónico siempre tiene origen ginecológico.",
+        "is_truth": false,
+        "explanation": "¡Mito! El dolor pélvico crónico puede tener múltiples causas, incluyendo gastrointestinales, urológicas, musculoesqueléticas y neurológicas."
+    },
+    {
+        "id": 127,
+        "category": "Dolor Pélvico",
+        "statement": "La fisioterapia de suelo pélvico puede ayudar a tratar el dolor pélvico crónico.",
+        "is_truth": true,
+        "explanation": "¡Verdad! La fisioterapia especializada del suelo pélvico es un tratamiento efectivo para muchos tipos de dolor pélvico crónico."
+    },
+    {
+        "id": 128,
+        "category": "Dolor Pélvico",
+        "statement": "El dolor durante las relaciones sexuales es normal y debe tolerarse.",
+        "is_truth": false,
+        "explanation": "¡Mito peligroso! El dolor durante las relaciones sexuales (dispareunia) no es normal y siempre debe investigarse, ya que puede indicar condiciones médicas tratables."
+    },
+    {
+        "id": 129,
+        "category": "Incontinencia",
+        "statement": "La incontinencia urinaria es una parte normal del envejecimiento en la mujer.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque es común, la incontinencia urinaria no es una consecuencia inevitable del envejecimiento y puede tratarse efectivamente."
+    },
+    {
+        "id": 130,
+        "category": "Incontinencia",
+        "statement": "Los ejercicios de Kegel pueden mejorar la incontinencia urinaria.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Cuando se realizan correctamente, los ejercicios de Kegel fortalecen el suelo pélvico y pueden mejorar significativamente la incontinencia urinaria."
+    },
+    {
+        "id": 131,
+        "category": "Incontinencia",
+        "statement": "Beber menos líquidos es la mejor solución para la incontinencia.",
+        "is_truth": false,
+        "explanation": "¡Mito! La deshidratación puede empeorar la incontinencia al irritar la vejiga. Es importante mantenerse hidratado y buscar tratamiento adecuado."
+    },
+    {
+        "id": 132,
+        "category": "Cuidados del Recién Nacido",
+        "statement": "Los recién nacidos deben bañarse diariamente.",
+        "is_truth": false,
+        "explanation": "¡Mito! Bañar al recién nacido 2-3 veces por semana es suficiente. El baño excesivo puede resecar su piel delicada."
+    },
+    {
+        "id": 133,
+        "category": "Cuidados del Recién Nacido",
+        "statement": "Es normal que los recién nacidos estornuden frecuentemente.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Los estornudos frecuentes ayudan a limpiar las vías respiratorias del bebé y son normales, no necesariamente indican resfriado."
+    },
+    {
+        "id": 134,
+        "category": "Cuidados del Recién Nacido",
+        "statement": "Debes despertar al recién nacido cada 3-4 horas para alimentarlo.",
+        "is_truth": true,
+        "explanation": "¡Verdad! Durante las primeras semanas, es importante despertar al bebé para alimentarlo cada 3-4 horas para asegurar una ganancia de peso adecuada."
+    },
+    {
+        "id": 135,
+        "category": "Cuidados del Recién Nacido",
+        "statement": "Los bebés deben usar zapatos desde que empiezan a caminar.",
+        "is_truth": false,
+        "explanation": "¡Mito! Los bebés que están aprendiendo a caminar se benefician de estar descalzos o usar calcetines antideslizantes para desarrollar mejor el equilibrio y la fuerza muscular."
+    },
+    {
+        "id": 136,
+        "category": "Prevención de Enfermedades",
+        "statement": "La vacuna contra el VPH es solo efectiva si se recibe antes del inicio sexual.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque es más efectiva antes del inicio sexual, la vacuna contra el VPH también beneficia a mujeres sexualmente activas y puede proteger contra cepas a las que no han estado expuestas."
+    },
+    {
+        "id": 137,
+        "category": "Prevención de Enfermedades",
+        "statement": "La mamografía puede detectar el cáncer de mama antes de que se palpe un bulto.",
+        "is_truth": true,
+        "explanation": "¡Verdad! La mamografía puede detectar microcalcificaciones y tumores demasiado pequeños para ser palpados, permitiendo un diagnóstico temprano."
+    },
+    {
+        "id": 138,
+        "category": "Prevención de Enfermedades",
+        "statement": "El cáncer de cuello uterino se desarrolla rápidamente en pocos meses.",
+        "is_truth": false,
+        "explanation": "¡Mito! El cáncer de cuello uterino generalmente se desarrolla lentamente a lo largo de años, lo que hace que los exámenes regulares sean muy efectivos para la detección temprana."
+    },
+    {
+        "id": 139,
+        "category": "Prevención de Enfermedades",
+        "statement": "El uso regular de protectores diarios previene infecciones vaginales.",
+        "is_truth": false,
+        "explanation": "¡Mito! El uso constante de protectores diarios puede crear un ambiente húmedo que favorece el crecimiento de hongos y bacterias. Es mejor usar ropa interior de algodón y cambiarla regularmente."
+    },
+    {
+        "id": 140,
+        "category": "Menopausia",
+        "statement": "Los sofocos son el único síntoma de la menopausia.",
+        "is_truth": false,
+        "explanation": "¡Mito! La menopausia puede causar múltiples síntomas incluyendo cambios de humor, sequedad vaginal, alteraciones del sueño, y cambios en la libido, entre otros."
+    },
+    {
+        "id": 141,
+        "category": "Menopausia",
+        "statement": "La terapia hormonal para la menopausia aumenta el riesgo de cáncer de mama.",
+        "is_truth": true,
+        "explanation": "¡Verdad! El uso prolongado de terapia hormonal combinada (estrógeno + progestágeno) se asocia con un aumento modesto del riesgo de cáncer de mama."
+    },
+    {
+        "id": 142,
+        "category": "Menopausia",
+        "statement": "Todas las mujeres aumentan de peso durante la menopausia.",
+        "is_truth": false,
+        "explanation": "¡Mito! Aunque los cambios hormonales pueden favorecer el aumento de peso, no es inevitable. Una dieta balanceada y ejercicio regular pueden ayudar a mantener un peso saludable."
+    },
+    {
+        "id": 143,
+        "category": "SOP",
+        "statement": "El Síndrome de Ovario Poliquístico desaparece después de la menopausia.",
+        "is_truth": false,
+        "explanation": "¡Mito! El SOP es una condición crónica que persiste después de la menopausia, aunque algunos síntomas como los ciclos irregulares ya no son relevantes."
+    },
+    {
+        "id": 144,
+        "category": "SOP",
+        "statement": "Las mujeres con SOP tienen mayor riesgo de diabetes tipo 2.",
+        "is_truth": true,
+        "explanation": "¡Verdad! La resistencia a la insulina asociada con el SOP aumenta significativamente el riesgo de desarrollar diabetes tipo 2."
+    },
+    {
+        "id": 145,
+        "category": "Lactancia",
+        "statement": "La leche materna cambia su composición según las necesidades del bebé.",
+        "is_truth": true,
+        "explanation": "¡Verdad! La leche materna se adapta, cambiando su composición de grasa, proteínas y otros componentes según la edad del bebé, la hora del día e incluso si el bebé está enfermo."
+    },
+    {
+        "id": 146,
+        "category": "Lactancia",
+        "statement": "Amamantar previene el cáncer de mama.",
+        "is_truth": true,
+        "explanation": "¡Verdad! La lactancia materna reduce el riesgo de cáncer de mama, especialmente cuando se prolonga por más de un año en total (sumando todos los hijos)."
+    },
+    {
+        "id": 147,
+        "category": "Sexualidad",
+        "statement": "La libido baja en la mujer siempre tiene causas psicológicas.",
+        "is_truth": false,
+        "explanation": "¡Mito! La libido baja puede tener causas físicas (hormonales, medicamentos, condiciones médicas) y psicológicas. Una evaluación integral es necesaria."
+    },
+    {
+        "id": 148,
+        "category": "Sexualidad",
+        "statement": "El deseo sexual espontáneo es la única forma 'normal' de deseo.",
+        "is_truth": false,
+        "explanation": "¡Mito! El deseo sexual receptivo (que surge en respuesta a estímulos) es igualmente normal y común, especialmente en mujeres."
+    },
+    {
+        "id": 149,
+        "category": "General",
+        "statement": "Los quistes ováricos siempre son cancerosos.",
+        "is_truth": false,
+        "explanation": "¡Mito! La gran mayoría de los quistes ováricos son funcionales (relacionados con el ciclo menstrual) y benignos."
+    },
+    {
+        "id": 150,
+        "category": "General",
+        "statement": "La histerectomía causa automáticamente aumento de peso y depresión.",
+        "is_truth": false,
+        "explanation": "¡Mito! Muchas mujeres no experimentan estos efectos. La respuesta individual varía y depende de múltiples factores incluyendo la razón de la cirugía y si se conservan los ovarios."
+    }
+]

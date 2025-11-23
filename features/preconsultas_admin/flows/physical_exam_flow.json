@@ -1,0 +1,181 @@
+{
+  "start_node": "ASK_CONDICIONES_GENERALES",
+  "nodes": {
+    "ASK_CONDICIONES_GENERALES": {
+      "type": "buttons", "text_key": "exam.ask_condiciones", "save_to": "condiciones_generales",
+      "options": [
+        {"label": "Buenas"},
+        {"label": "Regulares"}
+      ], "allow_omit": true, "next_node": "ASK_PESO", "next_on_omit": "ASK_PESO"
+    },
+    "ASK_PESO": { "type": "numeric_input", "text_key": "exam.ask_peso", "save_to": "peso_kg", "next_node": "ASK_ALTURA" },
+    "ASK_ALTURA": { "type": "numeric_input", "text_key": "exam.ask_altura", "save_to": "altura_cm", "next_node": "CALCULATE_IMC" },
+    "CALCULATE_IMC": { "type": "action", "handler": "calculate_imc", "next_node": "ASK_MAMA_DERECHA_SIMETRIA" },
+
+    "ASK_MAMA_DERECHA_SIMETRIA": {
+      "type": "buttons", "text_key": "exam.ask_mama_derecha_simetria", "save_to": "mama_derecha_simetria",
+      "options": [{"label": "Simétrica"}, {"label": "Asimétrica"}],
+      "allow_omit": true, "next_node": "ASK_MAMA_DERECHA_AREOLA", "next_on_omit": "ASK_MAMA_DERECHA_AREOLA"
+    },
+    "ASK_MAMA_DERECHA_AREOLA": {
+      "type": "buttons", "text_key": "exam.ask_mama_derecha_areola", "save_to": "mama_derecha_areola",
+      "options": [{"label": "Normal"}, {"label": "Anormal"}, {"label": "Retraído"}],
+      "allow_omit": true, "next_node": "ASK_MAMA_DERECHA_NODULOS", "next_on_omit": "ASK_MAMA_DERECHA_NODULOS"
+    },
+    "ASK_MAMA_DERECHA_NODULOS": {
+      "type": "buttons", "text_key": "exam.ask_mama_derecha_nodulos", "save_to": "mama_derecha_nodulos",
+      "options": [
+        {"label": "Sin Presencia", "next_node": "ASK_MAMA_DERECHA_SECRECION"},
+        {"label": "Con Presencia", "next_node": "ASK_MAMA_DERECHA_RADIALES"}
+      ], "allow_omit": true, "next_on_omit": "ASK_MAMA_DERECHA_SECRECION"
+    },
+    "ASK_MAMA_DERECHA_RADIALES": { "type": "checklist", "text_key": "exam.ask_mama_radiales", "save_to": "mama_derecha_nodulos_radiales", "keyboard_type": "radiales_mama", "next_node": "ASK_MAMA_DERECHA_SECRECION" },
+    "ASK_MAMA_DERECHA_SECRECION": {
+      "type": "yes_no", "text_key": "exam.ask_mama_derecha_secrecion", "save_to": "mama_derecha_secrecion", "allow_omit": true,
+      "next_on_yes": "ASK_MAMA_IZQUIERDA_SIMETRIA",
+      "next_on_no": "ASK_MAMA_IZQUIERDA_SIMETRIA",
+      "next_on_omit": "ASK_MAMA_IZQUIERDA_SIMETRIA"
+    },
+
+    "ASK_MAMA_IZQUIERDA_SIMETRIA": {
+      "type": "buttons", "text_key": "exam.ask_mama_izquierda_simetria", "save_to": "mama_izquierda_simetria",
+      "options": [{"label": "Simétrica"}, {"label": "Asimétrica"}],
+      "allow_omit": true, "next_node": "ASK_MAMA_IZQUIERDA_AREOLA", "next_on_omit": "ASK_MAMA_IZQUIERDA_AREOLA"
+    },
+    "ASK_MAMA_IZQUIERDA_AREOLA": {
+      "type": "buttons", "text_key": "exam.ask_mama_izquierda_areola", "save_to": "mama_izquierda_areola",
+      "options": [{"label": "Normal"}, {"label": "Anormal"}, {"label": "Retraído"}],
+      "allow_omit": true, "next_node": "ASK_MAMA_IZQUIERDA_NODULOS", "next_on_omit": "ASK_MAMA_IZQUIERDA_NODULOS"
+    },
+    "ASK_MAMA_IZQUIERDA_NODULOS": {
+      "type": "buttons", "text_key": "exam.ask_mama_izquierda_nodulos", "save_to": "mama_izquierda_nodulos",
+      "options": [
+        {"label": "Sin Presencia", "next_node": "ASK_MAMA_IZQUIERDA_SECRECION"},
+        {"label": "Con Presencia", "next_node": "ASK_MAMA_IZQUIERDA_RADIALES"}
+      ], "allow_omit": true, "next_on_omit": "ASK_MAMA_IZQUIERDA_SECRECION"
+    },
+    "ASK_MAMA_IZQUIERDA_RADIALES": { "type": "checklist", "text_key": "exam.ask_mama_radiales_izq", "save_to": "mama_izquierda_nodulos_radiales", "keyboard_type": "radiales_mama", "next_node": "ASK_MAMA_IZQUIERDA_SECRECION" },
+    "ASK_MAMA_IZQUIERDA_SECRECION": {
+      "type": "yes_no", "text_key": "exam.ask_mama_izquierda_secrecion", "save_to": "mama_izquierda_secrecion", "allow_omit": true,
+      "next_on_yes": "ASK_GENITALES_EXTERNOS",
+      "next_on_no": "ASK_GENITALES_EXTERNOS",
+      "next_on_omit": "ASK_GENITALES_EXTERNOS"
+    },
+
+    "ASK_GENITALES_EXTERNOS": { "type": "buttons", "text_key": "exam.ask_genitales_externos", "save_to": "genitales_externos", "options": [{"label": "Normal"}, {"label": "Anormal"}], "allow_omit": true, "next_node": "ASK_VAGINA_TRAYECTO", "next_on_omit": "ASK_VAGINA_TRAYECTO" },
+    "ASK_VAGINA_TRAYECTO": {
+      "type": "yes_no", "text_key": "exam.ask_vagina_trayecto", "save_to": "vagina_trayecto", "allow_omit": true,
+      "next_on_yes": "ASK_PAREDES_VAGINALES",
+      "next_on_no": "ASK_PAREDES_VAGINALES",
+      "next_on_omit": "ASK_PAREDES_VAGINALES"
+    },
+    "ASK_PAREDES_VAGINALES": { "type": "checklist", "text_key": "exam.ask_paredes_vaginales", "save_to": "paredes_vaginales", "keyboard_type": "paredes_vaginales", "next_node": "ASK_CUELLO_UTERINO" },
+    "ASK_CUELLO_UTERINO": { "type": "checklist", "text_key": "exam.ask_cuello_uterino", "save_to": "cuello_uterino", "keyboard_type": "cuello_uterino", "next_node": "ASK_OCE" },
+    "ASK_OCE": {
+      "type": "buttons",
+      "text_key": "exam.ask_oce",
+      "save_to": "oce_description",
+      "options": [
+        {"label": "Normal"},
+        {"label": "Puntiforme (Nulípara)"},
+        {"label": "Transverso (Multípara)"},
+        {"label": "No Valorable"}
+      ],
+      "allow_omit": true,
+      "next_node": "ASK_SECRECION_VAGINAL",
+      "next_on_omit": "ASK_SECRECION_VAGINAL"
+    },
+    "ASK_SECRECION_VAGINAL": { "type": "checklist", "text_key": "exam.ask_secrecion_vaginal", "save_to": "secrecion_vaginal_tipo", "keyboard_type": "secrecion_vaginal", "next_node": "DECIDE_SECRECION_SUBFLUJO" },
+
+    "DECIDE_SECRECION_SUBFLUJO": {
+      "type": "action",
+      "handler": "decide_secrecion_subflujo",
+      "next_if_blanca": "ASK_SECRECION_BLANCA_TIPO",
+      "next_if_sangrado": "ASK_SECRECION_SANGRE_TIPO",
+      "next_if_done": "ASK_REALIZO_TACTO"
+    },
+    "ASK_SECRECION_BLANCA_TIPO": {
+      "type": "buttons",
+      "text_key": "exam.ask_secrecion_blanca",
+      "save_to": "secrecion_blanca_detalle",
+      "options": [{"label": "Fluida"}, {"label": "Gruesa"}],
+      "allow_omit": true,
+      "next_node": "DECIDE_SECRECION_SUBFLUJO",
+      "next_on_omit": "DECIDE_SECRECION_SUBFLUJO"
+    },
+    "ASK_SECRECION_SANGRE_TIPO": {
+      "type": "buttons",
+      "text_key": "exam.ask_secrecion_sangre",
+      "save_to": "secrecion_sangre_detalle",
+      "options": [{"label": "Con Coágulos Fétidos"}, {"label": "Sin Coágulos Fétidos"}],
+      "allow_omit": true,
+      "next_node": "ASK_REALIZO_TACTO",
+      "next_on_omit": "ASK_REALIZO_TACTO"
+    },
+    "ASK_REALIZO_TACTO": {
+      "type": "yes_no",
+      "text_key": "exam.ask_realizo_tacto",
+      "save_to": "realizo_tacto",
+      "next_on_yes": "ASK_UTERO_POSICION",
+      "next_on_no": "ASK_INFO_ADICIONAL_BOOL"
+    },
+    "ASK_UTERO_POSICION": {
+      "type": "buttons",
+      "text_key": "exam.ask_utero_posicion",
+      "save_to": "utero_posicion",
+      "options": [{"label": "AVF"}, {"label": "RVF"}, {"label": "Indiferente"}],
+      "allow_omit": true, "next_node": "ASK_UTERO_TAMANO", "next_on_omit": "ASK_UTERO_TAMANO"
+    },
+    "ASK_UTERO_TAMANO": {
+      "type": "buttons",
+      "text_key": "exam.ask_utero_tamano",
+      "save_to": "utero_tamano",
+      "options": [
+        {"label": "Normal, sup. regular"},
+        {"label": "Aumentado, sup. regular"},
+        {"label": "Aumentado, sup. irregular"}
+      ],
+      "allow_omit": true, "next_node": "ASK_MOVILIZACION_CERVIX", "next_on_omit": "ASK_MOVILIZACION_CERVIX"
+    },
+    "ASK_MOVILIZACION_CERVIX": {
+      "type": "buttons",
+      "text_key": "exam.ask_movilizacion_cervix",
+      "save_to": "movilizacion_cervix",
+      "options": [
+        {"label": "No dolorosa"},
+        {"label": "Dolorosa"}
+      ],
+      "allow_omit": true, "next_node": "ASK_ANEXOS", "next_on_omit": "ASK_ANEXOS"
+    },
+    "ASK_ANEXOS": {
+      "type": "checklist",
+      "text_key": "exam.ask_anexos",
+      "save_to": "anexos_hallazgos",
+      "keyboard_type": "anexos_options",
+      "next_node": "ASK_FONDO_SACO"
+    },
+    "ASK_FONDO_SACO": {
+      "type": "buttons",
+      "text_key": "exam.ask_fondo_saco",
+      "save_to": "fondo_saco",
+      "options": [{"label": "Libre, no doloroso"}, {"label": "Ocupado/Doloroso"}],
+      "allow_omit": true,
+      "next_node": "ASK_INFO_ADICIONAL_BOOL",
+      "next_on_omit": "ASK_INFO_ADICIONAL_BOOL"
+    },
+    "ASK_INFO_ADICIONAL_BOOL": {
+      "type": "yes_no",
+      "text_key": "exam.ask_info_adicional_bool",
+      "save_to": "quiere_info_adicional",
+      "next_on_yes": "ASK_INFO_ADICIONAL_TEXT",
+      "next_on_no": "COMBINE_EXAMEN_FISICO_SUMMARY"
+    },
+    "ASK_INFO_ADICIONAL_TEXT": {
+      "type": "text_input",
+      "text_key": "exam.ask_info_adicional",
+      "save_to": "examen_fisico_adicional",
+      "next_node": "COMBINE_EXAMEN_FISICO_SUMMARY"
+    },
+    "COMBINE_EXAMEN_FISICO_SUMMARY": { "type": "action", "handler": "combine_examen_fisico_summary", "next_node": "END_SUBFLOW" }
+  }
+}
