@@ -105,6 +105,11 @@ def init_bot():
         cleanup_on_start()
         logger.info("Limpieza completada.")
         
+        # Inicializar la aplicación (necesario para webhooks)
+        logger.info("Inicializando Application...")
+        loop.run_until_complete(bot_application.initialize())
+        logger.info("Application inicializada.")
+        
         logger.info("Bot inicializado correctamente.")
         return bot_application
     except Exception as e:
