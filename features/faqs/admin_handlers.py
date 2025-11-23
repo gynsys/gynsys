@@ -11,6 +11,7 @@ from common.keyboards import get_delete_confirmation_keyboard
 from common.conversation_utils import cancel_conv
 from common.context_manager import get_tenant_id
 from . import keyboards as admin_keyboards
+from .faq_service import add_faq_direct, update_faq_direct, get_faq_details_direct
 
 logger = logging.getLogger(__name__)
 
@@ -208,35 +209,44 @@ async def receive_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return AWAITING_CONTENT
 
 async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    title = context.user_data.pop('item_title')
-    content = update.message.text_html
+    """Añade una nueva FAQ usando función específica para evitar conflictos"""
+    question = context.user_data.pop('item_title', None)
+    answer = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
+    
+    if not question:
+        await update.message.reply_text("❌ Error: No se encontró la pregunta.")
+        return ConversationHandler.END
+    
     bot_id = await get_tenant_id(update, context)
     if not bot_id:
         await update.message.reply_text("❌ No se pudo determinar el perfil del médico.")
         return ConversationHandler.END
     
     try:
-        await content_db.add_item(bot_id, CONFIG['table'], title, content, CONFIG['title_col'], CONFIG['content_col'])
+        # Usar función específica para FAQs
+        faq_id = await add_faq_direct(bot_id, question, answer)
+        
+        if not faq_id:
+            await update.message.reply_text(f"❌ Error al guardar la {CONFIG['singular'].lower()}. Por favor, intenta nuevamente.")
+            return ConversationHandler.END
+        
         await update.message.delete()
         message_to_edit = await context.bot.edit_message_text(
             chat_id=update.effective_chat.id, 
-            message_id=context.user_data.pop('main_conv_message_id'), 
+            message_id=context.user_data.pop('main_conv_message_id', None), 
             text=f"✅ ¡{CONFIG['singular']} añadida con éxito!"
         )
         await asyncio.sleep(2)
         
-        # Mostrar la lista de FAQs actualizada (incluyendo la recién agregada)
-        # Esto permite al usuario ver que la FAQ se agregó correctamente
-        bot_id = await get_tenant_id(update, context)
+        # Mostrar la lista de FAQs actualizada
         reply_markup = await admin_keyboards.get_faqs_for_action_keyboard(bot_id, "modify")
         
         if reply_markup:
-            # Si hay FAQs, mostrar la lista
             try:
                 await context.bot.edit_message_text(
                     chat_id=update.effective_chat.id,
                     message_id=message_to_edit.message_id,
-                    text=f"✅ ¡{CONFIG['singular']} añadida con éxito!\n\n📋 <b>Lista de {CONFIG['plural']}:</b>",
+                    text=f"✅ ¡{CONFIG['singular']} añadida con éxito!\n\n📋 <b>Selecciona la {CONFIG['singular'].lower()} que deseas modificar:</b>",
                     reply_markup=reply_markup,
                     parse_mode="HTML"
                 )
@@ -259,7 +269,7 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
                 )
                 await faqs_hub(fake_update, context)
         else:
-            # Si no hay FAQs (no debería pasar, pero por si acaso), volver al hub
+            # Si no hay FAQs, volver al hub
             fake_query = CallbackQuery(
                 id="fake_query_id",
                 from_user=update.effective_user,
@@ -284,12 +294,38 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 @admin_required
 async def modify_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query; await query.answer()
+    """Inicia la modificación de una FAQ usando función específica"""
+    query = update.callback_query
+    await query.answer()
+    
     item_id = int(query.data.split('_')[-1])
-    item_details = await content_db.get_item_details(item_id, CONFIG['table'], CONFIG['title_col'], CONFIG['content_col'])
-    if not item_details: return ConversationHandler.END
-    context.user_data.update({'item_id_to_modify': item_id, 'original_item': item_details, 'main_conv_message_id': query.message.message_id})
-    await query.edit_message_text(f"✏️ Modificando '{item_details['title']}'.\n\n<b>Pregunta actual:</b>\n<blockquote>{escape_html(item_details['title'])}</blockquote>\nEnvía la <b>nueva pregunta</b> o '.' para mantener.\n\n<i>/cancelar para detener.</i>", parse_mode="HTML")
+    bot_id = await get_tenant_id(update, context)
+    
+    if not bot_id:
+        await query.edit_message_text("❌ No se pudo determinar el perfil del médico.")
+        return ConversationHandler.END
+    
+    # Usar función específica para FAQs
+    item_details = await get_faq_details_direct(item_id, bot_id)
+    
+    if not item_details:
+        await query.edit_message_text("❌ FAQ no encontrada.")
+        return ConversationHandler.END
+    
+    context.user_data.update({
+        'item_id_to_modify': item_id,
+        'original_item': item_details,
+        'main_conv_message_id': query.message.message_id,
+        'bot_id': bot_id  # Guardar bot_id para validación
+    })
+    
+    await query.edit_message_text(
+        f"✏️ Modificando '{escape_html(item_details['title'])}'.\n\n"
+        f"<b>Pregunta actual:</b>\n<blockquote>{escape_html(item_details['title'])}</blockquote>\n"
+        f"Envía la <b>nueva pregunta</b> o '.' para mantener.\n\n"
+        f"<i>/cancelar para detener.</i>",
+        parse_mode="HTML"
+    )
     return AWAITING_MOD_TITLE
 
 async def receive_modified_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -301,17 +337,73 @@ async def receive_modified_title(update: Update, context: ContextTypes.DEFAULT_T
     return AWAITING_MOD_CONTENT
 
 async def save_modified_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message.text_html != '.': context.user_data['new_content'] = update.message.text_html
-    await update.message.delete()
-    ud = context.user_data; original_item = ud.pop('original_item'); item_id = ud.pop('item_id_to_modify')
-    final_title = ud.get('new_title', original_item['title']); final_content = ud.get('new_content', original_item['content'])
-    await content_db.update_item(item_id, CONFIG['table'], final_title, final_content, CONFIG['title_col'], CONFIG['content_col'])
-    message_to_edit = await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=ud.pop('main_conv_message_id'), text=f"✅ ¡{CONFIG['singular']} actualizado con éxito!")
-    await asyncio.sleep(2)
-    fake_query = type('obj', (object,), {'data': f"{CONFIG['prefix']}_modify_list", 'message': message_to_edit, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': message_to_edit.edit_text})()
-    fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})()
-    await list_items_for_action(fake_update, context)
-    return ConversationHandler.END
+    """Guarda los cambios de una FAQ usando función específica"""
+    ud = context.user_data
+    
+    # Obtener datos del contexto
+    original_item = ud.get('original_item')
+    item_id = ud.get('item_id_to_modify')
+    bot_id = ud.get('bot_id')
+    
+    if not original_item or not item_id or not bot_id:
+        await update.message.reply_text("❌ Error: Datos de modificación no encontrados.")
+        return ConversationHandler.END
+    
+    # Obtener nuevos valores
+    new_question = ud.get('new_title')
+    new_answer = update.message.text_html if hasattr(update.message, 'text_html') and update.message.text_html != '.' else None
+    
+    if update.message.text_html == '.':
+        new_answer = None
+    
+    # Si no se proporcionó nuevo valor, mantener el original
+    final_question = new_question if new_question else original_item['title']
+    final_answer = new_answer if new_answer else original_item['content']
+    
+    try:
+        # Usar función específica para FAQs
+        success = await update_faq_direct(item_id, bot_id, final_question, final_answer)
+        
+        if not success:
+            await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}.")
+            return ConversationHandler.END
+        
+        await update.message.delete()
+        message_to_edit = await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=ud.pop('main_conv_message_id', None),
+            text=f"✅ ¡{CONFIG['singular']} actualizado con éxito!"
+        )
+        await asyncio.sleep(2)
+        
+        # Limpiar user_data
+        ud.pop('item_id_to_modify', None)
+        ud.pop('original_item', None)
+        ud.pop('new_title', None)
+        ud.pop('new_content', None)
+        ud.pop('bot_id', None)
+        
+        # Redirigir a la lista de modificación
+        fake_query = CallbackQuery(
+            id="fake_query_id",
+            from_user=update.effective_user,
+            chat_instance="fake_chat_instance",
+            data=f"{CONFIG['prefix']}_modify_list",
+            message=message_to_edit
+        )
+        fake_update = Update(
+            update_id=0,
+            effective_user=update.effective_user,
+            effective_chat=update.effective_chat,
+            effective_message=message_to_edit,
+            callback_query=fake_query
+        )
+        await list_items_for_action(fake_update, context)
+        return ConversationHandler.END
+    except Exception as e:
+        logger.error(f"❌ Error en save_modified_item: {e}", exc_info=True)
+        await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}.")
+        return ConversationHandler.END
 
 def register(app: Application):
     cancel_handlers = [CommandHandler('cancelar', cancel_conv), CallbackQueryHandler(cancel_conv, pattern='^cancel_conv$')]
