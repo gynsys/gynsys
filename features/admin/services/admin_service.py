@@ -224,7 +224,7 @@ class AdminService:
         deeplink = f"https://t.me/{bot_username}?start=medico_{doctor_id}"
         return share_code, deeplink
     
-    def add_or_reactivate_doctor(self, doctor_name, telegram_id):
+    async def add_or_reactivate_doctor(self, doctor_name, telegram_id):
         """
         Agrega un médico nuevo o reactiva uno existente.
         
@@ -235,17 +235,17 @@ class AdminService:
         Returns:
             tuple: (doctor_id, is_new)
         """
-        existing = self.get_any_doctor_by_telegram_id(telegram_id)
+        existing = await self.get_any_doctor_by_telegram_id(telegram_id)
         
         if existing:
             doctor_id = existing[0]
             # Actualizar nombre si es diferente
             if existing[1] != doctor_name:
-                self.update_doctor_name(doctor_id, doctor_name)
+                await self.update_doctor_name(doctor_id, doctor_name)
             
             # Activar si está inactivo
             if not existing[3]:  # is_active
-                self.activate_doctor(doctor_id)
+                await self.activate_doctor(doctor_id)
                 self.logger.info(f"Médico reactivado: {doctor_name} (ID: {doctor_id}, Telegram: {telegram_id})")
             else:
                 self.logger.info(f"Médico ya existe y está activo: {doctor_name} (ID: {doctor_id}, Telegram: {telegram_id})")
@@ -253,6 +253,6 @@ class AdminService:
             return doctor_id, False
         else:
             # Crear nuevo médico
-            doctor_id = self.add_doctor(doctor_name, telegram_id)
+            doctor_id = await self.add_doctor(doctor_name, telegram_id)
             return doctor_id, True
 

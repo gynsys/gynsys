@@ -26,7 +26,7 @@ async def show_requests_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     query = update.callback_query
     await query.answer()
     
-    pending = request_service.list_pending()
+    pending = await request_service.list_pending()
     
     text = format_request_list(pending)
     keyboard = get_requests_list_keyboard(pending) if pending else InlineKeyboardMarkup([
