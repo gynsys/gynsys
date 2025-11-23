@@ -301,14 +301,24 @@ async def simple_delete_doctor(update: Update, context: ContextTypes.DEFAULT_TYP
         )
         return
     
-    await admin_service.remove_doctor_permanently(doctor_id)
+    result = await admin_service.remove_doctor_permanently(doctor_id)
     
-    success_text = format_doctor_delete_success(doctor[1], doctor[2])
-    await query.edit_message_text(
-        success_text,
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("↩️ Volver", callback_data="delete_doctor_menu")]]),
-        parse_mode="HTML"
-    )
+    if result:
+        success_text = format_doctor_delete_success(doctor[1], doctor[2])
+        await query.edit_message_text(
+            success_text,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("↩️ Volver", callback_data="delete_doctor_menu")]]),
+            parse_mode="HTML"
+        )
+        # Refrescar la lista después de un breve delay
+        await asyncio.sleep(1.5)
+        await show_delete_menu(update, context, page=0)
+    else:
+        await query.edit_message_text(
+            "❌ Error al eliminar el médico. Por favor, intenta nuevamente.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("↩️ Volver", callback_data="delete_doctor_menu")]]),
+            parse_mode="HTML"
+        )
 
 
 async def simple_restrict_doctor(update: Update, context: ContextTypes.DEFAULT_TYPE, doctor_id: int):
