@@ -80,23 +80,59 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def receive_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    full_name = update.message.text.strip()
-    await update.message.delete()
+    try:
+        full_name = update.message.text.strip()
+        await update.message.delete()
 
-    context.user_data["doctor_request_name"] = full_name
-    message_ref = context.user_data.get("doctor_request_message")
+        context.user_data["doctor_request_name"] = full_name
+        message_ref = context.user_data.get("doctor_request_message")
 
-    await context.bot.edit_message_text(
-        chat_id=message_ref[0],
-        message_id=message_ref[1],
-        text=(
-            f"✅ Nombre recibido: <b>{html.escape(full_name)}</b>\n\n"
-            "Ahora escribe tu <b>ID de Telegram</b> (número que te da @userinfobot)."
-        ),
-        reply_markup=get_cancel_keyboard(),
-        parse_mode="HTML",
-    )
-    return REQUEST_WAITING_TELEGRAM_ID
+        if not message_ref:
+            # Si no hay referencia al mensaje, enviar uno nuevo
+            new_message = await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=(
+                    f"✅ Nombre recibido: <b>{html.escape(full_name)}</b>\n\n"
+                    "Ahora escribe tu <b>ID de Telegram</b> (número que te da @userinfobot)."
+                ),
+                reply_markup=get_cancel_keyboard(),
+                parse_mode="HTML",
+            )
+            context.user_data["doctor_request_message"] = (new_message.chat_id, new_message.message_id)
+        else:
+            try:
+                await context.bot.edit_message_text(
+                    chat_id=message_ref[0],
+                    message_id=message_ref[1],
+                    text=(
+                        f"✅ Nombre recibido: <b>{html.escape(full_name)}</b>\n\n"
+                        "Ahora escribe tu <b>ID de Telegram</b> (número que te da @userinfobot)."
+                    ),
+                    reply_markup=get_cancel_keyboard(),
+                    parse_mode="HTML",
+                )
+            except Exception as e:
+                # Si falla editar, enviar mensaje nuevo
+                print(f"Error editando mensaje en receive_full_name: {e}")
+                new_message = await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=(
+                        f"✅ Nombre recibido: <b>{html.escape(full_name)}</b>\n\n"
+                        "Ahora escribe tu <b>ID de Telegram</b> (número que te da @userinfobot)."
+                    ),
+                    reply_markup=get_cancel_keyboard(),
+                    parse_mode="HTML",
+                )
+                context.user_data["doctor_request_message"] = (new_message.chat_id, new_message.message_id)
+        
+        return REQUEST_WAITING_TELEGRAM_ID
+    except Exception as e:
+        print(f"Error en receive_full_name: {e}")
+        await update.message.reply_text(
+            "❌ Ocurrió un error. Por favor, intenta nuevamente usando /start",
+            parse_mode="HTML",
+        )
+        return ConversationHandler.END
 
 
 async def receive_telegram_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
