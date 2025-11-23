@@ -155,10 +155,11 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
         """
         # Obtener todos los doctores (activos e inactivos) excepto SuperAdmin
         # Esto permite al superadmin gestionar módulos de todos los médicos
+        from config import SUPER_ADMIN_ID
         doctors_result = await self.session.execute(
             select(Doctor)
             .where(
-                Doctor.id != 1  # Excluir SuperAdmin
+                Doctor.telegram_id != SUPER_ADMIN_ID  # Excluir SuperAdmin por telegram_id
             )
             .order_by(Doctor.name)
         )

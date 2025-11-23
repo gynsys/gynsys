@@ -89,9 +89,10 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
         inactive_doctors = await admin_service.get_inactive_doctors()
         logger.info(f"[list_doctors_for_modules] Doctores inactivos obtenidos: {len(inactive_doctors)}")
         
-        # Combinar todos los doctores (excepto SuperAdmin id=1)
-        all_doctors_list = [d for d in all_doctors if d[0] != 1] + [d for d in inactive_doctors if d[0] != 1]
-        logger.info(f"[list_doctors_for_modules] Total doctores (sin SuperAdmin): {len(all_doctors_list)}")
+        # Combinar todos los doctores (excepto SuperAdmin por telegram_id)
+        from config import SUPER_ADMIN_ID
+        all_doctors_list = [d for d in all_doctors if d[2] != SUPER_ADMIN_ID] + [d for d in inactive_doctors if d[2] != SUPER_ADMIN_ID]
+        logger.info(f"[list_doctors_for_modules] Total doctores (sin SuperAdmin telegram_id={SUPER_ADMIN_ID}): {len(all_doctors_list)}")
         
         if not all_doctors_list:
             logger.warning("[list_doctors_for_modules] No se encontraron doctores (excepto SuperAdmin)")
