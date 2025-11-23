@@ -1,4 +1,4 @@
-# features/galeria/tenant_handlers.py
+# features/galeria/admin_handlers.py
 import logging
 import asyncio
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message, Chat
