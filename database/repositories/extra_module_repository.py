@@ -147,17 +147,17 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
     
     async def get_all_doctors_with_modules(self) -> List[dict]:
         """
-        Obtiene todos los doctores activos con sus módulos activos.
+        Obtiene todos los doctores (activos e inactivos) con sus módulos activos.
         Excluye al SuperAdmin (id=1).
         
         Returns:
             Lista de diccionarios con información de doctores y sus módulos
         """
-        # Primero obtener todos los doctores activos (excepto SuperAdmin)
+        # Obtener todos los doctores (activos e inactivos) excepto SuperAdmin
+        # Esto permite al superadmin gestionar módulos de todos los médicos
         doctors_result = await self.session.execute(
             select(Doctor)
             .where(
-                Doctor.is_active == True,
                 Doctor.id != 1  # Excluir SuperAdmin
             )
             .order_by(Doctor.name)
