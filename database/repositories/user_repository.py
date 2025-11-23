@@ -8,6 +8,13 @@ from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
 from database.models.user import Doctor, PatientDoctor
 from database.models.bot import Bot, UserTenant
+from database.models.content import TextContent, FAQ, Gallery, Precio
+from database.models.location import Location
+from database.models.menu import MainMenuButton, Submenu, SubmenuButton
+from database.models.notification import Notification
+from database.models.job import Cita
+from database.models.extra import TestQuestion, ExtraModule
+from database.models.util import BotLogo, UserAction
 from database.repositories.base_repository import BaseRepository
 from config import SUPER_ADMIN_ID
 import logging
@@ -204,7 +211,12 @@ class DoctorRepository(BaseRepository[Doctor]):
         telegram_id = doctor.telegram_id
         
         try:
-            # 1. Eliminar de patient_doctor (como doctor y como paciente)
+            # 1. Obtener el bot_id asociado al doctor
+            bot_stmt = select(Bot.id).where(Bot.admin_user_id == telegram_id)
+            bot_result = await self.session.execute(bot_stmt)
+            bot_id = bot_result.scalar_one_or_none()
+            
+            # 2. Eliminar de patient_doctor (como doctor y como paciente)
             await self.session.execute(
                 delete(PatientDoctor).where(PatientDoctor.doctor_id == doctor_id)
             )
@@ -212,23 +224,82 @@ class DoctorRepository(BaseRepository[Doctor]):
                 delete(PatientDoctor).where(PatientDoctor.patient_telegram_id == telegram_id)
             )
             
-            # 2. Eliminar de bots (usando telegram_id como admin_user_id)
+            # 3. Eliminar módulos extras (depende de doctor_id, no bot_id)
             await self.session.execute(
-                delete(Bot).where(Bot.admin_user_id == telegram_id)
+                delete(ExtraModule).where(ExtraModule.doctor_id == doctor_id)
             )
             
-            # 3. Eliminar de user_tenants
-            await self.session.execute(
-                delete(UserTenant).where(UserTenant.user_id == telegram_id)
-            )
+            # 4. Si existe bot_id, eliminar todas las dependencias del bot ANTES de eliminar el bot
+            if bot_id:
+                # Eliminar SubmenuButtons primero (dependen de Submenu)
+                # Obtener todos los submenu_ids para este bot
+                submenu_stmt = select(Submenu.id).where(Submenu.bot_id == bot_id)
+                submenu_result = await self.session.execute(submenu_stmt)
+                submenu_ids = [row[0] for row in submenu_result.fetchall()]
+                
+                if submenu_ids:
+                    await self.session.execute(
+                        delete(SubmenuButton).where(SubmenuButton.submenu_id.in_(submenu_ids))
+                    )
+                
+                # Eliminar todas las tablas que dependen de bot_id
+                await self.session.execute(
+                    delete(TextContent).where(TextContent.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(FAQ).where(FAQ.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(Gallery).where(Gallery.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(Precio).where(Precio.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(Location).where(Location.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(MainMenuButton).where(MainMenuButton.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(Submenu).where(Submenu.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(Notification).where(Notification.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(Cita).where(Cita.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(TestQuestion).where(TestQuestion.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(BotLogo).where(BotLogo.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(UserAction).where(UserAction.bot_id == bot_id)
+                )
+                await self.session.execute(
+                    delete(UserTenant).where(UserTenant.bot_id == bot_id)
+                )
+                
+                # Ahora sí, eliminar el bot
+                await self.session.execute(
+                    delete(Bot).where(Bot.id == bot_id)
+                )
+            else:
+                # Si no hay bot_id, solo eliminar user_tenants por user_id
+                await self.session.execute(
+                    delete(UserTenant).where(UserTenant.user_id == telegram_id)
+                )
             
-            # 4. Finalmente, eliminar de doctors
+            # 5. Finalmente, eliminar de doctors
             await self.session.delete(doctor)
             await self.session.flush()
             return True
             
         except Exception as e:
-            logger.error(f"Error eliminando doctor {doctor_id}: {e}")
+            logger.error(f"Error eliminando doctor {doctor_id}: {e}", exc_info=True)
             await self.session.rollback()
             return False
     
