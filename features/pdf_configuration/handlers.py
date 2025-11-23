@@ -481,7 +481,10 @@ def register(app: Application):
         fallbacks=[
             CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'),
             MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message)
-        ]
+        ],
+        per_message=True,
+        per_chat=True,
+        per_user=True
     )
 
     # Conversación: Subida de logos
@@ -496,7 +499,10 @@ def register(app: Application):
         fallbacks=[
             CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'),
             MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message)
-        ]
+        ],
+        per_message=True,
+        per_chat=True,
+        per_user=True
     )
 
     # Conversación: Eliminación de logos
@@ -511,7 +517,10 @@ def register(app: Application):
         fallbacks=[
             CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'),
             MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message)
-        ]
+        ],
+        per_message=True,
+        per_chat=True,
+        per_user=True
     )
 
     # Registrar ConversationHandler PRIMERO
