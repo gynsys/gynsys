@@ -123,19 +123,24 @@ class FAQWorkflow:
     ) -> Dict[str, Any]:
         """
         Workflow para actualizar una FAQ.
+        VALIDA que la FAQ pertenezca al bot_id del inquilino actual (multiusuario).
         
         Returns:
             Dict con 'success' (bool) y 'error' (str) si falla
         """
         bot_id = await FAQWorkflow.get_bot_id(update, context)
         if not bot_id:
+            logger.error(f"[handle_update_workflow] No se pudo obtener bot_id para usuario {update.effective_user.id}")
             return {'success': False, 'error': 'No se pudo determinar el bot_id'}
         
         try:
-            # Validar que la FAQ existe y pertenece al bot
+            # VALIDACIÓN MULTIUSUARIO: Verificar que la FAQ existe y pertenece al bot_id actual
             existing = await get_faq_details_direct(faq_id, bot_id)
             if not existing:
+                logger.error(f"[handle_update_workflow] FAQ {faq_id} no encontrada o no pertenece a bot_id {bot_id}")
                 return {'success': False, 'error': 'FAQ no encontrada o no pertenece a este bot'}
+            
+            logger.info(f"[handle_update_workflow] Validación multiusuario OK: FAQ {faq_id} pertenece a bot_id {bot_id}")
             
             # Si no se proporcionaron valores, mantener los originales
             final_question = question if question is not None else existing['title']
@@ -194,19 +199,24 @@ class FAQWorkflow:
     ) -> Dict[str, Any]:
         """
         Workflow para obtener detalles de una FAQ.
+        VALIDA que la FAQ pertenezca al bot_id del inquilino actual (multiusuario).
         
         Returns:
             Dict con 'success' (bool), 'faq' (dict) o 'error' (str)
         """
         bot_id = await FAQWorkflow.get_bot_id(update, context)
         if not bot_id:
+            logger.error(f"[handle_get_workflow] No se pudo obtener bot_id para usuario {update.effective_user.id}")
             return {'success': False, 'error': 'No se pudo determinar el bot_id'}
         
         try:
+            # VALIDACIÓN MULTIUSUARIO: Verificar que la FAQ pertenece al bot_id actual
             faq = await get_faq_details_direct(faq_id, bot_id)
             if not faq:
-                return {'success': False, 'error': 'FAQ no encontrada'}
+                logger.error(f"[handle_get_workflow] FAQ {faq_id} no encontrada o no pertenece a bot_id {bot_id}")
+                return {'success': False, 'error': 'FAQ no encontrada o no pertenece a este bot'}
             
+            logger.info(f"[handle_get_workflow] Validación multiusuario OK: FAQ {faq_id} pertenece a bot_id {bot_id}")
             return {'success': True, 'faq': faq}
         except Exception as e:
             logger.error(f"❌ Error en handle_get_workflow: {e}", exc_info=True)

@@ -129,7 +129,8 @@ async def receive_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 async def receive_answer_and_save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Recibe la respuesta y guarda la FAQ"""
-    answer = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
+    # Obtener respuesta con formato HTML si está disponible
+    answer = getattr(update.message, 'text_html', None) or update.message.text
     
     if not answer or answer.strip() == '':
         await update.message.reply_text("❌ La respuesta no puede estar vacía. Intenta nuevamente:")
@@ -211,24 +212,55 @@ async def start_modify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Recibe la nueva pregunta - Simplificado basado en código que funcionaba"""
+    logger.info(f"[receive_mod_question] Inicio. Usuario: {update.effective_user.id}, Texto: {update.message.text[:50] if update.message.text else 'None'}...")
+    
     if update.message.text != '.':
         context.user_data['new_question'] = update.message.text
+        logger.info(f"[receive_mod_question] Nueva pregunta guardada: {update.message.text[:50]}...")
     
     try:
         await update.message.delete()
     except Exception:
         pass
     
-    original_faq = context.user_data['original_faq']
-    await context.bot.edit_message_text(
-        chat_id=update.effective_chat.id,
-        message_id=context.user_data['main_message_id'],
-        text=(
-            f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
-            f"Envía la <b>nueva respuesta</b> o '.' para mantener."
-        ),
-        parse_mode="HTML"
-    )
+    original_faq = context.user_data.get('original_faq')
+    if not original_faq:
+        logger.error("[receive_mod_question] No se encontró original_faq en user_data")
+        await update.message.reply_text("❌ Error: Datos no encontrados. Por favor, inicia nuevamente.")
+        return ConversationHandler.END
+    
+    main_message_id = context.user_data.get('main_message_id')
+    if not main_message_id:
+        logger.error("[receive_mod_question] No se encontró main_message_id en user_data")
+        await update.message.reply_text("❌ Error: No se encontró el mensaje a editar. Por favor, inicia nuevamente.")
+        return ConversationHandler.END
+    
+    try:
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=main_message_id,
+            text=(
+                f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
+                f"Envía la <b>nueva respuesta</b> o '.' para mantener."
+            ),
+            parse_mode="HTML"
+        )
+        logger.info(f"[receive_mod_question] Mensaje editado correctamente, retornando estado {WorkflowState.AWAITING_MOD_ANSWER}")
+    except Exception as e:
+        logger.error(f"[receive_mod_question] Error editando mensaje: {e}", exc_info=True)
+        # Si falla, enviar nuevo mensaje
+        new_msg = await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=(
+                f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
+                f"Envía la <b>nueva respuesta</b> o '.' para mantener."
+            ),
+            parse_mode="HTML"
+        )
+        context.user_data['main_message_id'] = new_msg.message_id
+        logger.info(f"[receive_mod_question] Nuevo mensaje enviado, actualizado main_message_id a {new_msg.message_id}")
+    
+    logger.info(f"[receive_mod_question] Retornando estado: {WorkflowState.AWAITING_MOD_ANSWER} (tipo: {type(WorkflowState.AWAITING_MOD_ANSWER)})")
     return WorkflowState.AWAITING_MOD_ANSWER
 
 
@@ -245,8 +277,10 @@ async def receive_mod_answer_and_save(update: Update, context: ContextTypes.DEFA
     # Obtener nuevos valores - Igual que el código que funcionaba
     new_question = ud.get('new_question')
     new_answer = None
-    if update.message.text_html != '.':
-        new_answer = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
+    user_text = update.message.text or ""
+    if user_text != '.':
+        # Obtener respuesta con formato HTML si está disponible
+        new_answer = getattr(update.message, 'text_html', None) or user_text
     
     # Valores finales
     final_question = new_question if new_question else original_faq['title']
@@ -400,7 +434,8 @@ async def start_edit_header(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 async def save_header(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Guarda el nuevo encabezado"""
-    new_header = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
+    # Obtener encabezado con formato HTML si está disponible
+    new_header = getattr(update.message, 'text_html', None) or update.message.text
     bot_id = await FAQWorkflow.get_bot_id(update, context)
     
     if not bot_id:
