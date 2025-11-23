@@ -2,6 +2,10 @@
 import logging
 import time
 from database import user_db, content_db
+from database.session import get_session
+from database.models.bot import Bot
+from database.models.user import Doctor
+from sqlalchemy import select
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     Application, ConversationHandler, CallbackQueryHandler, ContextTypes
@@ -84,10 +88,52 @@ async def start_test_intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     )
     return ASKING_QUESTION
 
+async def _get_bot_id_for_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int | None:
+    """
+    Obtiene el bot_id para el test, priorizando el doctor con el que interactúa el paciente.
+    Similar a cómo funciona en el módulo de citas.
+    """
+    user_id = update.effective_user.id
+    
+    # 1. Si el usuario es doctor, usar su propio bot_id
+    doctor = await role_manager.get_doctor_by_telegram_id(user_id)
+    if doctor:
+        doctor_telegram_id = doctor[2]  # telegram_id está en índice 2
+        async with get_session() as session:
+            stmt = select(Bot.id).where(Bot.admin_user_id == doctor_telegram_id)
+            result = await session.execute(stmt)
+            bot_id = result.scalar_one_or_none()
+            if bot_id:
+                return bot_id
+    
+    # 2. Si es paciente, buscar el doctor asignado
+    doctor_id = context.user_data.get("patient_doctor_id")
+    if not doctor_id:
+        assigned_doctor = await role_manager.get_assigned_doctor(user_id)
+        if assigned_doctor:
+            doctor_id = assigned_doctor[0]
+    
+    if doctor_id:
+        # Obtener bot_id desde doctor_id
+        async with get_session() as session:
+            # Buscar bot por admin_user_id del doctor
+            stmt_doctor = select(Doctor).where(Doctor.id == doctor_id)
+            result_doctor = await session.execute(stmt_doctor)
+            doctor_obj = result_doctor.scalar_one_or_none()
+            if doctor_obj:
+                stmt_bot = select(Bot.id).where(Bot.admin_user_id == doctor_obj.telegram_id)
+                result_bot = await session.execute(stmt_bot)
+                bot_id = result_bot.scalar_one_or_none()
+                if bot_id:
+                    return bot_id
+    
+    # 3. Fallback: usar get_tenant_id (para SuperAdmin o usuarios sin doctor asignado)
+    return await get_tenant_id(update, context)
+
 async def start_test_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-    bot_id = await get_tenant_id(update, context)
+    bot_id = await _get_bot_id_for_test(update, context)
     if not bot_id:
         await query.answer("❌ Error: No se pudo obtener el tenant ID.", show_alert=True)
         return ConversationHandler.END
