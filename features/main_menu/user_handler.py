@@ -265,4 +265,8 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
         doctor_id, doctor_name = doctor[0], doctor[1]
         await show_doctor_share_link(update, context, doctor_id, doctor_name)
+    elif callback_data == "admin_panel" or callback_data == "settings_menu":
+        # Redirigir al panel de administración
+        from features.admin_hub.handlers import show_full_admin_panel
+        await show_full_admin_panel(update, context)
     # Edición de FAQ removida

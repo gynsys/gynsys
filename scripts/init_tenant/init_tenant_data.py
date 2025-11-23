@@ -170,11 +170,34 @@ async def _load_pdf_settings(bot_id: int, pdf_settings: dict, doctor_name: str =
     """Carga la configuración PDF por defecto"""
     conn = await aiosqlite.connect(DB_PATH)
     try:
+        # Obtener doctor_id desde bot_id (igual que en _activate_extra_modules)
+        cursor = await conn.execute(
+            "SELECT admin_user_id FROM bots WHERE id = ?",
+            (bot_id,)
+        )
+        result = await cursor.fetchone()
+        if not result:
+            logger.warning(f"No se encontró bot_id={bot_id} para cargar PDF settings")
+            return
+        
+        admin_user_id = result[0]
+        # Obtener doctor_id desde telegram_id
+        cursor = await conn.execute(
+            "SELECT id FROM doctors WHERE telegram_id = ?",
+            (admin_user_id,)
+        )
+        doctor_result = await cursor.fetchone()
+        if not doctor_result:
+            logger.warning(f"No se encontró doctor para telegram_id={admin_user_id}")
+            return
+        
+        doctor_id = doctor_result[0]
+        
         # Personalizar doctor_name si se proporciona
         doctor_name_value = doctor_name if doctor_name else pdf_settings.get('doctor_name', 'Tu Nombre')
         
-        # Verificar si ya existe configuración para este bot_id
-        cursor = await conn.execute("SELECT doctor_id FROM pdf_settings WHERE doctor_id = ?", (bot_id,))
+        # Verificar si ya existe configuración para este doctor_id
+        cursor = await conn.execute("SELECT doctor_id FROM pdf_settings WHERE doctor_id = ?", (doctor_id,))
         exists = await cursor.fetchone()
         
         if not exists:
@@ -185,7 +208,7 @@ async def _load_pdf_settings(bot_id: int, pdf_settings: dict, doctor_name: str =
                     clinic_phone, clinic_email, show_logo, show_signature, footer_text
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                bot_id,
+                doctor_id,  # Usar doctor_id, no bot_id
                 pdf_settings.get('clinic_name', 'Nombre de tu Consultorio'),
                 doctor_name_value,
                 pdf_settings.get('clinic_address', 'Dirección de tu consultorio'),

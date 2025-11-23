@@ -77,6 +77,12 @@ class RequestService:
         # Agregar o reactivar médico
         doctor_id, is_new = await admin_service.add_or_reactivate_doctor(full_name, telegram_id)
         
+        # Inicializar datos por defecto solo si es nuevo doctor
+        if is_new:
+            bot_id = await admin_service.get_bot_id_for_doctor(telegram_id)
+            if bot_id:
+                await admin_service.initialize_tenant_data(bot_id, full_name)
+        
         # Limpiar asociaciones incorrectas
         await admin_service.cleanup_doctor_patient_associations()
         

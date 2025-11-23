@@ -87,6 +87,9 @@ async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE, re
     
     doctor_id, full_name, telegram_id = result
     
+    # Nota: La inicialización de datos por defecto ya se hace en request_service.approve_request
+    # cuando is_new=True, así que no necesitamos hacerlo aquí de nuevo
+    
     # Generar información de compartir
     bot_username = context.bot.username or "<tu_bot>"
     share_code, deeplink = request_service.generate_share_info(doctor_id, bot_username)
