@@ -79,9 +79,19 @@ class RequestService:
         
         # Inicializar datos por defecto solo si es nuevo doctor
         if is_new:
+            self.logger.info(f"🆕 Doctor nuevo creado (ID: {doctor_id}), inicializando datos por defecto...")
             bot_id = await admin_service.get_bot_id_for_doctor(telegram_id)
             if bot_id:
-                await admin_service.initialize_tenant_data(bot_id, full_name)
+                self.logger.info(f"📦 Bot_id encontrado: {bot_id}, iniciando carga de datos...")
+                success = await admin_service.initialize_tenant_data(bot_id, full_name)
+                if success:
+                    self.logger.info(f"✅ Datos inicializados correctamente para bot_id={bot_id}")
+                else:
+                    self.logger.warning(f"⚠️ Error al inicializar datos para bot_id={bot_id}")
+            else:
+                self.logger.warning(f"⚠️ No se encontró bot_id para telegram_id={telegram_id} después de crear doctor")
+        else:
+            self.logger.info(f"♻️ Doctor existente reactivado (ID: {doctor_id}), no se inicializan datos")
         
         # Limpiar asociaciones incorrectas
         await admin_service.cleanup_doctor_patient_associations()
