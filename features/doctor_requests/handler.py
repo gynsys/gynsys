@@ -25,6 +25,13 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # ⚠️ CRÍTICO: Limpiar user_data al inicio para evitar estados residuales
+    # Esto previene que el flujo se trabe la primera vez
+    context.user_data.pop("doctor_request_name", None)
+    context.user_data.pop("doctor_request_message", None)
+    
+    logger.info(f"start_request_bot: Iniciando solicitud para usuario {update.effective_user.id}")
+
     telegram_id = update.effective_user.id
     async with get_session() as session:
         repo = RequestRepository(session)
@@ -51,6 +58,7 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
             return ConversationHandler.END
 
+    # Guardar referencia al mensaje después de limpiar user_data
     context.user_data["doctor_request_message"] = (query.message.chat_id, query.message.message_id)
     # Manejo específico para cuando el mensaje anterior es una imagen
     try:

@@ -139,71 +139,175 @@ async def _load_faqs(bot_id: int, faqs: list):
     """Carga las FAQs por defecto"""
     conn = await aiosqlite.connect(DB_PATH)
     try:
+        # Validar que el bot_id existe antes de insertar (evitar foreign key constraint)
+        cursor = await conn.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+        bot_exists = await cursor.fetchone()
+        
+        if not bot_exists:
+            logger.error(f"❌ No se puede cargar FAQs: bot_id={bot_id} no existe en la tabla bots")
+            return
+        
+        logger.info(f"📋 Cargando {len(faqs)} FAQs para bot_id={bot_id}")
+        
+        # Verificar si ya existen FAQs para este bot_id (evitar duplicados)
+        cursor = await conn.execute("SELECT COUNT(*) FROM faqs WHERE bot_id = ?", (bot_id,))
+        existing_count = (await cursor.fetchone())[0]
+        
+        if existing_count > 0:
+            logger.warning(f"⚠️ Ya existen {existing_count} FAQs para bot_id={bot_id}. No se cargarán duplicados.")
+            return
+        
+        # Insertar FAQs
+        inserted_count = 0
         for faq in faqs:
-            await conn.execute(
-                "INSERT INTO faqs (bot_id, question, answer, display_order) VALUES (?, ?, ?, ?)",
-                (bot_id, faq['question'], faq['answer'], faq.get('display_order', 0))
-            )
+            try:
+                await conn.execute(
+                    "INSERT INTO faqs (bot_id, question, answer, display_order) VALUES (?, ?, ?, ?)",
+                    (bot_id, faq['question'], faq['answer'], faq.get('display_order', 0))
+                )
+                inserted_count += 1
+            except Exception as e:
+                logger.error(f"❌ Error insertando FAQ '{faq.get('question', 'N/A')[:30]}...': {e}")
+        
         await conn.commit()
+        logger.info(f"✅ {inserted_count}/{len(faqs)} FAQs insertadas correctamente para bot_id={bot_id}")
+        
+    except Exception as e:
+        logger.error(f"❌ Error en _load_faqs para bot_id={bot_id}: {e}", exc_info=True)
+        await conn.rollback()
     finally:
         await conn.close()
 
 
 async def _load_locations(bot_id: int, locations: list):
     """Carga las ubicaciones por defecto"""
-    for location in locations:
-        await locations_db.add_location(
-            bot_id=bot_id,
-            name=location['name'],
-            address=location['address'],
-            schedule=location.get('schedule', ''),
-            gmaps_url=location.get('maps_url', '')
-        )
-        # Actualizar is_active si está especificado
-        if 'is_active' in location:
-            conn = await aiosqlite.connect(DB_PATH)
+    # Validar que el bot_id existe
+    conn = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await conn.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+        bot_exists = await cursor.fetchone()
+        
+        if not bot_exists:
+            logger.error(f"❌ No se puede cargar ubicaciones: bot_id={bot_id} no existe en la tabla bots")
+            return
+        
+        logger.info(f"📋 Cargando {len(locations)} ubicaciones para bot_id={bot_id}")
+        
+        for location in locations:
             try:
-                await conn.execute(
-                    "UPDATE locations SET is_active = ? WHERE bot_id = ? AND name = ?",
-                    (1 if location['is_active'] else 0, bot_id, location['name'])
+                await locations_db.add_location(
+                    bot_id=bot_id,
+                    name=location['name'],
+                    address=location['address'],
+                    schedule=location.get('schedule', ''),
+                    gmaps_url=location.get('maps_url', '')
                 )
-                await conn.commit()
-            finally:
-                await conn.close()
+                # Actualizar is_active si está especificado
+                if 'is_active' in location:
+                    await conn.execute(
+                        "UPDATE locations SET is_active = ? WHERE bot_id = ? AND name = ?",
+                        (1 if location['is_active'] else 0, bot_id, location['name'])
+                    )
+                    await conn.commit()
+                logger.info(f"✅ Ubicación '{location['name']}' cargada")
+            except Exception as e:
+                logger.error(f"❌ Error cargando ubicación '{location.get('name', 'N/A')}': {e}")
+    except Exception as e:
+        logger.error(f"❌ Error en _load_locations para bot_id={bot_id}: {e}", exc_info=True)
+    finally:
+        await conn.close()
 
 
 async def _load_contact_info(bot_id: int, contact_info: dict):
     """Carga la información de contacto por defecto"""
-    if 'header' in contact_info:
-        await content_db.update_content("header_contacto", contact_info['header'], bot_id)
-    if 'description' in contact_info:
-        await content_db.update_content("description_contacto", contact_info['description'], bot_id)
+    # Validar que el bot_id existe
+    conn = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await conn.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+        bot_exists = await cursor.fetchone()
+        
+        if not bot_exists:
+            logger.error(f"❌ No se puede cargar información de contacto: bot_id={bot_id} no existe")
+            return
+        
+        logger.info(f"📋 Cargando información de contacto para bot_id={bot_id}")
+        
+        if 'header' in contact_info:
+            await content_db.update_content("header_contacto", contact_info['header'], bot_id)
+        if 'description' in contact_info:
+            await content_db.update_content("description_contacto", contact_info['description'], bot_id)
+        
+        logger.info(f"✅ Información de contacto cargada para bot_id={bot_id}")
+    except Exception as e:
+        logger.error(f"❌ Error en _load_contact_info para bot_id={bot_id}: {e}", exc_info=True)
+    finally:
+        await conn.close()
 
 
 async def _load_prices(bot_id: int, prices: list):
     """Carga los precios por defecto"""
-    for price in prices:
-        await add_item(
-            bot_id=bot_id,
-            table_name="precios",
-            title=price['title'],
-            content=price.get('content'),
-            title_column="title",
-            content_column="content"
-        )
+    # Validar que el bot_id existe
+    conn = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await conn.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+        bot_exists = await cursor.fetchone()
+        
+        if not bot_exists:
+            logger.error(f"❌ No se puede cargar precios: bot_id={bot_id} no existe")
+            return
+        
+        logger.info(f"📋 Cargando {len(prices)} precios para bot_id={bot_id}")
+        
+        for price in prices:
+            try:
+                await add_item(
+                    bot_id=bot_id,
+                    table_name="precios",
+                    title=price['title'],
+                    content=price.get('content'),
+                    title_column="title",
+                    content_column="content"
+                )
+                logger.info(f"✅ Precio '{price.get('title', 'N/A')[:30]}...' cargado")
+            except Exception as e:
+                logger.error(f"❌ Error cargando precio '{price.get('title', 'N/A')[:30]}...': {e}")
+    except Exception as e:
+        logger.error(f"❌ Error en _load_prices para bot_id={bot_id}: {e}", exc_info=True)
+    finally:
+        await conn.close()
 
 
 async def _load_gallery(bot_id: int, gallery: list):
     """Carga la galería por defecto"""
-    for item in gallery:
-        await add_item(
-            bot_id=bot_id,
-            table_name="gallery",
-            title=item['title'],
-            content=item.get('content'),
-            title_column="title",
-            content_column="content"
-        )
+    # Validar que el bot_id existe
+    conn = await aiosqlite.connect(DB_PATH)
+    try:
+        cursor = await conn.execute("SELECT id FROM bots WHERE id = ?", (bot_id,))
+        bot_exists = await cursor.fetchone()
+        
+        if not bot_exists:
+            logger.error(f"❌ No se puede cargar galería: bot_id={bot_id} no existe")
+            return
+        
+        logger.info(f"📋 Cargando {len(gallery)} items de galería para bot_id={bot_id}")
+        
+        for item in gallery:
+            try:
+                await add_item(
+                    bot_id=bot_id,
+                    table_name="gallery",
+                    title=item['title'],
+                    content=item.get('content'),
+                    title_column="title",
+                    content_column="content"
+                )
+                logger.info(f"✅ Item de galería '{item.get('title', 'N/A')[:30]}...' cargado")
+            except Exception as e:
+                logger.error(f"❌ Error cargando item de galería '{item.get('title', 'N/A')[:30]}...': {e}")
+    except Exception as e:
+        logger.error(f"❌ Error en _load_gallery para bot_id={bot_id}: {e}", exc_info=True)
+    finally:
+        await conn.close()
 
 
 async def _load_pdf_settings(bot_id: int, pdf_settings: dict, doctor_name: str = None):
