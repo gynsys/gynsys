@@ -176,21 +176,40 @@ async def start_modify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
     query = update.callback_query
     await query.answer()
     
-    faq_id = int(query.data.split('_')[-1])
+    logger.info(f"[start_modify] Inicio. Usuario: {update.effective_user.id}, Callback: {query.data}")
+    
+    try:
+        faq_id = int(query.data.split('_')[-1])
+        logger.info(f"[start_modify] FAQ ID: {faq_id}")
+    except (ValueError, IndexError) as e:
+        logger.error(f"[start_modify] Error parseando FAQ ID: {e}")
+        await query.edit_message_text("❌ Error: ID de FAQ inválido.")
+        return ConversationHandler.END
+    
     bot_id = await FAQWorkflow.get_bot_id(update, context)
     
     if not bot_id:
+        logger.error(f"[start_modify] No se pudo obtener bot_id para usuario {update.effective_user.id}")
         await query.edit_message_text("❌ No se pudo determinar el perfil del médico.")
         return ConversationHandler.END
+    
+    logger.info(f"[start_modify] Bot ID: {bot_id}")
     
     # Obtener FAQ usando workflow
     result = await FAQWorkflow.handle_get_workflow(update, context, faq_id)
     
     if not result['success']:
+        logger.error(f"[start_modify] Error obteniendo FAQ: {result.get('error')}")
         await query.edit_message_text(f"❌ {result.get('error', 'FAQ no encontrada')}")
         return ConversationHandler.END
     
     faq = result['faq']
+    logger.info(f"[start_modify] FAQ obtenida: {faq['title'][:50]}...")
+    
+    # Limpiar estado anterior si existe
+    context.user_data.pop('workflow_state', None)
+    context.user_data.pop('new_question', None)
+    context.user_data.pop('new_answer', None)
     
     # Guardar estado
     context.user_data['workflow_state'] = WorkflowState.AWAITING_MOD_QUESTION
@@ -198,40 +217,95 @@ async def start_modify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
     context.user_data['original_faq'] = faq
     context.user_data['main_message_id'] = query.message.message_id
     
-    await query.edit_message_text(
-        f"✏️ Modificando '{escape_html(faq['title'])}'.\n\n"
-        f"<b>Pregunta actual:</b>\n<blockquote>{escape_html(faq['title'])}</blockquote>\n"
-        f"Envía la <b>nueva pregunta</b> o '.' para mantener.\n\n"
-        f"<i>/cancelar para detener.</i>",
-        parse_mode="HTML"
-    )
+    logger.info(f"[start_modify] Estado guardado. workflow_state={WorkflowState.AWAITING_MOD_QUESTION}")
+    
+    try:
+        await query.edit_message_text(
+            f"✏️ Modificando '{escape_html(faq['title'])}'.\n\n"
+            f"<b>Pregunta actual:</b>\n<blockquote>{escape_html(faq['title'])}</blockquote>\n"
+            f"Envía la <b>nueva pregunta</b> o '.' para mantener.\n\n"
+            f"<i>/cancelar para detener.</i>",
+            parse_mode="HTML"
+        )
+        logger.info(f"[start_modify] Mensaje editado, retornando {WorkflowState.AWAITING_MOD_QUESTION}")
+    except Exception as e:
+        logger.error(f"[start_modify] Error editando mensaje: {e}", exc_info=True)
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=(
+                f"✏️ Modificando '{escape_html(faq['title'])}'.\n\n"
+                f"<b>Pregunta actual:</b>\n<blockquote>{escape_html(faq['title'])}</blockquote>\n"
+                f"Envía la <b>nueva pregunta</b> o '.' para mantener.\n\n"
+                f"<i>/cancelar para detener.</i>"
+            ),
+            parse_mode="HTML"
+        )
+    
     return WorkflowState.AWAITING_MOD_QUESTION
 
 
 async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     """Recibe la nueva pregunta"""
+    logger.info(f"[receive_mod_question] Inicio. Usuario: {update.effective_user.id}")
+    
+    # Validar que hay mensaje
+    if not update.message or not update.message.text:
+        logger.error("[receive_mod_question] No hay mensaje o texto")
+        await update.message.reply_text("❌ Por favor, envía un texto válido.")
+        return WorkflowState.AWAITING_MOD_QUESTION
+    
     new_question = update.message.text.strip() if update.message.text != '.' else None
+    
+    logger.info(f"[receive_mod_question] Pregunta recibida: {new_question[:50] if new_question else 'Mantener original'}...")
     
     if new_question:
         context.user_data['new_question'] = new_question
+    
+    # Validar que tenemos los datos necesarios
+    if 'original_faq' not in context.user_data:
+        logger.error("[receive_mod_question] No se encontró original_faq en user_data")
+        await update.message.reply_text("❌ Error: Datos de la FAQ no encontrados. Por favor, inicia nuevamente.")
+        return ConversationHandler.END
+    
+    if 'main_message_id' not in context.user_data:
+        logger.error("[receive_mod_question] No se encontró main_message_id en user_data")
+        await update.message.reply_text("❌ Error: No se encontró el mensaje a editar. Por favor, inicia nuevamente.")
+        return ConversationHandler.END
     
     context.user_data['workflow_state'] = WorkflowState.AWAITING_MOD_ANSWER
     original_faq = context.user_data['original_faq']
     
     try:
         await update.message.delete()
-    except Exception:
-        pass
+        logger.info("[receive_mod_question] Mensaje del usuario eliminado")
+    except Exception as e:
+        logger.warning(f"[receive_mod_question] No se pudo eliminar mensaje: {e}")
     
-    await context.bot.edit_message_text(
-        chat_id=update.effective_chat.id,
-        message_id=context.user_data['main_message_id'],
-        text=(
-            f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
-            f"Envía la <b>nueva respuesta</b> o '.' para mantener."
-        ),
-        parse_mode="HTML"
-    )
+    try:
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=context.user_data['main_message_id'],
+            text=(
+                f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
+                f"Envía la <b>nueva respuesta</b> o '.' para mantener."
+            ),
+            parse_mode="HTML"
+        )
+        logger.info("[receive_mod_question] Mensaje editado correctamente, retornando AWAITING_MOD_ANSWER")
+    except Exception as e:
+        logger.error(f"[receive_mod_question] Error editando mensaje: {e}", exc_info=True)
+        # Si falla, enviar nuevo mensaje
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=(
+                f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
+                f"Envía la <b>nueva respuesta</b> o '.' para mantener."
+            ),
+            parse_mode="HTML"
+        )
+        # Actualizar main_message_id
+        context.user_data['main_message_id'] = (await context.bot.get_updates())[-1].message.message_id if context.bot.get_updates() else None
+    
     return WorkflowState.AWAITING_MOD_ANSWER
 
 

@@ -237,11 +237,11 @@ class FAQWorkflow:
 
 
 class WorkflowState:
-    """Estados del workflow para conversaciones"""
-    IDLE = "idle"
-    AWAITING_QUESTION = "awaiting_question"
-    AWAITING_ANSWER = "awaiting_answer"
-    AWAITING_MOD_QUESTION = "awaiting_mod_question"
-    AWAITING_MOD_ANSWER = "awaiting_mod_answer"
-    AWAITING_HEADER = "awaiting_header"
+    """Estados del workflow para conversaciones - Usando enteros para compatibilidad con ConversationHandler"""
+    IDLE = 0
+    AWAITING_QUESTION = 1
+    AWAITING_ANSWER = 2
+    AWAITING_MOD_QUESTION = 3
+    AWAITING_MOD_ANSWER = 4
+    AWAITING_HEADER = 5
 
