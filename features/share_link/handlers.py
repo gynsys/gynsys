@@ -14,32 +14,57 @@ async def show_patient_share_link(
     doctor_name: str,
 ):
     """Displays share link info for patients with a return button."""
-    query = update.callback_query
-    share_code = build_share_code(doctor_id)
-    bot_username = getattr(context.bot, "username", None)
-    deeplink = build_deeplink(bot_username, doctor_id)
+    try:
+        query = update.callback_query
+        
+        # Responder al callback primero
+        if query:
+            await query.answer()
+        
+        share_code = build_share_code(doctor_id)
+        bot_username = getattr(context.bot, "username", None) or context.bot.username
+        deeplink = build_deeplink(bot_username, doctor_id)
 
-    share_text = (
-        "🔗 <b>Comparte el bot de tu médico</b>\n\n"
-        f"👩‍⚕️ {html.escape(doctor_name)}\n\n"
-        "Copia y comparte este código o enlace con quien necesite agendar "
-        "citas y recibir información personalizada:\n\n"
-        f"📛 <b>Código:</b>\n<code>{share_code}</code>\n\n"
-        f"🌐 <b>Enlace directo:</b>\n{deeplink}"
-    )
+        share_text = (
+            "🔗 <b>Comparte el bot de tu médico</b>\n\n"
+            f"👩‍⚕️ {html.escape(doctor_name)}\n\n"
+            "Copia y comparte este código o enlace con quien necesite agendar "
+            "citas y recibir información personalizada:\n\n"
+            f"📛 <b>Código:</b>\n<code>{share_code}</code>\n\n"
+            f"🌐 <b>Enlace directo:</b>\n{deeplink}"
+        )
 
-    if query:
-        await query.edit_message_text(
-            text=share_text,
-            reply_markup=get_share_link_keyboard(),
-            parse_mode="HTML",
-        )
-    else:
-        await update.effective_message.reply_text(
-            text=share_text,
-            reply_markup=get_share_link_keyboard(),
-            parse_mode="HTML",
-        )
+        if query:
+            try:
+                await query.edit_message_text(
+                    text=share_text,
+                    reply_markup=get_share_link_keyboard(),
+                    parse_mode="HTML",
+                )
+            except Exception as e:
+                # Si falla editar, enviar mensaje nuevo
+                print(f"Error editando mensaje en show_patient_share_link: {e}")
+                await context.bot.send_message(
+                    chat_id=query.message.chat.id,
+                    text=share_text,
+                    reply_markup=get_share_link_keyboard(),
+                    parse_mode="HTML",
+                )
+        else:
+            await update.effective_message.reply_text(
+                text=share_text,
+                reply_markup=get_share_link_keyboard(),
+                parse_mode="HTML",
+            )
+    except Exception as e:
+        print(f"Error en show_patient_share_link: {e}")
+        if query:
+            await query.answer("❌ Error al mostrar el link. Intenta nuevamente.", show_alert=True)
+        else:
+            await update.effective_message.reply_text(
+                "❌ Error al mostrar el link. Intenta nuevamente.",
+                parse_mode="HTML",
+            )
 
 
 async def show_doctor_share_link(
