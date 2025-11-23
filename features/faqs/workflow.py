@@ -74,13 +74,16 @@ class FAQWorkflow:
         message=None
     ):
         """Redirige a la lista de FAQs para una acción específica"""
-        from .admin_handlers import list_items_for_action
+        from .admin_handlers import list_for_modify, list_for_delete
         fake_update = await FAQWorkflow.create_fake_update(
             update,
             f"faq_{action}_list",
             message
         )
-        await list_items_for_action(fake_update, context)
+        if action == "modify":
+            await list_for_modify(fake_update, context)
+        elif action == "delete":
+            await list_for_delete(fake_update, context)
     
     @staticmethod
     async def handle_add_workflow(
