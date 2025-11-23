@@ -39,10 +39,16 @@ class FAQWorkflow:
     @staticmethod
     async def create_fake_update(
         update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
         callback_data: str,
         message=None
     ) -> Update:
         """Crea un Update simulado para redirecciones"""
+        # Si no hay mensaje, usar el mensaje del update original
+        if message is None:
+            message = update.effective_message
+        
+        # Crear CallbackQuery simple (las funciones usarán context.bot directamente)
         fake_query = CallbackQuery(
             id="fake_query_id",
             from_user=update.effective_user,
@@ -50,6 +56,7 @@ class FAQWorkflow:
             data=callback_data,
             message=message
         )
+        
         return Update(
             update_id=update.update_id,
             callback_query=fake_query
@@ -61,6 +68,7 @@ class FAQWorkflow:
         from .admin_handlers import faqs_hub
         fake_update = await FAQWorkflow.create_fake_update(
             update,
+            context,
             "faqs_admin_hub",
             update.effective_message
         )
@@ -77,6 +85,7 @@ class FAQWorkflow:
         from .admin_handlers import list_for_modify, list_for_delete
         fake_update = await FAQWorkflow.create_fake_update(
             update,
+            context,
             f"faq_{action}_list",
             message
         )

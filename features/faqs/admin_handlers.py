@@ -322,18 +322,54 @@ async def receive_mod_answer_and_save(update: Update, context: ContextTypes.DEFA
 async def list_for_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Lista FAQs para eliminar"""
     query = update.callback_query
-    await query.answer()
+    
+    # Usar context.bot directamente si query no tiene bot asociado (fake_update)
+    if query and hasattr(query, 'get_bot'):
+        try:
+            await query.answer()
+        except RuntimeError:
+            pass
+    elif query:
+        try:
+            await context.bot.answer_callback_query(query.id)
+        except Exception:
+            pass
     
     result = await FAQWorkflow.handle_list_workflow(update, context, "delete")
     
     if not result['success']:
-        await query.answer(result.get('error', 'No hay FAQs para eliminar'), show_alert=True)
+        if query:
+            try:
+                await query.answer(result.get('error', 'No hay FAQs para eliminar'), show_alert=True)
+            except RuntimeError:
+                await context.bot.answer_callback_query(
+                    query.id if query else "fake",
+                    text=result.get('error', 'No hay FAQs para eliminar'),
+                    show_alert=True
+                )
         return
     
-    await query.edit_message_text(
-        f"Selecciona la {CONFIG['singular'].lower()} que deseas eliminar:",
-        reply_markup=result['keyboard']
-    )
+    # Editar mensaje - usar context.bot si query no tiene bot
+    if query and hasattr(query, 'edit_message_text'):
+        try:
+            await query.edit_message_text(
+                f"Selecciona la {CONFIG['singular'].lower()} que deseas eliminar:",
+                reply_markup=result['keyboard']
+            )
+        except RuntimeError:
+            await context.bot.edit_message_text(
+                chat_id=query.message.chat.id,
+                message_id=query.message.message_id,
+                text=f"Selecciona la {CONFIG['singular'].lower()} que deseas eliminar:",
+                reply_markup=result['keyboard']
+            )
+    elif query and query.message:
+        await context.bot.edit_message_text(
+            chat_id=query.message.chat.id,
+            message_id=query.message.message_id,
+            text=f"Selecciona la {CONFIG['singular'].lower()} que deseas eliminar:",
+            reply_markup=result['keyboard']
+        )
 
 
 @admin_required
@@ -392,18 +428,57 @@ async def execute_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def list_for_modify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Lista FAQs para modificar"""
     query = update.callback_query
-    await query.answer()
+    
+    # Usar context.bot directamente si query no tiene bot asociado (fake_update)
+    if query and hasattr(query, 'get_bot'):
+        try:
+            await query.answer()
+        except RuntimeError:
+            # Si no tiene bot asociado, usar context.bot directamente
+            pass
+    elif query:
+        # Intentar answer con context.bot
+        try:
+            await context.bot.answer_callback_query(query.id)
+        except Exception:
+            pass
     
     result = await FAQWorkflow.handle_list_workflow(update, context, "modify")
     
     if not result['success']:
-        await query.answer(result.get('error', 'No hay FAQs para modificar'), show_alert=True)
+        if query:
+            try:
+                await query.answer(result.get('error', 'No hay FAQs para modificar'), show_alert=True)
+            except RuntimeError:
+                await context.bot.answer_callback_query(
+                    query.id if query else "fake",
+                    text=result.get('error', 'No hay FAQs para modificar'),
+                    show_alert=True
+                )
         return
     
-    await query.edit_message_text(
-        f"Selecciona la {CONFIG['singular'].lower()} que deseas modificar:",
-        reply_markup=result['keyboard']
-    )
+    # Editar mensaje - usar context.bot si query no tiene bot
+    if query and hasattr(query, 'edit_message_text'):
+        try:
+            await query.edit_message_text(
+                f"Selecciona la {CONFIG['singular'].lower()} que deseas modificar:",
+                reply_markup=result['keyboard']
+            )
+        except RuntimeError:
+            # Si falla, usar context.bot directamente
+            await context.bot.edit_message_text(
+                chat_id=query.message.chat.id,
+                message_id=query.message.message_id,
+                text=f"Selecciona la {CONFIG['singular'].lower()} que deseas modificar:",
+                reply_markup=result['keyboard']
+            )
+    elif query and query.message:
+        await context.bot.edit_message_text(
+            chat_id=query.message.chat.id,
+            message_id=query.message.message_id,
+            text=f"Selecciona la {CONFIG['singular'].lower()} que deseas modificar:",
+            reply_markup=result['keyboard']
+        )
 
 
 # ==================== EDITAR ENCABEZADO ====================
