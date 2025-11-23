@@ -195,6 +195,36 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
         """
         return [
             {
+                'name': 'galeria',
+                'display_name': '🖼️ Galería',
+                'description': 'Galería de imágenes y contenido visual'
+            },
+            {
+                'name': 'contacto',
+                'display_name': '📞 Contacto',
+                'description': 'Información de contacto del médico'
+            },
+            {
+                'name': 'precios',
+                'display_name': '💰 Precios',
+                'description': 'Lista de precios y servicios'
+            },
+            {
+                'name': 'faqs',
+                'display_name': '❓ FAQs',
+                'description': 'Preguntas frecuentes'
+            },
+            {
+                'name': 'citas',
+                'display_name': '📅 Citas',
+                'description': 'Sistema de gestión de citas'
+            },
+            {
+                'name': 'ubicaciones',
+                'display_name': '📍 Ubicaciones',
+                'description': 'Ubicaciones y horarios de consultorios'
+            },
+            {
                 'name': 'test',
                 'display_name': '🧪 Test Endometriosis',
                 'description': 'Módulo de pruebas médicas'
@@ -204,6 +234,5 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
                 'display_name': '🎮 Aprende Jugando',
                 'description': 'Quiz educativo de mitos y verdades'
             },
-            # Aquí se pueden agregar más módulos en el futuro
         ]
 

@@ -58,13 +58,12 @@ async def superadmin_main_menu(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 async def show_doctors_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Muestra el submenú de gestión de médicos"""
+    """Muestra directamente la lista de médicos con sus módulos para gestionar"""
     query = update.callback_query
     await query.answer()
-    print("🔄 Mostrando menú de médicos")
+    print("🔄 Mostrando lista de médicos con módulos")
     
-    texto = format_doctors_menu_text()
-    keyboard = get_doctors_management_keyboard()
-    
-    await safe_edit_message(query, texto, keyboard, context)
+    # Importar aquí para evitar circular imports
+    from features.extra_modules.admin_handlers import list_doctors_for_modules
+    await list_doctors_for_modules(update, context)
 

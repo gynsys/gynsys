@@ -58,26 +58,43 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
     
     # Extraer número de página del callback si existe
     page = 0
-    if query.data.startswith("extra_modules_page_"):
-        try:
-            page = int(query.data.split("_")[-1])
-        except (ValueError, IndexError):
-            page = 0
+    if query.data:
+        if query.data.startswith("doctors_modules_page_"):
+            try:
+                page = int(query.data.split("_")[-1])
+            except (ValueError, IndexError):
+                page = 0
+        elif query.data.startswith("extra_modules_page_"):
+            try:
+                page = int(query.data.split("_")[-1])
+            except (ValueError, IndexError):
+                page = 0
     
     doctors = await extra_modules_db.get_all_doctors_with_modules()
     
     if not doctors:
-        text = "❌ No hay doctores activos en el sistema."
+        text = (
+            "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
+            "❌ No hay doctores activos en el sistema."
+        )
         keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Volver", callback_data="extra_modules_hub")]
+            [InlineKeyboardButton("🏠 Menú Principal", callback_data="main_menu")]
         ])
     else:
         text = (
-            "👨‍⚕️ <b>Selecciona un Doctor</b>\n\n"
+            "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
             f"Total: {len(doctors)} doctores activos\n\n"
-            "Selecciona un doctor para gestionar sus módulos extras:"
+            "Selecciona un médico para gestionar sus módulos:\n"
+            "• 🖼️ Galería\n"
+            "• 📞 Contacto\n"
+            "• 💰 Precios\n"
+            "• ❓ FAQs\n"
+            "• 📅 Citas\n"
+            "• 📍 Ubicaciones\n"
+            "• 🧪 Test Endometriosis\n"
+            "• 🎮 Aprende Jugando"
         )
-        keyboard = get_doctors_list_keyboard(doctors, page=page)
+        keyboard = get_doctors_list_keyboard(doctors, page=page, return_to="doctors_menu")
     
     try:
         await query.edit_message_text(
@@ -99,7 +116,7 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
             )
 
 @superadmin_required
-async def show_doctor_modules(update: Update, context: ContextTypes.DEFAULT_TYPE, doctor_id: int = None):
+async def show_doctor_modules(update: Update, context: ContextTypes.DEFAULT_TYPE, doctor_id: int = None, return_to: str = "doctors_menu"):
     """Muestra los módulos disponibles para un doctor específico"""
     query = update.callback_query
     await query.answer()
@@ -134,13 +151,13 @@ async def show_doctor_modules(update: Update, context: ContextTypes.DEFAULT_TYPE
         ])
         
         text = (
-            f"🔧 <b>Módulos Extras - {doctor_name}</b>\n\n"
-            f"Gestiona las funcionalidades adicionales para este inquilino:\n\n"
+            f"🔧 <b>Módulos - {doctor_name}</b>\n\n"
+            f"Gestiona las funcionalidades disponibles para este médico:\n\n"
             f"{modules_text}\n\n"
             "Presiona un módulo para activarlo/desactivarlo:"
         )
         
-        keyboard = get_doctor_modules_keyboard(doctor_id, doctor_name, available_modules, active_modules)
+        keyboard = get_doctor_modules_keyboard(doctor_id, doctor_name, available_modules, active_modules, return_to="doctors_menu")
         
         try:
             await query.edit_message_text(
@@ -187,8 +204,8 @@ async def toggle_doctor_module(update: Update, context: ContextTypes.DEFAULT_TYP
         status = "activado" if is_active else "desactivado"
         await query.answer(f"✅ Módulo {status} correctamente.", show_alert=True)
         
-        # Refrescar la vista
-        await show_doctor_modules(update, context, doctor_id)
+        # Refrescar la vista - mantener el return_to para que el botón "Volver" funcione correctamente
+        await show_doctor_modules(update, context, doctor_id, return_to="doctors_menu")
     else:
         await query.answer("❌ Error al cambiar el estado del módulo.", show_alert=True)
 

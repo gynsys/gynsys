@@ -136,7 +136,7 @@ async def handle_superadmin_callback(update: Update, context: ContextTypes.DEFAU
         return
     
     # === MÓDULOS EXTRAS ===
-    elif callback_data.startswith("extra_modules"):
+    elif callback_data.startswith("extra_modules") or callback_data.startswith("doctors_modules_page_"):
         from features.extra_modules.admin_handlers import (
             extra_modules_hub,
             list_doctors_for_modules,
@@ -148,6 +148,9 @@ async def handle_superadmin_callback(update: Update, context: ContextTypes.DEFAU
         elif callback_data == "extra_modules_by_doctor":
             await list_doctors_for_modules(update, context)
         elif callback_data.startswith("extra_modules_page_"):
+            await list_doctors_for_modules(update, context)
+        elif callback_data.startswith("doctors_modules_page_"):
+            # Paginación desde el menú de médicos
             await list_doctors_for_modules(update, context)
         elif callback_data.startswith("extra_modules_doctor_"):
             await show_doctor_modules(update, context)
