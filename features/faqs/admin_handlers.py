@@ -1,424 +1,494 @@
-# features/faqs/admin_handlers.py
+"""
+Handlers de administración de FAQs usando arquitectura workflow.
+Separado por tipo de usuario:
+- Superadmin: Puede gestionar FAQs de todos los tenants
+- Tenants (Doctores): Gestionan sus propias FAQs
+"""
 import logging
 import asyncio
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message, User, Chat
-from telegram.ext import Application, ConversationHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters, CommandHandler
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from telegram.ext import (
+    Application,
+    ConversationHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+    CommandHandler
+)
 
 from database import content_db
 from common.decorators import admin_required
 from common.helpers import escape_html
 from common.keyboards import get_delete_confirmation_keyboard
 from common.conversation_utils import cancel_conv
-from common.context_manager import get_tenant_id
+from .workflow import FAQWorkflow, WorkflowState
 from . import keyboards as admin_keyboards
-from .faq_service import add_faq_direct, update_faq_direct, get_faq_details_direct
 
 logger = logging.getLogger(__name__)
 
-# --- CONFIGURACIÓN Y ESTADOS ---
-CONFIG = {'singular': 'FAQ', 'plural': 'FAQs', 'table': 'faqs', 'title_col': 'question', 'content_col': 'answer', 'prefix': 'faq'}
-(AWAITING_TITLE, AWAITING_CONTENT, AWAITING_MOD_TITLE, AWAITING_MOD_CONTENT, AWAITING_HEADER_TEXT) = range(5)
-# --- HUB DE GESTIÓN ---
+CONFIG = {
+    'singular': 'FAQ',
+    'plural': 'FAQs',
+    'prefix': 'faq'
+}
+
+
+# ==================== HUB PRINCIPAL ====================
 @admin_required
 async def faqs_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(f"📋 [faqs_hub] ========== INICIO ==========")
-    print(f"📋 [faqs_hub] Función llamada. User ID: {update.effective_user.id}")
-    logger.info(f"[faqs_hub] ========== INICIO ==========")
-    logger.info(f"[faqs_hub] Función llamada. User ID: {update.effective_user.id}")
-    
-    # Verificar si pasó el decorador
-    from config import SUPER_ADMIN_ID
-    if update.effective_user.id == SUPER_ADMIN_ID:
-        print(f"📋 [faqs_hub] ✅ Usuario es SUPER_ADMIN_ID")
-        logger.info(f"[faqs_hub] ✅ Usuario es SUPER_ADMIN_ID")
-    else:
-        print(f"📋 [faqs_hub] Usuario NO es superadmin")
-        logger.info(f"[faqs_hub] Usuario NO es superadmin")
-    
+    """Hub principal de gestión de FAQs"""
     query = update.callback_query
     if query:
-        # Verificar si query tiene el atributo 'data' (puede ser un objeto simulado)
-        if hasattr(query, 'data'):
-            logger.info(f"[faqs_hub] Callback query detectado. Data: {query.data}")
-        else:
-            logger.info(f"[faqs_hub] Callback query detectado (objeto simulado sin data)")
-        
-        # Intentar answer() solo si es un query real
-        if hasattr(query, 'answer'):
-            try:
-                await query.answer()
-                logger.info(f"[faqs_hub] query.answer() ejecutado correctamente")
-            except Exception as e:
-                logger.error(f"[faqs_hub] Error en query.answer(): {e}")
-    else:
-        logger.warning(f"[faqs_hub] No hay callback_query en el update")
+        await query.answer()
     
-    try:
-        bot_id = await get_tenant_id(update, context)
-        logger.info(f"[faqs_hub] bot_id obtenido: {bot_id}")
-    except Exception as e:
-        logger.error(f"[faqs_hub] Error obteniendo bot_id: {e}")
-        bot_id = None
+    bot_id = await FAQWorkflow.get_bot_id(update, context)
+    if not bot_id:
+        error_msg = "❌ No se pudo determinar el perfil del médico."
+        if query:
+            await query.edit_message_text(error_msg, parse_mode="HTML")
+        else:
+            await update.effective_message.reply_text(error_msg)
+        return
     
     keyboard = [
-        [InlineKeyboardButton(f"✏️ Editar Encabezado", callback_data=f"{CONFIG['prefix']}_edit_header")],
-
-        [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
-        [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
-        [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel'), InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
+        [InlineKeyboardButton(f"✏️ Editar Encabezado", callback_data="faq_edit_header")],
+        [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data="faq_add_start")],
+        [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data="faq_modify_list")],
+        [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data="faq_delete_list")],
+        [
+            InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel'),
+            InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')
+        ]
     ]
     
-    # Intentar editar mensaje si hay query y tiene método edit_message_text
-    if query and hasattr(query, 'edit_message_text') and hasattr(query, 'message'):
+    text = f"🔧 <b>Gestión de {CONFIG['plural']}</b>"
+    
+    if query:
         try:
-            logger.info(f"[faqs_hub] Intentando editar mensaje...")
-            await query.edit_message_text(f"🔧 <b>Gestión de {CONFIG['plural']}</b>", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
-            logger.info(f"[faqs_hub] ✅ Mensaje editado exitosamente")
+            await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
         except Exception as e:
-            logger.error(f"[faqs_hub] ❌ Error editando mensaje: {e}", exc_info=True)
-            # Intentar enviar nuevo mensaje
-            try:
-                await context.bot.send_message(
-                    chat_id=update.effective_chat.id,
-                    text=f"🔧 <b>Gestión de {CONFIG['plural']}</b>",
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode="HTML"
-                )
-                logger.info(f"[faqs_hub] ✅ Mensaje enviado como nuevo mensaje")
-            except Exception as e2:
-                logger.error(f"[faqs_hub] ❌ Error enviando nuevo mensaje: {e2}", exc_info=True)
-    else:
-        # Si no hay query válido, enviar nuevo mensaje directamente
-        try:
+            logger.error(f"Error editando mensaje: {e}")
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=f"🔧 <b>Gestión de {CONFIG['plural']}</b>",
+                text=text,
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="HTML"
             )
-            logger.info(f"[faqs_hub] ✅ Mensaje enviado (sin query válido)")
-        except Exception as e:
-            logger.error(f"[faqs_hub] ❌ Error enviando mensaje: {e}", exc_info=True)
-    
-    logger.info(f"[faqs_hub] ========== FIN ==========")
-
-@admin_required
-async def start_header_edit(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query; await query.answer()
-    bot_id = await get_tenant_id(update, context)
-    header_key = "header_faq" # Clave específica para el header de FAQs
-
-    context.user_data['header_key_to_edit'] = header_key
-    context.user_data['main_conv_message_id'] = query.message.message_id
-
-    current_header = await content_db.get_content(header_key, bot_id) or "(Sin encabezado definido)"
-
-    await query.edit_message_text(
-        f"✍️ Editando encabezado para <b>{CONFIG['plural']}</b>\n\n"
-        f"<b>Texto actual:</b>\n<blockquote>{current_header}</blockquote>\n\n"
-        "Envía el nuevo texto del encabezado.\n\n<i>/cancelar para detener.</i>",
-        parse_mode="HTML"
-    )
-    return AWAITING_HEADER_TEXT
-
-async def save_modified_header(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    new_header = update.message.text_html
-    await update.message.delete()
-    header_key = context.user_data.pop('header_key_to_edit')
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await update.message.reply_text("❌ No se pudo determinar el perfil del médico.")
-        return ConversationHandler.END
-    await content_db.update_content(header_key, new_header, bot_id)
-
-    message_to_edit = await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data.pop('main_conv_message_id'), text="✅ Encabezado actualizado.")
-    await asyncio.sleep(2)
-
-    fake_query = type('obj', (object,), {'data': 'faqs_admin_hub', 'message': message_to_edit, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': message_to_edit.edit_text})()
-    fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})()
-    await faqs_hub(fake_update, context)
-    return ConversationHandler.END
-# --- LÓGICA DE LISTADO, ELIMINACIÓN Y REORDENACIÓN ---
-@admin_required
-async def list_items_for_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer()
-    action = query.data.split('_')[1]
-    bot_id = await get_tenant_id(update, context)
-    reply_markup = await admin_keyboards.get_faqs_for_action_keyboard(bot_id, action)
-    if not reply_markup:
-        await query.answer(f"No hay {CONFIG['plural'].lower()} para gestionar.", show_alert=True); return
-    action_text = 'modificar' if action == 'modify' else 'eliminar'
-    await query.edit_message_text(f"Selecciona la {CONFIG['singular'].lower()} que deseas {action_text}:", reply_markup=reply_markup)
-
-@admin_required
-async def confirm_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer()
-    item_id = int(query.data.split('_')[-1])
-    item_details = await content_db.get_item_details(item_id, CONFIG['table'], CONFIG['title_col'], CONFIG['content_col'])
-    item_name = item_details.get('title', 'este elemento') if item_details else 'este elemento'
-    callback_for_confirmation = f"{CONFIG['prefix']}_delete_execute_confirm_{item_id}"
-    await query.edit_message_text(f"<b>⚠️ ¿Seguro que quieres eliminar?</b>\n\n<blockquote>{escape_html(item_name)}</blockquote>",
-        reply_markup=get_delete_confirmation_keyboard(item_type_callback=callback_for_confirmation, back_callback=f"{CONFIG['prefix']}_delete_list"), parse_mode="HTML")
-
-@admin_required
-async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer()
-    item_id = int(query.data.split('_')[-1])
-    if await content_db.delete_item(item_id, CONFIG['table']):
-        await query.answer("✅ Elemento eliminado.", show_alert=True)
-    fake_query = type('obj', (object,), {'data': f"{CONFIG['prefix']}_delete_list", 'message': query.message, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': query.message.edit_text})()
-    fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})()
-    await list_items_for_action(fake_update, context)
-
-# Funciones de reordenar eliminadas - ya no se usan
-
-# --- CONVERSATION HANDLERS (Añadir y Modificar) ---
-@admin_required
-async def add_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query; await query.answer()
-    context.user_data['main_conv_message_id'] = query.message.message_id
-    await query.edit_message_text(f"✍️ Envía la <b>pregunta</b> para la nueva {CONFIG['singular']}.\n\n<i>/cancelar para detener.</i>", parse_mode="HTML")
-    return AWAITING_TITLE
-
-async def receive_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['item_title'] = update.message.text
-    await update.message.delete()
-    await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data['main_conv_message_id'], text="✅ Pregunta guardada. Ahora, envía la <b>respuesta</b>.", parse_mode="HTML")
-    return AWAITING_CONTENT
-
-async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Añade una nueva FAQ usando función específica para evitar conflictos"""
-    question = context.user_data.pop('item_title', None)
-    answer = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
-    
-    if not question:
-        await update.message.reply_text("❌ Error: No se encontró la pregunta.")
-        return ConversationHandler.END
-    
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await update.message.reply_text("❌ No se pudo determinar el perfil del médico.")
-        return ConversationHandler.END
-    
-    try:
-        # Usar función específica para FAQs
-        faq_id = await add_faq_direct(bot_id, question, answer)
-        
-        if not faq_id:
-            await update.message.reply_text(f"❌ Error al guardar la {CONFIG['singular'].lower()}. Por favor, intenta nuevamente.")
-            return ConversationHandler.END
-        
-        await update.message.delete()
-        message_to_edit = await context.bot.edit_message_text(
-            chat_id=update.effective_chat.id, 
-            message_id=context.user_data.pop('main_conv_message_id', None), 
-            text=f"✅ ¡{CONFIG['singular']} añadida con éxito!"
+    else:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode="HTML"
         )
-        await asyncio.sleep(2)
-        
-        # Mostrar la lista de FAQs actualizada
-        reply_markup = await admin_keyboards.get_faqs_for_action_keyboard(bot_id, "modify")
-        
-        if reply_markup:
-            try:
-                await context.bot.edit_message_text(
-                    chat_id=update.effective_chat.id,
-                    message_id=message_to_edit.message_id,
-                    text=f"✅ ¡{CONFIG['singular']} añadida con éxito!\n\n📋 <b>Selecciona la {CONFIG['singular'].lower()} que deseas modificar:</b>",
-                    reply_markup=reply_markup,
-                    parse_mode="HTML"
-                )
-            except Exception as e:
-                logger.error(f"Error mostrando lista de FAQs: {e}", exc_info=True)
-                # Si falla, volver al hub
-                fake_query = CallbackQuery(
-                    id="fake_query_id",
-                    from_user=update.effective_user,
-                    chat_instance="fake_chat_instance",
-                    data=f"{CONFIG['prefix']}_admin_hub",
-                    message=message_to_edit
-                )
-                fake_update = Update(
-                    update_id=update.update_id,
-                    callback_query=fake_query
-                )
-                await faqs_hub(fake_update, context)
-        else:
-            # Si no hay FAQs, volver al hub
-            fake_query = CallbackQuery(
-                id="fake_query_id",
-                from_user=update.effective_user,
-                chat_instance="fake_chat_instance",
-                data=f"{CONFIG['prefix']}_admin_hub",
-                message=message_to_edit
-            )
-            fake_update = Update(
-                update_id=update.update_id,
-                callback_query=fake_query
-            )
-            await faqs_hub(fake_update, context)
-        
-        return ConversationHandler.END
-    except Exception as e:
-        logger.error(f"❌ Error en save_new_item: {e}", exc_info=True)
-        await update.message.reply_text(f"❌ Error al guardar la {CONFIG['singular'].lower()}. Por favor, intenta nuevamente.")
-        return ConversationHandler.END
 
+
+# ==================== AGREGAR FAQ ====================
 @admin_required
-async def modify_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Inicia la modificación de una FAQ usando función específica"""
+async def start_add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+    """Inicia el flujo de agregar FAQ"""
     query = update.callback_query
     await query.answer()
     
-    item_id = int(query.data.split('_')[-1])
-    bot_id = await get_tenant_id(update, context)
+    context.user_data['workflow_state'] = WorkflowState.AWAITING_QUESTION
+    context.user_data['main_message_id'] = query.message.message_id
+    
+    await query.edit_message_text(
+        f"✍️ Envía la <b>pregunta</b> para la nueva {CONFIG['singular']}.\n\n"
+        f"<i>/cancelar para detener.</i>",
+        parse_mode="HTML"
+    )
+    return WorkflowState.AWAITING_QUESTION
+
+
+async def receive_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+    """Recibe la pregunta del usuario"""
+    question = update.message.text.strip()
+    
+    if not question:
+        await update.message.reply_text("❌ La pregunta no puede estar vacía. Intenta nuevamente:")
+        return WorkflowState.AWAITING_QUESTION
+    
+    context.user_data['new_question'] = question
+    context.user_data['workflow_state'] = WorkflowState.AWAITING_ANSWER
+    
+    try:
+        await update.message.delete()
+    except Exception:
+        pass
+    
+    await context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=context.user_data['main_message_id'],
+        text="✅ Pregunta guardada. Ahora, envía la <b>respuesta</b>.",
+        parse_mode="HTML"
+    )
+    return WorkflowState.AWAITING_ANSWER
+
+
+async def receive_answer_and_save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Recibe la respuesta y guarda la FAQ"""
+    answer = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
+    
+    if not answer or answer.strip() == '':
+        await update.message.reply_text("❌ La respuesta no puede estar vacía. Intenta nuevamente:")
+        return WorkflowState.AWAITING_ANSWER
+    
+    question = context.user_data.get('new_question')
+    if not question:
+        await update.message.reply_text("❌ Error: No se encontró la pregunta. Por favor, inicia nuevamente.")
+        return ConversationHandler.END
+    
+    # Usar workflow para agregar
+    result = await FAQWorkflow.handle_add_workflow(update, context, question, answer)
+    
+    if not result['success']:
+        await update.message.reply_text(f"❌ Error: {result.get('error', 'No se pudo guardar la FAQ')}")
+        return ConversationHandler.END
+    
+    try:
+        await update.message.delete()
+    except Exception:
+        pass
+    
+    # Mostrar éxito y redirigir
+    message_to_edit = await context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=context.user_data.pop('main_message_id', None),
+        text=f"✅ ¡{CONFIG['singular']} añadida con éxito!"
+    )
+    await asyncio.sleep(2)
+    
+    # Limpiar estado
+    context.user_data.pop('new_question', None)
+    context.user_data.pop('workflow_state', None)
+    
+    # Redirigir a lista de modificación para ver el resultado
+    await FAQWorkflow.redirect_to_list(update, context, "modify", message_to_edit)
+    return ConversationHandler.END
+
+
+# ==================== MODIFICAR FAQ ====================
+@admin_required
+async def start_modify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+    """Inicia el flujo de modificar FAQ"""
+    query = update.callback_query
+    await query.answer()
+    
+    faq_id = int(query.data.split('_')[-1])
+    bot_id = await FAQWorkflow.get_bot_id(update, context)
     
     if not bot_id:
         await query.edit_message_text("❌ No se pudo determinar el perfil del médico.")
         return ConversationHandler.END
     
-    # Usar función específica para FAQs
-    item_details = await get_faq_details_direct(item_id, bot_id)
+    # Obtener FAQ usando workflow
+    result = await FAQWorkflow.handle_get_workflow(update, context, faq_id)
     
-    if not item_details:
-        await query.edit_message_text("❌ FAQ no encontrada.")
+    if not result['success']:
+        await query.edit_message_text(f"❌ {result.get('error', 'FAQ no encontrada')}")
         return ConversationHandler.END
     
-    context.user_data.update({
-        'item_id_to_modify': item_id,
-        'original_item': item_details,
-        'main_conv_message_id': query.message.message_id,
-        'bot_id': bot_id  # Guardar bot_id para validación
-    })
+    faq = result['faq']
+    
+    # Guardar estado
+    context.user_data['workflow_state'] = WorkflowState.AWAITING_MOD_QUESTION
+    context.user_data['faq_id'] = faq_id
+    context.user_data['original_faq'] = faq
+    context.user_data['main_message_id'] = query.message.message_id
     
     await query.edit_message_text(
-        f"✏️ Modificando '{escape_html(item_details['title'])}'.\n\n"
-        f"<b>Pregunta actual:</b>\n<blockquote>{escape_html(item_details['title'])}</blockquote>\n"
+        f"✏️ Modificando '{escape_html(faq['title'])}'.\n\n"
+        f"<b>Pregunta actual:</b>\n<blockquote>{escape_html(faq['title'])}</blockquote>\n"
         f"Envía la <b>nueva pregunta</b> o '.' para mantener.\n\n"
         f"<i>/cancelar para detener.</i>",
         parse_mode="HTML"
     )
-    return AWAITING_MOD_TITLE
+    return WorkflowState.AWAITING_MOD_QUESTION
 
-async def receive_modified_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message.text != '.': context.user_data['new_title'] = update.message.text
-    await update.message.delete()
-    original_item = context.user_data['original_item']
-    await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data['main_conv_message_id'],
-        text=f"<b>Respuesta actual:</b>\n<blockquote>{original_item['content']}</blockquote>\nEnvía la <b>nueva respuesta</b> o '.' para mantener.", parse_mode="HTML")
-    return AWAITING_MOD_CONTENT
 
-async def save_modified_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Guarda los cambios de una FAQ usando función específica"""
-    ud = context.user_data
+async def receive_mod_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+    """Recibe la nueva pregunta"""
+    new_question = update.message.text.strip() if update.message.text != '.' else None
     
-    # Obtener datos del contexto
-    original_item = ud.get('original_item')
-    item_id = ud.get('item_id_to_modify')
-    bot_id = ud.get('bot_id')
+    if new_question:
+        context.user_data['new_question'] = new_question
     
-    if not original_item or not item_id or not bot_id:
-        logger.error(f"❌ Datos faltantes: original_item={original_item is not None}, item_id={item_id}, bot_id={bot_id}")
-        await update.message.reply_text("❌ Error: Datos de modificación no encontrados.")
-        return ConversationHandler.END
-    
-    # Obtener nuevos valores de manera más robusta
-    new_question = ud.get('new_title')
-    
-    # Obtener nueva respuesta - usar text_html si está disponible, sino text
-    user_text = update.message.text if update.message.text else ""
-    if hasattr(update.message, 'text_html') and update.message.text_html:
-        new_answer = update.message.text_html if update.message.text_html != '.' else None
-    else:
-        new_answer = user_text if user_text != '.' else None
-    
-    # Si el usuario envió '.', mantener el valor original
-    if user_text == '.':
-        new_answer = None
-    
-    # Si no se proporcionó nuevo valor, mantener el original
-    final_question = new_question if new_question else original_item['title']
-    final_answer = new_answer if new_answer else original_item['content']
-    
-    logger.info(f"🔧 Actualizando FAQ: id={item_id}, bot_id={bot_id}, question={final_question[:50] if final_question else None}..., answer={final_answer[:50] if final_answer else None}...")
+    context.user_data['workflow_state'] = WorkflowState.AWAITING_MOD_ANSWER
+    original_faq = context.user_data['original_faq']
     
     try:
-        # Usar función específica para FAQs
-        success = await update_faq_direct(item_id, bot_id, final_question, final_answer)
-        
-        if not success:
-            logger.error(f"❌ update_faq_direct retornó False para item_id={item_id}, bot_id={bot_id}")
-            await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}.")
-            return ConversationHandler.END
-        
         await update.message.delete()
-        message_to_edit = await context.bot.edit_message_text(
-            chat_id=update.effective_chat.id,
-            message_id=ud.pop('main_conv_message_id', None),
-            text=f"✅ ¡{CONFIG['singular']} actualizado con éxito!"
-        )
-        await asyncio.sleep(2)
-        
-        # Limpiar user_data
-        ud.pop('item_id_to_modify', None)
-        ud.pop('original_item', None)
-        ud.pop('new_title', None)
-        ud.pop('new_content', None)
-        ud.pop('bot_id', None)
-        
-        # Redirigir a la lista de modificación
-        fake_query = CallbackQuery(
-            id="fake_query_id",
-            from_user=update.effective_user,
-            chat_instance="fake_chat_instance",
-            data=f"{CONFIG['prefix']}_modify_list",
-            message=message_to_edit
-        )
-        fake_update = Update(
-            update_id=update.update_id,
-            callback_query=fake_query
-        )
-        await list_items_for_action(fake_update, context)
-        return ConversationHandler.END
-    except Exception as e:
-        logger.error(f"❌ Error en save_modified_item: {e}", exc_info=True)
-        await update.message.reply_text(f"❌ Error al actualizar la {CONFIG['singular'].lower()}: {str(e)}")
-        return ConversationHandler.END
+    except Exception:
+        pass
+    
+    await context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=context.user_data['main_message_id'],
+        text=(
+            f"<b>Respuesta actual:</b>\n<blockquote>{escape_html(original_faq['content'])}</blockquote>\n"
+            f"Envía la <b>nueva respuesta</b> o '.' para mantener."
+        ),
+        parse_mode="HTML"
+    )
+    return WorkflowState.AWAITING_MOD_ANSWER
 
+
+async def receive_mod_answer_and_save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Recibe la nueva respuesta y guarda los cambios"""
+    new_answer = None
+    user_text = update.message.text if update.message.text else ""
+    
+    if user_text != '.':
+        new_answer = update.message.text_html if hasattr(update.message, 'text_html') else user_text
+    
+    faq_id = context.user_data.get('faq_id')
+    new_question = context.user_data.get('new_question')
+    
+    if not faq_id:
+        await update.message.reply_text("❌ Error: No se encontró el ID de la FAQ.")
+        return ConversationHandler.END
+    
+    # Usar workflow para actualizar
+    result = await FAQWorkflow.handle_update_workflow(
+        update,
+        context,
+        faq_id,
+        new_question,
+        new_answer
+    )
+    
+    if not result['success']:
+        await update.message.reply_text(f"❌ Error: {result.get('error', 'No se pudo actualizar la FAQ')}")
+        return ConversationHandler.END
+    
+    try:
+        await update.message.delete()
+    except Exception:
+        pass
+    
+    # Mostrar éxito y redirigir
+    message_to_edit = await context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=context.user_data.pop('main_message_id', None),
+        text=f"✅ ¡{CONFIG['singular']} actualizado con éxito!"
+    )
+    await asyncio.sleep(2)
+    
+    # Limpiar estado
+    context.user_data.pop('faq_id', None)
+    context.user_data.pop('original_faq', None)
+    context.user_data.pop('new_question', None)
+    context.user_data.pop('workflow_state', None)
+    
+    # Redirigir a lista de modificación
+    await FAQWorkflow.redirect_to_list(update, context, "modify", message_to_edit)
+    return ConversationHandler.END
+
+
+# ==================== ELIMINAR FAQ ====================
+@admin_required
+async def list_for_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Lista FAQs para eliminar"""
+    query = update.callback_query
+    await query.answer()
+    
+    result = await FAQWorkflow.handle_list_workflow(update, context, "delete")
+    
+    if not result['success']:
+        await query.answer(result.get('error', 'No hay FAQs para eliminar'), show_alert=True)
+        return
+    
+    await query.edit_message_text(
+        f"Selecciona la {CONFIG['singular'].lower()} que deseas eliminar:",
+        reply_markup=result['keyboard']
+    )
+
+
+@admin_required
+async def confirm_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Confirma la eliminación de una FAQ"""
+    query = update.callback_query
+    await query.answer()
+    
+    faq_id = int(query.data.split('_')[-1])
+    
+    # Obtener detalles usando workflow
+    result = await FAQWorkflow.handle_get_workflow(update, context, faq_id)
+    
+    if not result['success']:
+        await query.edit_message_text(f"❌ {result.get('error', 'FAQ no encontrada')}")
+        return
+    
+    faq = result['faq']
+    item_name = escape_html(faq['title'])
+    
+    callback_confirm = f"faq_delete_execute_confirm_{faq_id}"
+    
+    await query.edit_message_text(
+        f"<b>⚠️ ¿Seguro que quieres eliminar?</b>\n\n<blockquote>{item_name}</blockquote>",
+        reply_markup=get_delete_confirmation_keyboard(
+            item_type_callback=callback_confirm,
+            back_callback="faq_delete_list"
+        ),
+        parse_mode="HTML"
+    )
+
+
+@admin_required
+async def execute_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Ejecuta la eliminación de una FAQ"""
+    query = update.callback_query
+    await query.answer()
+    
+    faq_id = int(query.data.split('_')[-1])
+    
+    # Usar workflow para eliminar
+    result = await FAQWorkflow.handle_delete_workflow(update, context, faq_id)
+    
+    if not result['success']:
+        await query.answer(result.get('error', 'No se pudo eliminar'), show_alert=True)
+        return
+    
+    await query.answer("✅ Elemento eliminado.", show_alert=True)
+    
+    # Redirigir a lista de eliminación actualizada
+    await FAQWorkflow.redirect_to_list(update, context, "delete", query.message)
+
+
+# ==================== LISTAR PARA MODIFICAR ====================
+@admin_required
+async def list_for_modify(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Lista FAQs para modificar"""
+    query = update.callback_query
+    await query.answer()
+    
+    result = await FAQWorkflow.handle_list_workflow(update, context, "modify")
+    
+    if not result['success']:
+        await query.answer(result.get('error', 'No hay FAQs para modificar'), show_alert=True)
+        return
+    
+    await query.edit_message_text(
+        f"Selecciona la {CONFIG['singular'].lower()} que deseas modificar:",
+        reply_markup=result['keyboard']
+    )
+
+
+# ==================== EDITAR ENCABEZADO ====================
+@admin_required
+async def start_edit_header(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+    """Inicia la edición del encabezado"""
+    query = update.callback_query
+    await query.answer()
+    
+    bot_id = await FAQWorkflow.get_bot_id(update, context)
+    if not bot_id:
+        await query.edit_message_text("❌ No se pudo determinar el perfil del médico.")
+        return ConversationHandler.END
+    
+    context.user_data['workflow_state'] = WorkflowState.AWAITING_HEADER
+    context.user_data['main_message_id'] = query.message.message_id
+    
+    current_header = await content_db.get_content("header_faq", bot_id) or "(Sin encabezado definido)"
+    
+    await query.edit_message_text(
+        f"✍️ Editando encabezado para <b>{CONFIG['plural']}</b>\n\n"
+        f"<b>Texto actual:</b>\n<blockquote>{current_header}</blockquote>\n\n"
+        f"Envía el nuevo texto del encabezado.\n\n<i>/cancelar para detener.</i>",
+        parse_mode="HTML"
+    )
+    return WorkflowState.AWAITING_HEADER
+
+
+async def save_header(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Guarda el nuevo encabezado"""
+    new_header = update.message.text_html if hasattr(update.message, 'text_html') else update.message.text
+    bot_id = await FAQWorkflow.get_bot_id(update, context)
+    
+    if not bot_id:
+        await update.message.reply_text("❌ No se pudo determinar el perfil del médico.")
+        return ConversationHandler.END
+    
+    await content_db.update_content("header_faq", new_header, bot_id)
+    
+    try:
+        await update.message.delete()
+    except Exception:
+        pass
+    
+    message_to_edit = await context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=context.user_data.pop('main_message_id', None),
+        text="✅ Encabezado actualizado."
+    )
+    await asyncio.sleep(2)
+    
+    context.user_data.pop('workflow_state', None)
+    
+    # Redirigir al hub
+    await FAQWorkflow.redirect_to_hub(update, context)
+    return ConversationHandler.END
+
+
+# ==================== REGISTRO DE HANDLERS ====================
 def register(app: Application):
-    cancel_handlers = [CommandHandler('cancelar', cancel_conv), CallbackQueryHandler(cancel_conv, pattern='^cancel_conv$')]
-    # Aquí iría la ConversationHandler para editar el header
-
+    """Registra todos los handlers de FAQs"""
+    cancel_handlers = [
+        CommandHandler('cancelar', cancel_conv),
+        CallbackQueryHandler(cancel_conv, pattern='^cancel_conv$')
+    ]
+    
+    # ConversationHandler para agregar
     add_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(add_item_start, pattern=f"^{CONFIG['prefix']}_add_start$")], 
+        entry_points=[CallbackQueryHandler(start_add, pattern='^faq_add_start$')],
         states={
-            AWAITING_TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_title)], 
-            AWAITING_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_new_item)]
-        }, 
+            WorkflowState.AWAITING_QUESTION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_question)
+            ],
+            WorkflowState.AWAITING_ANSWER: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_answer_and_save)
+            ]
+        },
         fallbacks=cancel_handlers,
-        allow_reentry=True  # Permite añadir múltiples FAQs seguidas
+        allow_reentry=True
     )
+    
+    # ConversationHandler para modificar
     modify_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(modify_item_start, pattern=f"^{CONFIG['prefix']}_modify_\\d+$")], 
+        entry_points=[CallbackQueryHandler(start_modify, pattern='^faq_modify_\\d+$')],
         states={
-            AWAITING_MOD_TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_modified_title)], 
-            AWAITING_MOD_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_modified_item)]
-        }, 
+            WorkflowState.AWAITING_MOD_QUESTION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_mod_question)
+            ],
+            WorkflowState.AWAITING_MOD_ANSWER: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_mod_answer_and_save)
+            ]
+        },
         fallbacks=cancel_handlers,
-        allow_reentry=True  # Permite modificar múltiples FAQs seguidas
+        allow_reentry=True
     )
-    edit_header_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(start_header_edit, pattern=f"^{CONFIG['prefix']}_edit_header$")],
-        states={AWAITING_HEADER_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_modified_header)]},
+    
+    # ConversationHandler para editar encabezado
+    header_conv = ConversationHandler(
+        entry_points=[CallbackQueryHandler(start_edit_header, pattern='^faq_edit_header$')],
+        states={
+            WorkflowState.AWAITING_HEADER: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, save_header)
+            ]
+        },
         fallbacks=cancel_handlers,
-        allow_reentry=True  # Permite editar el header múltiples veces
+        allow_reentry=True
     )
-
-    app.add_handler(add_conv); app.add_handler(modify_conv)
+    
+    # Handlers de callbacks
+    app.add_handler(add_conv)
+    app.add_handler(modify_conv)
+    app.add_handler(header_conv)
     app.add_handler(CallbackQueryHandler(faqs_hub, pattern='^faqs_admin_hub$'))
-    app.add_handler(edit_header_conv)
-    app.add_handler(CallbackQueryHandler(list_items_for_action, pattern=f"^{CONFIG['prefix']}_(modify|delete)_list$"))
-    app.add_handler(CallbackQueryHandler(confirm_delete_item, pattern=f"^{CONFIG['prefix']}_delete_\\d+$"))
-    app.add_handler(CallbackQueryHandler(execute_delete_item, pattern=f"^{CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
-    # Handlers de reordenar eliminados - ya no se usan
+    app.add_handler(CallbackQueryHandler(list_for_modify, pattern='^faq_modify_list$'))
+    app.add_handler(CallbackQueryHandler(list_for_delete, pattern='^faq_delete_list$'))
+    app.add_handler(CallbackQueryHandler(confirm_delete, pattern='^faq_delete_\\d+$'))
+    app.add_handler(CallbackQueryHandler(execute_delete, pattern='^faq_delete_execute_confirm_\\d+$'))
+
