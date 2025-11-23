@@ -196,17 +196,21 @@ class AdminService:
             int: bot_id o None
         """
         try:
-            async with aiosqlite.connect(DB_PATH) as conn:
-                conn.row_factory = aiosqlite.Row
-                cursor = await conn.execute(
-                    'SELECT id FROM bots WHERE admin_user_id = ?',
-                    (telegram_id,)
-                )
-                result = await cursor.fetchone()
-                if result:
-                    return result['id']
+            from database.session import get_session
+            from database.models.bot import Bot
+            from sqlalchemy import select
+            
+            async with get_session() as session:
+                stmt = select(Bot.id).where(Bot.admin_user_id == telegram_id)
+                result = await session.execute(stmt)
+                bot_id = result.scalar_one_or_none()
+                if bot_id:
+                    self.logger.info(f"Bot_id encontrado: {bot_id} para telegram_id: {telegram_id}")
+                    return bot_id
+                else:
+                    self.logger.warning(f"No se encontró bot_id para telegram_id: {telegram_id}")
         except Exception as e:
-            self.logger.error(f"Error obteniendo bot_id para telegram_id {telegram_id}: {e}")
+            self.logger.error(f"Error obteniendo bot_id para telegram_id {telegram_id}: {e}", exc_info=True)
         return None
     
     def generate_share_info(self, doctor_id, bot_username):

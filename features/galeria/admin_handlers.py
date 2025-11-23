@@ -1,7 +1,7 @@
 # features/galeria/tenant_handlers.py
 import logging
 import asyncio
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message, Chat
 from telegram.ext import Application, ConversationHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters, CommandHandler
 import html
 
@@ -153,24 +153,48 @@ async def save_new_item_with_media(update: Update, context: ContextTypes.DEFAULT
     content = context.user_data.pop('item_content')
     tenant_id = await get_tenant_id(update, context)
 
-    await content_db.add_item_with_media(tenant_id, CONFIG['table'], title, content, media_file_id, media_type, CONFIG['title_col'], CONFIG['content_col'])
-    await message.delete()
+    try:
+        await content_db.add_item_with_media(tenant_id, CONFIG['table'], title, content, media_file_id, media_type, CONFIG['title_col'], CONFIG['content_col'])
+        await message.delete()
 
-    message_to_edit = await context.bot.edit_message_text(
-        chat_id=update.effective_chat.id,
-        message_id=context.user_data.pop('main_conv_message_id'),
-        text=f"✅ ¡{CONFIG['singular']} añadido!"
-    )
-    await asyncio.sleep(2)
-    fake_update = type('obj', (object,), {
-    'callback_query': None, # Importante para que no lo tome como un clic
-    'effective_user': update.effective_user,
-    'effective_message': message_to_edit # ¡AQUÍ ESTÁ LA CORRECCIÓN!
-    })()
-    await galeria_hub(fake_update, context)
-    #await galeria_hub(type('obj', (object,), {'message': message_to_edit, 'callback_query': None, 'effective_user': update.effective_user})(), context)
-    context.user_data.clear()
-    return ConversationHandler.END
+        main_conv_message_id = context.user_data.pop('main_conv_message_id', None)
+        
+        if main_conv_message_id:
+            try:
+                await context.bot.edit_message_text(
+                    chat_id=update.effective_chat.id,
+                    message_id=main_conv_message_id,
+                    text=f"✅ ¡{CONFIG['singular']} añadido!"
+                )
+                await asyncio.sleep(1.5)
+            except Exception as e:
+                logger.warning(f"Error editando mensaje: {e}")
+        
+        # Volver al hub de galería usando un callback query simulado
+        fake_chat = Chat(id=update.effective_chat.id, type=update.effective_chat.type)
+        fake_message = Message(
+            message_id=main_conv_message_id or update.effective_message.message_id,
+            date=update.effective_message.date,
+            chat=fake_chat,
+            from_user=update.effective_user
+        )
+        fake_query = CallbackQuery(
+            id="fake",
+            from_user=update.effective_user,
+            chat_instance="fake",
+            message=fake_message,
+            data=f"{CONFIG['prefix']}_admin_hub"
+        )
+        fake_update = Update(update_id=update.update_id, callback_query=fake_query)
+        
+        await galeria_hub(fake_update, context, send_new=False)
+        context.user_data.clear()
+        return ConversationHandler.END
+    except Exception as e:
+        logger.error(f"Error guardando item de galería: {e}", exc_info=True)
+        await message.reply_text("❌ Error al guardar el ítem. Intenta nuevamente.")
+        context.user_data.clear()
+        return ConversationHandler.END
 
 # --- MODIFY ITEM CONVERSATION ---
 @superadmin_required
