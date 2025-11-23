@@ -4,6 +4,18 @@ Script para configurar el webhook en Telegram
 """
 import asyncio
 import sys
+import os
+from pathlib import Path
+
+# Agregar el directorio raíz del proyecto al path
+# Esto permite ejecutar el script desde cualquier ubicación
+script_dir = Path(__file__).parent
+project_root = script_dir.parent
+sys.path.insert(0, str(project_root))
+
+# Cambiar al directorio raíz para que funcione correctamente
+os.chdir(project_root)
+
 from telegram import Bot
 from config import BOT_TOKEN
 
