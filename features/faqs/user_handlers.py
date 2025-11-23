@@ -238,15 +238,24 @@ async def navigate_faq_previous(update: Update, context: ContextTypes.DEFAULT_TY
     current_index = context.user_data.get('faq_current_index', 0)
     items = context.user_data.get('faqs_list', [])
     
-    if not items or current_index <= 0:
+    logger.info(f"[navigate_faq_previous] current_index={current_index}, total_items={len(items) if items else 0}")
+    
+    if not items:
+        logger.error("[navigate_faq_previous] No hay items en user_data")
+        await query.answer("Error: No se encontraron preguntas.", show_alert=True)
+        return
+    
+    if current_index <= 0:
         await query.answer("Ya estás en la primera pregunta.", show_alert=True)
         return
     
     bot_id = await get_tenant_id(update, context)
     if not bot_id:
         bot_id = 1
+        logger.warning(f"[navigate_faq_previous] No se obtuvo bot_id, usando fallback bot_id=1")
     
     new_index = current_index - 1
+    logger.info(f"[navigate_faq_previous] Navegando de índice {current_index} a {new_index}")
     await _show_faq_by_index(update, context, new_index, bot_id)
 
 async def navigate_faq_next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -257,15 +266,24 @@ async def navigate_faq_next(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     current_index = context.user_data.get('faq_current_index', 0)
     items = context.user_data.get('faqs_list', [])
     
-    if not items or current_index >= len(items) - 1:
+    logger.info(f"[navigate_faq_next] current_index={current_index}, total_items={len(items) if items else 0}")
+    
+    if not items:
+        logger.error("[navigate_faq_next] No hay items en user_data")
+        await query.answer("Error: No se encontraron preguntas.", show_alert=True)
+        return
+    
+    if current_index >= len(items) - 1:
         await query.answer("Ya estás en la última pregunta.", show_alert=True)
         return
     
     bot_id = await get_tenant_id(update, context)
     if not bot_id:
         bot_id = 1
+        logger.warning(f"[navigate_faq_next] No se obtuvo bot_id, usando fallback bot_id=1")
     
     new_index = current_index + 1
+    logger.info(f"[navigate_faq_next] Navegando de índice {current_index} a {new_index}")
     await _show_faq_by_index(update, context, new_index, bot_id)
 
 async def faq_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

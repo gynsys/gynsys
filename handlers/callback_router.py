@@ -42,6 +42,17 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
         from features.faqs.user_handlers import show_faqs_menu
         await show_faqs_menu(update, context)
         return
+    
+    # Handlers de navegación de FAQs (deben ir antes de la redirección por rol)
+    if callback_data in {"faq_next", "faq_prev", "faq_ignore"}:
+        from features.faqs.user_handlers import navigate_faq_next, navigate_faq_previous, faq_ignore
+        if callback_data == "faq_next":
+            await navigate_faq_next(update, context)
+        elif callback_data == "faq_prev":
+            await navigate_faq_previous(update, context)
+        elif callback_data == "faq_ignore":
+            await faq_ignore(update, context)
+        return
 
     if callback_data == "main_menu":
         if user_role == 'superadmin':
