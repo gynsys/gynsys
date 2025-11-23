@@ -74,12 +74,15 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
     from features.admin.services.admin_service import AdminService
     admin_service = AdminService()
     all_doctors = await admin_service.get_all_doctors()
+    logger.info(f"[list_doctors_for_modules] Doctores activos obtenidos: {len(all_doctors)}")
     
     # También obtener doctores inactivos
     inactive_doctors = await admin_service.get_inactive_doctors()
+    logger.info(f"[list_doctors_for_modules] Doctores inactivos obtenidos: {len(inactive_doctors)}")
     
     # Combinar todos los doctores (excepto SuperAdmin id=1)
     all_doctors_list = [d for d in all_doctors if d[0] != 1] + [d for d in inactive_doctors if d[0] != 1]
+    logger.info(f"[list_doctors_for_modules] Total doctores (sin SuperAdmin): {len(all_doctors_list)}")
     
     if not all_doctors_list:
         text = (
@@ -123,17 +126,30 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
         keyboard = get_doctors_list_keyboard(doctors_with_modules, page=page, return_to="doctors_menu")
     
     try:
+        logger.info(f"[list_doctors_for_modules] Intentando editar mensaje. Doctores encontrados: {len(doctors_with_modules) if 'doctors_with_modules' in locals() else 0}")
         await query.edit_message_text(
             text,
             reply_markup=keyboard,
             parse_mode="HTML"
         )
+        logger.info("[list_doctors_for_modules] Mensaje editado exitosamente")
     except BadRequest as e:
+        logger.error(f"[list_doctors_for_modules] Error editando mensaje: {e}")
         if "no text" in str(e).lower() or "message to edit not found" in str(e).lower():
+            logger.info("[list_doctors_for_modules] Mensaje anterior no tiene texto, eliminando y enviando nuevo")
             try:
                 await query.message.delete()
-            except:
-                pass
+            except Exception as del_err:
+                logger.warning(f"[list_doctors_for_modules] No se pudo eliminar mensaje anterior: {del_err}")
+            await context.bot.send_message(
+                chat_id=query.message.chat.id,
+                text=text,
+                reply_markup=keyboard,
+                parse_mode="HTML"
+            )
+        else:
+            # Otro tipo de BadRequest, intentar enviar nuevo mensaje
+            logger.info("[list_doctors_for_modules] Enviando nuevo mensaje debido a BadRequest")
             await context.bot.send_message(
                 chat_id=query.message.chat.id,
                 text=text,
