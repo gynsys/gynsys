@@ -225,25 +225,57 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         )
         await asyncio.sleep(2)
         
-        # Crear fake_query con todos los atributos necesarios
-        fake_query = CallbackQuery(
-            id="fake_query_id",
-            from_user=update.effective_user,
-            chat_instance="fake_chat_instance",
-            data=f"{CONFIG['prefix']}_admin_hub",  # Agregar data necesario para faqs_hub
-            message=message_to_edit
-        )
+        # Mostrar la lista de FAQs actualizada (incluyendo la recién agregada)
+        # Esto permite al usuario ver que la FAQ se agregó correctamente
+        bot_id = await get_tenant_id(update, context)
+        reply_markup = await admin_keyboards.get_faqs_for_action_keyboard(bot_id, "modify")
         
-        # Crear fake_update con todos los atributos necesarios
-        fake_update = Update(
-            update_id=0,
-            effective_user=update.effective_user,
-            effective_chat=update.effective_chat,
-            effective_message=message_to_edit,
-            callback_query=fake_query
-        )
+        if reply_markup:
+            # Si hay FAQs, mostrar la lista
+            try:
+                await context.bot.edit_message_text(
+                    chat_id=update.effective_chat.id,
+                    message_id=message_to_edit.message_id,
+                    text=f"✅ ¡{CONFIG['singular']} añadida con éxito!\n\n📋 <b>Lista de {CONFIG['plural']}:</b>",
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.error(f"Error mostrando lista de FAQs: {e}", exc_info=True)
+                # Si falla, volver al hub
+                fake_query = CallbackQuery(
+                    id="fake_query_id",
+                    from_user=update.effective_user,
+                    chat_instance="fake_chat_instance",
+                    data=f"{CONFIG['prefix']}_admin_hub",
+                    message=message_to_edit
+                )
+                fake_update = Update(
+                    update_id=0,
+                    effective_user=update.effective_user,
+                    effective_chat=update.effective_chat,
+                    effective_message=message_to_edit,
+                    callback_query=fake_query
+                )
+                await faqs_hub(fake_update, context)
+        else:
+            # Si no hay FAQs (no debería pasar, pero por si acaso), volver al hub
+            fake_query = CallbackQuery(
+                id="fake_query_id",
+                from_user=update.effective_user,
+                chat_instance="fake_chat_instance",
+                data=f"{CONFIG['prefix']}_admin_hub",
+                message=message_to_edit
+            )
+            fake_update = Update(
+                update_id=0,
+                effective_user=update.effective_user,
+                effective_chat=update.effective_chat,
+                effective_message=message_to_edit,
+                callback_query=fake_query
+            )
+            await faqs_hub(fake_update, context)
         
-        await faqs_hub(fake_update, context)
         return ConversationHandler.END
     except Exception as e:
         logger.error(f"❌ Error en save_new_item: {e}", exc_info=True)
