@@ -24,14 +24,22 @@ engine: AsyncEngine = create_async_engine(
 async def init_engine():
     """
     Inicializa el engine y ejecuta PRAGMAs necesarios.
+    Crea todas las tablas de SQLAlchemy si no existen.
     Debe llamarse al inicio de la aplicación.
     """
+    from .models import Base
+    
     async with engine.begin() as conn:
         # Habilitar foreign keys
         await conn.execute(text("PRAGMA foreign_keys = ON;"))
         # Habilitar WAL mode para mejor concurrencia
         await conn.execute(text("PRAGMA journal_mode=WAL;"))
+        
+        # Crear todas las tablas de SQLAlchemy si no existen
+        await conn.run_sync(Base.metadata.create_all)
+    
     logger.info("Engine SQLAlchemy inicializado correctamente")
+    logger.info("Tablas de SQLAlchemy creadas/verificadas")
 
 async def close_engine():
     """
