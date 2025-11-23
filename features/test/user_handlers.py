@@ -94,24 +94,32 @@ async def _get_bot_id_for_test(update: Update, context: ContextTypes.DEFAULT_TYP
     Similar a cómo funciona en el módulo de citas.
     """
     user_id = update.effective_user.id
+    logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Iniciando búsqueda de bot_id")
     
     # 1. Si el usuario es doctor, usar su propio bot_id
     doctor = await role_manager.get_doctor_by_telegram_id(user_id)
     if doctor:
         doctor_telegram_id = doctor[2]  # telegram_id está en índice 2
+        logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Es doctor, telegram_id={doctor_telegram_id}")
         async with get_session() as session:
             stmt = select(Bot.id).where(Bot.admin_user_id == doctor_telegram_id)
             result = await session.execute(stmt)
             bot_id = result.scalar_one_or_none()
             if bot_id:
+                logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Bot ID encontrado para doctor: {bot_id}")
                 return bot_id
+            else:
+                logger.warning(f"[_get_bot_id_for_test] Usuario {user_id}: No se encontró bot_id para doctor telegram_id={doctor_telegram_id}")
     
     # 2. Si es paciente, buscar el doctor asignado
     doctor_id = context.user_data.get("patient_doctor_id")
+    logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: patient_doctor_id en context = {doctor_id}")
+    
     if not doctor_id:
         assigned_doctor = await role_manager.get_assigned_doctor(user_id)
         if assigned_doctor:
             doctor_id = assigned_doctor[0]
+            logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Doctor asignado encontrado: {doctor_id}")
     
     if doctor_id:
         # Obtener bot_id desde doctor_id
@@ -121,27 +129,41 @@ async def _get_bot_id_for_test(update: Update, context: ContextTypes.DEFAULT_TYP
             result_doctor = await session.execute(stmt_doctor)
             doctor_obj = result_doctor.scalar_one_or_none()
             if doctor_obj:
+                logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Doctor objeto encontrado, telegram_id={doctor_obj.telegram_id}")
                 stmt_bot = select(Bot.id).where(Bot.admin_user_id == doctor_obj.telegram_id)
                 result_bot = await session.execute(stmt_bot)
                 bot_id = result_bot.scalar_one_or_none()
                 if bot_id:
+                    logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Bot ID encontrado para paciente: {bot_id}")
                     return bot_id
+                else:
+                    logger.warning(f"[_get_bot_id_for_test] Usuario {user_id}: No se encontró bot_id para doctor_id={doctor_id}")
     
     # 3. Fallback: usar get_tenant_id (para SuperAdmin o usuarios sin doctor asignado)
-    return await get_tenant_id(update, context)
+    fallback_bot_id = await get_tenant_id(update, context)
+    logger.info(f"[_get_bot_id_for_test] Usuario {user_id}: Usando fallback get_tenant_id: {fallback_bot_id}")
+    return fallback_bot_id
 
 async def start_test_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
+    user_id = update.effective_user.id
+    
     bot_id = await _get_bot_id_for_test(update, context)
+    logger.info(f"[start_test_questions] Usuario {user_id}: bot_id obtenido = {bot_id}")
+    
     if not bot_id:
+        logger.error(f"[start_test_questions] Usuario {user_id}: No se pudo obtener bot_id")
         await query.answer("❌ Error: No se pudo obtener el tenant ID.", show_alert=True)
         return ConversationHandler.END
 
+    logger.info(f"[start_test_questions] Usuario {user_id}: Consultando preguntas para bot_id={bot_id}")
     question_items = await content_db.get_all_items(bot_id, 'test_questions', 'question')
     questions = [item['title'] for item in question_items]
+    logger.info(f"[start_test_questions] Usuario {user_id}: Se encontraron {len(questions)} preguntas para bot_id={bot_id}")
 
     if not questions:
+        logger.warning(f"[start_test_questions] Usuario {user_id}: No se encontraron preguntas para bot_id={bot_id}")
         await query.edit_message_text(
             "Lo siento, las preguntas para el test no están configuradas.",
             parse_mode="HTML"
