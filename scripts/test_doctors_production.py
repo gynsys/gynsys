@@ -1,22 +1,41 @@
 """
 Script de prueba para verificar la obtención de doctores en producción
 Ejecutar en el servidor para diagnosticar el problema
+
+USO:
+    python scripts/test_doctors_production.py
+
+NOTA: Asegúrate de tener todas las dependencias instaladas:
+    pip install -r requirements.txt
 """
 import asyncio
 import sys
 from pathlib import Path
 
+# Verificar dependencias críticas
+try:
+    import aiosqlite
+except ImportError:
+    print("❌ Error: Falta el módulo 'aiosqlite'")
+    print("   Instala las dependencias con: pip install -r requirements.txt")
+    sys.exit(1)
+
 # Agregar el directorio raíz al path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from database.session import get_session
-from database.engine import init_engine, close_engine
-from features.admin.services.admin_service import AdminService
-from database import extra_modules_db
-from database.repositories.user_repository import DoctorRepository
-from sqlalchemy import select
-from database.models.user import Doctor
+try:
+    from database.session import get_session
+    from database.engine import init_engine, close_engine
+    from features.admin.services.admin_service import AdminService
+    from database import extra_modules_db
+    from database.repositories.user_repository import DoctorRepository
+    from sqlalchemy import select
+    from database.models.user import Doctor
+except ImportError as e:
+    print(f"❌ Error importando módulos: {e}")
+    print("   Asegúrate de estar en el directorio raíz del proyecto")
+    sys.exit(1)
 
 
 async def test_get_doctors_production():
