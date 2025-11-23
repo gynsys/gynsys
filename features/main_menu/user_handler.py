@@ -43,40 +43,61 @@ async def get_doctor_public_keyboard(user_id: int = None):
     """
     keyboard = []
     
-    # Fila 1: Verificar si los módulos extra están activos
-    extra_buttons = []
+    # Verificar módulos activos para el doctor
+    active_modules = {}
     if user_id:
         doctor = await role_manager.get_doctor_by_telegram_id(user_id)
         if doctor:
             doctor_id = doctor[0]
             from database import extra_modules_db
-            # Verificar módulo test
-            is_test_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'test')
-            if is_test_active:
-                extra_buttons.append(InlineKeyboardButton("🧪 Test Endometriosis", callback_data="start_endo_test"))
-            
-            # Verificar módulo quiz
-            is_quiz_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'quiz')
-            if is_quiz_active:
-                extra_buttons.append(InlineKeyboardButton("🎮 Aprende Jugando", callback_data="quiz_start_intro"))
+            # Verificar todos los módulos
+            module_names = ['galeria', 'contacto', 'precios', 'faqs', 'citas', 'ubicaciones', 'test', 'quiz']
+            for module_name in module_names:
+                active_modules[module_name] = await extra_modules_db.is_module_active_for_doctor(doctor_id, module_name)
+    
+    # Fila 1: Módulos extra (test y quiz) - solo si están activos
+    extra_buttons = []
+    if active_modules.get('test', False):
+        extra_buttons.append(InlineKeyboardButton("🧪 Test Endometriosis", callback_data="start_endo_test"))
+    if active_modules.get('quiz', False):
+        extra_buttons.append(InlineKeyboardButton("🎮 Aprende Jugando", callback_data="quiz_start_intro"))
     
     # Agregar botones de módulos extra en filas separadas
     for button in extra_buttons:
         keyboard.append([button])
     
-    keyboard.extend([
-        [
-            InlineKeyboardButton("🖼️ Galería", callback_data="galeria_menu"),
-            InlineKeyboardButton("💰 Precios", callback_data="doctor_pricing"),
-        ],
-        [
-            InlineKeyboardButton("📅 Citas", callback_data="doctor_citas"),
-            InlineKeyboardButton("📞 Contacto", callback_data="doctor_contact"),
-        ],
-        [
-            InlineKeyboardButton("📍 Ubicaciones", callback_data="doctor_locations"),
-            InlineKeyboardButton("❓ FAQ", callback_data="doctor_faq"),
-        ],
+    # Construir teclado principal según módulos activos
+    main_buttons = []
+    
+    # Fila: Galería y Precios (solo si están activos)
+    row = []
+    if active_modules.get('galeria', True):  # Por defecto True para compatibilidad
+        row.append(InlineKeyboardButton("🖼️ Galería", callback_data="galeria_menu"))
+    if active_modules.get('precios', True):
+        row.append(InlineKeyboardButton("💰 Precios", callback_data="doctor_pricing"))
+    if row:
+        main_buttons.append(row)
+    
+    # Fila: Citas y Contacto (solo si están activos)
+    row = []
+    if active_modules.get('citas', True):
+        row.append(InlineKeyboardButton("📅 Citas", callback_data="doctor_citas"))
+    if active_modules.get('contacto', True):
+        row.append(InlineKeyboardButton("📞 Contacto", callback_data="doctor_contact"))
+    if row:
+        main_buttons.append(row)
+    
+    # Fila: Ubicaciones y FAQ (solo si están activos)
+    row = []
+    if active_modules.get('ubicaciones', True):
+        row.append(InlineKeyboardButton("📍 Ubicaciones", callback_data="doctor_locations"))
+    if active_modules.get('faqs', True):
+        row.append(InlineKeyboardButton("❓ FAQ", callback_data="doctor_faq"))
+    if row:
+        main_buttons.append(row)
+    
+    # Siempre mostrar estos botones (no son módulos controlables)
+    main_buttons.extend([
         [
             InlineKeyboardButton("📋 Gestión Historia", callback_data="patient_management_hub"),
         ],
@@ -88,6 +109,8 @@ async def get_doctor_public_keyboard(user_id: int = None):
             # ⚠️ NO AGREGAR "🏠 Inicio" AQUÍ - Ver documentación arriba
         ],
     ])
+    
+    keyboard.extend(main_buttons)
     return InlineKeyboardMarkup(keyboard)
 
 

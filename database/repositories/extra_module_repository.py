@@ -94,7 +94,7 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
                 )
                 self.session.add(new_module)
             
-            await self.session.flush()
+            await self.session.commit()
             return True
         except Exception as e:
             print(f"Error activando módulo: {e}")
@@ -121,7 +121,7 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
                 )
                 .values(is_active=False)
             )
-            await self.session.flush()
+            await self.session.commit()
             return result.rowcount > 0
         except Exception as e:
             print(f"Error desactivando módulo: {e}")
