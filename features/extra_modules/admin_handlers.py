@@ -70,20 +70,46 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
             except (ValueError, IndexError):
                 page = 0
     
-    doctors = await extra_modules_db.get_all_doctors_with_modules()
+    # Usar admin_service para obtener todos los doctores (activos e inactivos)
+    from features.admin.services.admin_service import AdminService
+    admin_service = AdminService()
+    all_doctors = await admin_service.get_all_doctors()
     
-    if not doctors:
+    # También obtener doctores inactivos
+    inactive_doctors = await admin_service.get_inactive_doctors()
+    
+    # Combinar todos los doctores (excepto SuperAdmin id=1)
+    all_doctors_list = [d for d in all_doctors if d[0] != 1] + [d for d in inactive_doctors if d[0] != 1]
+    
+    if not all_doctors_list:
         text = (
             "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
-            "❌ No hay doctores activos en el sistema."
+            "❌ No hay doctores registrados en el sistema."
         )
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("🏠 Menú Principal", callback_data="main_menu")]
         ])
     else:
+        # Construir lista de doctores con sus módulos
+        doctors_with_modules = []
+        for doctor in all_doctors_list:
+            doctor_id = doctor[0]
+            doctor_name = doctor[1]
+            telegram_id = doctor[2]
+            
+            # Obtener módulos activos para este doctor
+            active_modules = await extra_modules_db.get_active_modules_for_doctor(doctor_id)
+            
+            doctors_with_modules.append({
+                'doctor_id': doctor_id,
+                'name': doctor_name,
+                'telegram_id': telegram_id,
+                'modules': active_modules
+            })
+        
         text = (
             "👨‍⚕️ <b>Gestión de Módulos por Médico</b>\n\n"
-            f"Total: {len(doctors)} doctores activos\n\n"
+            f"Total: {len(doctors_with_modules)} doctores\n\n"
             "Selecciona un médico para gestionar sus módulos:\n"
             "• 🖼️ Galería\n"
             "• 📞 Contacto\n"
@@ -94,7 +120,7 @@ async def list_doctors_for_modules(update: Update, context: ContextTypes.DEFAULT
             "• 🧪 Test Endometriosis\n"
             "• 🎮 Aprende Jugando"
         )
-        keyboard = get_doctors_list_keyboard(doctors, page=page, return_to="doctors_menu")
+        keyboard = get_doctors_list_keyboard(doctors_with_modules, page=page, return_to="doctors_menu")
     
     try:
         await query.edit_message_text(
