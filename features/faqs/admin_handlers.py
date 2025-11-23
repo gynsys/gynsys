@@ -261,10 +261,7 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
                     message=message_to_edit
                 )
                 fake_update = Update(
-                    update_id=0,
-                    effective_user=update.effective_user,
-                    effective_chat=update.effective_chat,
-                    effective_message=message_to_edit,
+                    update_id=update.update_id,
                     callback_query=fake_query
                 )
                 await faqs_hub(fake_update, context)
@@ -278,10 +275,7 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
                 message=message_to_edit
             )
             fake_update = Update(
-                update_id=0,
-                effective_user=update.effective_user,
-                effective_chat=update.effective_chat,
-                effective_message=message_to_edit,
+                update_id=update.update_id,
                 callback_query=fake_query
             )
             await faqs_hub(fake_update, context)
@@ -392,10 +386,7 @@ async def save_modified_item(update: Update, context: ContextTypes.DEFAULT_TYPE)
             message=message_to_edit
         )
         fake_update = Update(
-            update_id=0,
-            effective_user=update.effective_user,
-            effective_chat=update.effective_chat,
-            effective_message=message_to_edit,
+            update_id=update.update_id,
             callback_query=fake_query
         )
         await list_items_for_action(fake_update, context)
