@@ -1,7 +1,7 @@
 # features/faqs/admin_handlers.py
 import logging
 import asyncio
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message, User, Chat
 from telegram.ext import Application, ConversationHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters, CommandHandler
 
 from database import content_db
@@ -214,14 +214,41 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     if not bot_id:
         await update.message.reply_text("❌ No se pudo determinar el perfil del médico.")
         return ConversationHandler.END
-    await content_db.add_item(bot_id, CONFIG['table'], title, content, CONFIG['title_col'], CONFIG['content_col'])
-    await update.message.delete()
-    message_to_edit = await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data.pop('main_conv_message_id'), text=f"✅ ¡{CONFIG['singular']} añadida con éxito!")
-    await asyncio.sleep(2)
-    fake_query = type('obj', (object,), {'message': message_to_edit, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': message_to_edit.edit_text})()
-    fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})()
-    await faqs_hub(fake_update, context)
-    return ConversationHandler.END
+    
+    try:
+        await content_db.add_item(bot_id, CONFIG['table'], title, content, CONFIG['title_col'], CONFIG['content_col'])
+        await update.message.delete()
+        message_to_edit = await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id, 
+            message_id=context.user_data.pop('main_conv_message_id'), 
+            text=f"✅ ¡{CONFIG['singular']} añadida con éxito!"
+        )
+        await asyncio.sleep(2)
+        
+        # Crear fake_query con todos los atributos necesarios
+        fake_query = CallbackQuery(
+            id="fake_query_id",
+            from_user=update.effective_user,
+            chat_instance="fake_chat_instance",
+            data=f"{CONFIG['prefix']}_admin_hub",  # Agregar data necesario para faqs_hub
+            message=message_to_edit
+        )
+        
+        # Crear fake_update con todos los atributos necesarios
+        fake_update = Update(
+            update_id=0,
+            effective_user=update.effective_user,
+            effective_chat=update.effective_chat,
+            effective_message=message_to_edit,
+            callback_query=fake_query
+        )
+        
+        await faqs_hub(fake_update, context)
+        return ConversationHandler.END
+    except Exception as e:
+        logger.error(f"❌ Error en save_new_item: {e}", exc_info=True)
+        await update.message.reply_text(f"❌ Error al guardar la {CONFIG['singular'].lower()}. Por favor, intenta nuevamente.")
+        return ConversationHandler.END
 
 @admin_required
 async def modify_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
