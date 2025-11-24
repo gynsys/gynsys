@@ -32,15 +32,20 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
     logger.info(f"[handle_all_callbacks] Callback recibido: {callback_data} - Usuario: {user_id} - Rol: {user_role}")
     print(f"🔔 Callback: {callback_data} - Usuario: {user_id} - Rol: {user_role}")  # DEBUG
     
+    # ⚠️ IMPORTANTE: Los callbacks del test deben ser manejados por el ConversationHandler
+    # Si llegamos aquí con un callback del test, significa que el ConversationHandler no lo capturó
+    # Esto puede pasar si el usuario no está en una conversación activa del test
+    # En ese caso, simplemente ignoramos el callback
+    if callback_data in {"test_answer_yes", "test_answer_no", "cancel_test", "begin_test"}:
+        logger.warning(f"[handle_all_callbacks] Callback del test '{callback_data}' llegó a handle_all_callbacks - el ConversationHandler debería haberlo capturado")
+        # No hacer nada - el callback ya fue procesado o ignorado
+        await query.answer()  # Responder al callback para evitar que quede colgado
+        return
+    
     # Si el usuario es médico inactivo, mostrar mensaje de renovación
     if user_role == 'inactive_doctor':
         await show_inactive_doctor_message(update, context)
         return
-    
-    # Handlers específicos del test (deben ir ANTES de la redirección por rol para evitar interceptar callbacks)
-    if callback_data in {"test_answer_yes", "test_answer_no", "cancel_test", "begin_test"}:
-        logger.info(f"[handle_all_callbacks] Callback del test detectado: {callback_data}, dejando que ConversationHandler lo maneje")
-        return  # Dejar que el ConversationHandler del test maneje estos callbacks
     
     # Handlers específicos de FAQs (deben ir antes de la redirección por rol)
     if callback_data in {"faq_menu", "doctor_faq", "patient_faq", "faq"}:

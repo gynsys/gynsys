@@ -90,6 +90,8 @@ def register_all_handlers(application: Application):
     register_precios_admin_handlers(application)
     register_extra_modules_handlers(application)
     register_test_admin_handlers(application)
+    # ⚠️ IMPORTANTE: El ConversationHandler del test debe registrarse ANTES de handle_all_callbacks
+    # para que pueda capturar los callbacks test_answer_yes, test_answer_no, cancel_test
     register_test_user_handlers(application)
     register_quiz_handlers(application)
     register_welcome_message_handlers(application)
