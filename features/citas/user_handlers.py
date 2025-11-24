@@ -501,6 +501,10 @@ async def handle_ever_pregnant(update: Update, context: ContextTypes.DEFAULT_TYP
     return SELECTING_LOCATION
 
 async def handle_first_pregnancy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """
+    Guarda si es el primer embarazo (en un flujo prenatal)
+    y luego pregunta el motivo de la consulta.
+    """
     query = update.callback_query
     await query.answer()
 
@@ -515,7 +519,9 @@ async def handle_first_pregnancy(update: Update, context: ContextTypes.DEFAULT_T
         [InlineKeyboardButton("❌ Cancelar", callback_data="book_cancel")]
     ])
     await query.edit_message_text(text, reply_markup=reason_keyboard)
-    return AWAITING_RECURRENT_REASON
+    # Retornar AWAITING_REASON para que el ConversationHandler maneje la selección del motivo
+    # Después de seleccionar el motivo, el flujo continúa con SELECTING_LOCATION
+    return AWAITING_REASON
 
 # Función auxiliar para mostrar la confirmación (para no repetir código)
 async def show_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
