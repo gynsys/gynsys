@@ -216,12 +216,23 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     return ASKING_QUESTION
 
 async def handle_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query; await query.answer()
+    query = update.callback_query
+    await query.answer()
+    
+    logger.info(f"[handle_answer] Callback recibido: {query.data}")
+    
     user_data = context.user_data
     if query.data == 'test_answer_yes':
-        user_data['test_answers'].append('yes'); user_data['test_score'] += 1
-    else:
+        user_data['test_answers'].append('yes')
+        user_data['test_score'] += 1
+        logger.info(f"[handle_answer] Respuesta: Sí, score actual: {user_data['test_score']}")
+    elif query.data == 'test_answer_no':
         user_data['test_answers'].append('no')
+        logger.info(f"[handle_answer] Respuesta: No, score actual: {user_data['test_score']}")
+    else:
+        logger.warning(f"[handle_answer] Callback desconocido: {query.data}")
+        return ASKING_QUESTION
+    
     user_data['test_question_index'] += 1
     if user_data['test_question_index'] < len(user_data['test_questions']):
         return await ask_question(update, context)
@@ -314,9 +325,56 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     """Cancela el test. NO registra nada. Solo limpia y vuelve al menú."""
     query = update.callback_query
     await query.answer("Test cancelado.")
+    
+    logger.info(f"[cancel_test] Test cancelado por usuario {update.effective_user.id}")
+    
+    # Limpiar datos del test
     context.user_data.clear()
-    # Usar el router centralizado en lugar de show_main_menu para evitar imports circulares
-    await handle_all_callbacks(update, context)
+    
+    # Eliminar el mensaje del test si existe
+    try:
+        if query.message:
+            await query.message.delete()
+    except Exception as e:
+        logger.warning(f"[cancel_test] No se pudo eliminar el mensaje: {e}")
+    
+    # Enviar mensaje de confirmación y volver al menú principal
+    try:
+        from features.main_menu.user_handler import admin_main_menu
+        from features.patient_menu.patient_handler import patient_main_menu
+        from utils.role_manager import RoleManager
+        from config import DB_PATH
+        
+        role_mgr = RoleManager(DB_PATH)
+        user_id = update.effective_user.id
+        user_role = await role_mgr.get_user_role(user_id)
+        
+        if user_role == 'doctor':
+            await admin_main_menu(update, context)
+        elif user_role == 'patient':
+            doctor = await role_mgr.get_assigned_doctor(user_id)
+            if doctor:
+                await patient_main_menu(update, context, doctor[0])
+            else:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="✅ Test cancelado. Usa /start para comenzar.",
+                    parse_mode="HTML"
+                )
+        else:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="✅ Test cancelado. Usa /start para comenzar.",
+                parse_mode="HTML"
+            )
+    except Exception as e:
+        logger.error(f"[cancel_test] Error al volver al menú: {e}", exc_info=True)
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="✅ Test cancelado. Usa /start para comenzar.",
+            parse_mode="HTML"
+        )
+    
     return ConversationHandler.END
 
 async def dismiss_test_notification(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -334,17 +392,17 @@ def register(app: Application):
         states={
             ASKING_QUESTION: [
                 CallbackQueryHandler(start_test_questions, pattern='^begin_test$'),
-                # --- ¡CORRECCIÓN AQUÍ! ---
-                # Añadimos la coma que faltaba al final de esta línea.
-                CallbackQueryHandler(handle_answer, pattern='^test_answer_(yes|no)$'),
+                CallbackQueryHandler(handle_answer, pattern='^test_answer_yes$'),
+                CallbackQueryHandler(handle_answer, pattern='^test_answer_no$'),
             ]
         },
         fallbacks=[
             CallbackQueryHandler(cancel_test, pattern='^cancel_test$'),
-
             CallbackQueryHandler(handle_all_callbacks, pattern='^main_menu$')
         ],
-        per_message=False,
+        per_message=True,  # Cambiar a True para que cada mensaje se trackee correctamente
+        per_chat=True,
+        per_user=True,
         allow_reentry=True
     )
     app.add_handler(test_conv)

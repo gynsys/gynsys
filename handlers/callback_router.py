@@ -37,6 +37,11 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
         await show_inactive_doctor_message(update, context)
         return
     
+    # Handlers específicos del test (deben ir ANTES de la redirección por rol para evitar interceptar callbacks)
+    if callback_data in {"test_answer_yes", "test_answer_no", "cancel_test", "begin_test"}:
+        logger.info(f"[handle_all_callbacks] Callback del test detectado: {callback_data}, dejando que ConversationHandler lo maneje")
+        return  # Dejar que el ConversationHandler del test maneje estos callbacks
+    
     # Handlers específicos de FAQs (deben ir antes de la redirección por rol)
     if callback_data in {"faq_menu", "doctor_faq", "patient_faq", "faq"}:
         from features.faqs.user_handlers import show_faqs_menu
