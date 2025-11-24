@@ -220,10 +220,18 @@ def register_all_handlers(application: Application):
     register_pdf_configuration(application)
 
     # Handler central de callbacks (debe ir al final)
-    # ⚠️ IMPORTANTE: Excluir callbacks del test para que el ConversationHandler los maneje
+    # ⚠️ IMPORTANTE: Los callbacks del test son manejados por el ConversationHandler
     # El ConversationHandler del test debe estar registrado ANTES de este handler
-    application.add_handler(CallbackQueryHandler(
-        handle_all_callbacks,
-        pattern=~(filters.Regex("^test_answer_") | filters.Regex("^cancel_test$") | filters.Regex("^begin_test$"))
-    ))
+    # Usamos un filtro personalizado para excluir callbacks del test
+    def exclude_test_callbacks(update):
+        """Filtro que excluye callbacks del test"""
+        if not update.callback_query:
+            return False
+        callback_data = update.callback_query.data
+        # Excluir callbacks del test
+        if callback_data.startswith("test_answer_") or callback_data == "cancel_test" or callback_data == "begin_test":
+            return False
+        return True
+    
+    application.add_handler(CallbackQueryHandler(handle_all_callbacks, filters=exclude_test_callbacks))
 
