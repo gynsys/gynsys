@@ -579,9 +579,10 @@ async def confirm_appointment(update: Update, context: ContextTypes.DEFAULT_TYPE
     consultation_type = ud.get('booking_consultation_type', 'Ginecológica')
     is_first_pregnancy = ud.get('booking_is_first_pregnancy')
     has_been_pregnant = ud.get('booking_has_been_pregnant')
-    pregnancy_status = is_first_pregnancy if is_first_pregnancy is not None else (not has_been_pregnant if has_been_pregnant is not None else None)
     reason = ud.get('booking_reason') or consultation_type
 
+    # IMPORTANTE: Pasar los valores originales directamente, no calcular pregnancy_status
+    # porque is_first_pregnancy y has_been_pregnant son independientes y se usan para diferentes casos
     new_appointment_id = await _create_appointment(
         doctor_id=doctor_id,
         user_id=user_id,
@@ -592,8 +593,8 @@ async def confirm_appointment(update: Update, context: ContextTypes.DEFAULT_TYPE
         status='pending',
         reason=reason,
         consultation_type=consultation_type,
-        is_first_pregnancy=pregnancy_status,
-        has_been_pregnant=has_been_pregnant
+        is_first_pregnancy=is_first_pregnancy,  # Valor original, no calculado
+        has_been_pregnant=has_been_pregnant  # Valor original
     )
 
     if new_appointment_id:
