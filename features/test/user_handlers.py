@@ -331,49 +331,8 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     # Limpiar datos del test
     context.user_data.clear()
     
-    # Eliminar el mensaje del test si existe
-    try:
-        if query.message:
-            await query.message.delete()
-    except Exception as e:
-        logger.warning(f"[cancel_test] No se pudo eliminar el mensaje: {e}")
-    
-    # Enviar mensaje de confirmación y volver al menú principal
-    try:
-        from features.main_menu.user_handler import admin_main_menu
-        from features.patient_menu.patient_handler import patient_main_menu
-        from utils.role_manager import RoleManager
-        from config import DB_PATH
-        
-        role_mgr = RoleManager(DB_PATH)
-        user_id = update.effective_user.id
-        user_role = await role_mgr.get_user_role(user_id)
-        
-        if user_role == 'doctor':
-            await admin_main_menu(update, context)
-        elif user_role == 'patient':
-            doctor = await role_mgr.get_assigned_doctor(user_id)
-            if doctor:
-                await patient_main_menu(update, context, doctor[0])
-            else:
-                await context.bot.send_message(
-                    chat_id=update.effective_chat.id,
-                    text="✅ Test cancelado. Usa /start para comenzar.",
-                    parse_mode="HTML"
-                )
-        else:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="✅ Test cancelado. Usa /start para comenzar.",
-                parse_mode="HTML"
-            )
-    except Exception as e:
-        logger.error(f"[cancel_test] Error al volver al menú: {e}", exc_info=True)
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="✅ Test cancelado. Usa /start para comenzar.",
-            parse_mode="HTML"
-        )
+    # Usar handle_all_callbacks para volver al menú (similar al bot viejo pero usando el router)
+    await handle_all_callbacks(update, context)
     
     return ConversationHandler.END
 
@@ -392,17 +351,15 @@ def register(app: Application):
         states={
             ASKING_QUESTION: [
                 CallbackQueryHandler(start_test_questions, pattern='^begin_test$'),
-                CallbackQueryHandler(handle_answer, pattern='^test_answer_yes$'),
-                CallbackQueryHandler(handle_answer, pattern='^test_answer_no$'),
+                # Usar un solo handler con regex para ambas respuestas (como en el bot viejo)
+                CallbackQueryHandler(handle_answer, pattern='^test_answer_(yes|no)$'),
             ]
         },
         fallbacks=[
             CallbackQueryHandler(cancel_test, pattern='^cancel_test$'),
             CallbackQueryHandler(handle_all_callbacks, pattern='^main_menu$')
         ],
-        per_message=True,  # Cambiar a True para que cada mensaje se trackee correctamente
-        per_chat=True,
-        per_user=True,
+        per_message=False,  # Cambiar a False como en el bot viejo
         allow_reentry=True
     )
     app.add_handler(test_conv)
