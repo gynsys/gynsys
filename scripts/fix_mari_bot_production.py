@@ -22,22 +22,22 @@ MARI_TELEGRAM_ID = 5057356565
 async def fix_mari_bot():
     """Corrige el problema del bot de MARI"""
     print("=" * 60)
-    print("🔧 CORRECCIÓN: Bot de MARI en Producción")
+    print("🔧 CORRECCIÓN: Bot de maariel2 en Producción")
     print("=" * 60)
     
     await init_engine()
     
     try:
         async with get_session() as session:
-            # 1. Buscar todos los bots de MARI
-            print(f"\n1. Buscando bots para MARI (Telegram ID: {MARI_TELEGRAM_ID}):")
+            # 1. Buscar todos los bots de maariel2
+            print(f"\n1. Buscando bots para maariel2 (Telegram ID: {MARI_TELEGRAM_ID}):")
             print("-" * 60)
             stmt_bots = select(Bot).where(Bot.admin_user_id == MARI_TELEGRAM_ID)
             result_bots = await session.execute(stmt_bots)
             mari_bots = result_bots.scalars().all()
             
             if not mari_bots:
-                print("   ❌ No se encontraron bots para MARI")
+                print("   ❌ No se encontraron bots para maariel2")
                 return
             
             print(f"   Se encontraron {len(mari_bots)} bot(s):")
@@ -107,8 +107,8 @@ async def fix_mari_bot():
                 print("   Usando preguntas por defecto...")
                 source_questions = None
             
-            # 4. Poblar preguntas para todos los bots de MARI que no las tengan
-            print(f"\n3. Poblando preguntas para todos los bots de MARI:")
+            # 4. Poblar preguntas para todos los bots de maariel2 que no las tengan
+            print(f"\n3. Poblando preguntas para todos los bots de maariel2:")
             print("-" * 60)
             
             for bot in mari_bots:
@@ -160,7 +160,7 @@ async def fix_mari_bot():
             print("✅ Proceso completado")
             print("=" * 60)
             print("\n📋 Instrucciones:")
-            print("   1. Verifica que todos los bots de MARI ahora tienen preguntas")
+            print("   1. Verifica que todos los bots de maariel2 ahora tienen preguntas")
             print("   2. Prueba el test desde el bot para confirmar que funciona")
             print("   3. Si hay múltiples bots, considera consolidarlos en uno solo")
             print("=" * 60)
