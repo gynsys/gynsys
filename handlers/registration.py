@@ -222,7 +222,6 @@ def register_all_handlers(application: Application):
     # Handler central de callbacks (debe ir al final)
     # ⚠️ IMPORTANTE: Excluir callbacks del test para que el ConversationHandler los maneje
     # El ConversationHandler del test debe estar registrado ANTES de este handler
-    from telegram.ext import filters
     application.add_handler(CallbackQueryHandler(
         handle_all_callbacks,
         pattern=~(filters.Regex("^test_answer_") | filters.Regex("^cancel_test$") | filters.Regex("^begin_test$"))
