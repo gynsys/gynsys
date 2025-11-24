@@ -505,9 +505,22 @@ class GenericContentRepository:
             """)
             result = await self.session.execute(query, {'item_id': item_id})
             row = result.first()
-            return dict(row) if row else None
+            if row:
+                # Convertir Row a dict correctamente
+                # En SQLAlchemy 2.0+, Row tiene _mapping que es un dict-like object
+                if hasattr(row, '_mapping'):
+                    return dict(row._mapping)
+                # Fallback: construir dict manualmente
+                return {
+                    'id': row.id,
+                    'title': getattr(row, 'title', None),
+                    'content': getattr(row, 'content', None),
+                    'media_file_id': getattr(row, 'media_file_id', None),
+                    'media_type': getattr(row, 'media_type', None)
+                }
+            return None
         except Exception as e:
-            logger.error(f"Error en get_item_details_with_media: {e}")
+            logger.error(f"Error en get_item_details_with_media: {e}", exc_info=True)
             return None
     
     async def update_item_with_media(

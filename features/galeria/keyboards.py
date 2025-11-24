@@ -37,29 +37,3 @@ async def get_gallery_for_action_keyboard(
     back_callback = back_callback or (f"{prefix}_admin_hub" if prefix == 'gallery' else f"{prefix}_hub")
     keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data=back_callback)])
     return InlineKeyboardMarkup(keyboard)
-
-async def get_gallery_reorder_keyboard(
-    tenant_id: int,
-    prefix: str = CONFIG['prefix'],
-    done_callback: Optional[str] = None,
-):
-    """Muestra la lista de ítems con botones para reordenar."""
-    items = await content_db.get_all_items(tenant_id, 'gallery', 'title')
-    if not items or len(items) < 2:
-        return None
-
-    min_order = min(it['display_order'] for it in items)
-    max_order = max(it['display_order'] for it in items)
-
-    keyboard = []
-    for item in items:
-        row = [InlineKeyboardButton(item['title'], callback_data="ignore")]
-        if item['display_order'] > min_order:
-            row.append(InlineKeyboardButton("🔼", callback_data=f"{prefix}_reorder_up_{item['id']}"))
-        if item['display_order'] < max_order:
-            row.append(InlineKeyboardButton("🔽", callback_data=f"{prefix}_reorder_down_{item['id']}"))
-        keyboard.append(row)
-
-    done_callback = done_callback or (f"{prefix}_admin_hub" if prefix == 'gallery' else f"{prefix}_hub")
-    keyboard.append([InlineKeyboardButton("✅ Listo", callback_data=done_callback)])
-    return InlineKeyboardMarkup(keyboard)

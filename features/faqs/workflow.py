@@ -1,269 +1,69 @@
 """
-Workflow para operaciones CRUD de FAQs.
-Arquitectura limpia que separa responsabilidades por tipo de usuario:
-- Superadmin: Gestiona FAQs de todos los tenants
-- Tenants (Doctores): Gestionan sus propias FAQs
-- Usuarios: Solo visualizan (manejado en user_handlers.py)
+Workflow para FAQs – refactor multi-tenant.
+Mismo nombre de archivo para no romper imports.
 """
 import logging
-from typing import Optional, Dict, Any, Callable
-from telegram import Update, CallbackQuery, InlineKeyboardMarkup
+from typing import Dict, Any, Optional
+from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from common.context_manager import get_tenant_id
-from .faq_service import (
-    add_faq_direct,
-    update_faq_direct,
-    get_faq_details_direct,
-    get_all_faqs_for_bot
-)
-from . import keyboards as admin_keyboards
+from .faq_service import add_faq, update_faq, delete_faq, get_faq, list_faqs
+from .keyboards import faqs_for_action_keyboard   # mismo nombre
 
 logger = logging.getLogger(__name__)
 
-
 class FAQWorkflow:
-    """Workflow centralizado para operaciones CRUD de FAQs"""
-    
     @staticmethod
     async def get_bot_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Optional[int]:
-        """Obtiene el bot_id validado"""
-        try:
-            bot_id = await get_tenant_id(update, context)
-            if not bot_id:
-                logger.warning(f"No se pudo obtener bot_id para usuario {update.effective_user.id}")
-            return bot_id
-        except Exception as e:
-            logger.error(f"Error obteniendo bot_id: {e}", exc_info=True)
-            return None
-    
-    @staticmethod
-    async def create_fake_update(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        callback_data: str,
-        message=None
-    ) -> Update:
-        """Crea un Update simulado para redirecciones"""
-        # Si no hay mensaje, usar el mensaje del update original
-        if message is None:
-            message = update.effective_message
-        
-        # Crear CallbackQuery simple (las funciones usarán context.bot directamente)
-        fake_query = CallbackQuery(
-            id="fake_query_id",
-            from_user=update.effective_user,
-            chat_instance="fake_chat_instance",
-            data=callback_data,
-            message=message
-        )
-        
-        return Update(
-            update_id=update.update_id,
-            callback_query=fake_query
-        )
-    
-    @staticmethod
-    async def redirect_to_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Redirige al hub de FAQs"""
-        from .admin_handlers import faqs_hub
-        fake_update = await FAQWorkflow.create_fake_update(
-            update,
-            context,
-            "faqs_admin_hub",
-            update.effective_message
-        )
-        await faqs_hub(fake_update, context)
-    
-    @staticmethod
-    async def redirect_to_list(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        action: str = "modify",
-        message=None
-    ):
-        """Redirige a la lista de FAQs para una acción específica"""
-        from .admin_handlers import list_for_modify, list_for_delete
-        fake_update = await FAQWorkflow.create_fake_update(
-            update,
-            context,
-            f"faq_{action}_list",
-            message
-        )
-        if action == "modify":
-            await list_for_modify(fake_update, context)
-        elif action == "delete":
-            await list_for_delete(fake_update, context)
-    
-    @staticmethod
-    async def handle_add_workflow(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        question: str,
-        answer: str
-    ) -> Dict[str, Any]:
-        """
-        Workflow para agregar una FAQ.
-        
-        Returns:
-            Dict con 'success' (bool) y 'faq_id' (int) o 'error' (str)
-        """
-        bot_id = await FAQWorkflow.get_bot_id(update, context)
-        if not bot_id:
-            return {'success': False, 'error': 'No se pudo determinar el bot_id'}
-        
-        try:
-            faq_id = await add_faq_direct(bot_id, question, answer)
-            if not faq_id:
-                return {'success': False, 'error': 'No se pudo crear la FAQ'}
-            
-            logger.info(f"✅ FAQ creada: id={faq_id}, bot_id={bot_id}")
-            return {'success': True, 'faq_id': faq_id}
-        except Exception as e:
-            logger.error(f"❌ Error en handle_add_workflow: {e}", exc_info=True)
-            return {'success': False, 'error': str(e)}
-    
-    @staticmethod
-    async def handle_update_workflow(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        faq_id: int,
-        question: Optional[str] = None,
-        answer: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Workflow para actualizar una FAQ.
-        VALIDA que la FAQ pertenezca al bot_id del inquilino actual (multiusuario).
-        
-        Returns:
-            Dict con 'success' (bool) y 'error' (str) si falla
-        """
-        bot_id = await FAQWorkflow.get_bot_id(update, context)
-        if not bot_id:
-            logger.error(f"[handle_update_workflow] No se pudo obtener bot_id para usuario {update.effective_user.id}")
-            return {'success': False, 'error': 'No se pudo determinar el bot_id'}
-        
-        try:
-            # VALIDACIÓN MULTIUSUARIO: Verificar que la FAQ existe y pertenece al bot_id actual
-            existing = await get_faq_details_direct(faq_id, bot_id)
-            if not existing:
-                logger.error(f"[handle_update_workflow] FAQ {faq_id} no encontrada o no pertenece a bot_id {bot_id}")
-                return {'success': False, 'error': 'FAQ no encontrada o no pertenece a este bot'}
-            
-            logger.info(f"[handle_update_workflow] Validación multiusuario OK: FAQ {faq_id} pertenece a bot_id {bot_id}")
-            
-            # Si no se proporcionaron valores, mantener los originales
-            final_question = question if question is not None else existing['title']
-            final_answer = answer if answer is not None else existing['content']
-            
-            success = await update_faq_direct(faq_id, bot_id, final_question, final_answer)
-            if not success:
-                return {'success': False, 'error': 'No se pudo actualizar la FAQ'}
-            
-            logger.info(f"✅ FAQ actualizada: id={faq_id}, bot_id={bot_id}")
-            return {'success': True}
-        except Exception as e:
-            logger.error(f"❌ Error en handle_update_workflow: {e}", exc_info=True)
-            return {'success': False, 'error': str(e)}
-    
-    @staticmethod
-    async def handle_delete_workflow(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        faq_id: int
-    ) -> Dict[str, Any]:
-        """
-        Workflow para eliminar una FAQ.
-        
-        Returns:
-            Dict con 'success' (bool) y 'error' (str) si falla
-        """
-        bot_id = await FAQWorkflow.get_bot_id(update, context)
-        if not bot_id:
-            return {'success': False, 'error': 'No se pudo determinar el bot_id'}
-        
-        try:
-            # Validar que la FAQ existe y pertenece al bot
-            existing = await get_faq_details_direct(faq_id, bot_id)
-            if not existing:
-                return {'success': False, 'error': 'FAQ no encontrada o no pertenece a este bot'}
-            
-            # Eliminar usando content_db (ya funciona)
-            from database import content_db
-            success = await content_db.delete_item(faq_id, 'faqs')
-            
-            if not success:
-                return {'success': False, 'error': 'No se pudo eliminar la FAQ'}
-            
-            logger.info(f"✅ FAQ eliminada: id={faq_id}, bot_id={bot_id}")
-            return {'success': True}
-        except Exception as e:
-            logger.error(f"❌ Error en handle_delete_workflow: {e}", exc_info=True)
-            return {'success': False, 'error': str(e)}
-    
-    @staticmethod
-    async def handle_get_workflow(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        faq_id: int
-    ) -> Dict[str, Any]:
-        """
-        Workflow para obtener detalles de una FAQ.
-        VALIDA que la FAQ pertenezca al bot_id del inquilino actual (multiusuario).
-        
-        Returns:
-            Dict con 'success' (bool), 'faq' (dict) o 'error' (str)
-        """
-        bot_id = await FAQWorkflow.get_bot_id(update, context)
-        if not bot_id:
-            logger.error(f"[handle_get_workflow] No se pudo obtener bot_id para usuario {update.effective_user.id}")
-            return {'success': False, 'error': 'No se pudo determinar el bot_id'}
-        
-        try:
-            # VALIDACIÓN MULTIUSUARIO: Verificar que la FAQ pertenece al bot_id actual
-            faq = await get_faq_details_direct(faq_id, bot_id)
-            if not faq:
-                logger.error(f"[handle_get_workflow] FAQ {faq_id} no encontrada o no pertenece a bot_id {bot_id}")
-                return {'success': False, 'error': 'FAQ no encontrada o no pertenece a este bot'}
-            
-            logger.info(f"[handle_get_workflow] Validación multiusuario OK: FAQ {faq_id} pertenece a bot_id {bot_id}")
-            return {'success': True, 'faq': faq}
-        except Exception as e:
-            logger.error(f"❌ Error en handle_get_workflow: {e}", exc_info=True)
-            return {'success': False, 'error': str(e)}
-    
-    @staticmethod
-    async def handle_list_workflow(
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-        action: str = "modify"
-    ) -> Dict[str, Any]:
-        """
-        Workflow para listar FAQs para una acción específica.
-        
-        Returns:
-            Dict con 'success' (bool), 'keyboard' (InlineKeyboardMarkup) o 'error' (str)
-        """
-        bot_id = await FAQWorkflow.get_bot_id(update, context)
-        if not bot_id:
-            return {'success': False, 'error': 'No se pudo determinar el bot_id'}
-        
-        try:
-            keyboard = await admin_keyboards.get_faqs_for_action_keyboard(bot_id, action)
-            if not keyboard:
-                return {'success': False, 'error': f'No hay FAQs para {action}'}
-            
-            return {'success': True, 'keyboard': keyboard}
-        except Exception as e:
-            logger.error(f"❌ Error en handle_list_workflow: {e}", exc_info=True)
-            return {'success': False, 'error': str(e)}
+        return await get_tenant_id(update, context)
 
+    @staticmethod
+    async def handle_add_workflow(update: Update, context: ContextTypes.DEFAULT_TYPE, q: str, a: str) -> Dict[str, Any]:
+        bot_id = await FAQWorkflow.get_bot_id(update, context)
+        if not bot_id:
+            return {"success": False, "error": "No se pudo determinar el bot"}
+        faq_id = await add_faq(bot_id, q, a)
+        return {"success": bool(faq_id), "faq_id": faq_id}
+
+    @staticmethod
+    async def handle_update_workflow(update: Update, context: ContextTypes.DEFAULT_TYPE, faq_id: int, q: Optional[str] = None, a: Optional[str] = None) -> Dict[str, Any]:
+        bot_id = await FAQWorkflow.get_bot_id(update, context)
+        if not bot_id:
+            return {"success": False, "error": "No se pudo determinar el bot"}
+        ok = await update_faq(faq_id, bot_id, q, a)
+        return {"success": ok}
+
+    @staticmethod
+    async def handle_delete_workflow(update: Update, context: ContextTypes.DEFAULT_TYPE, faq_id: int) -> Dict[str, Any]:
+        bot_id = await FAQWorkflow.get_bot_id(update, context)
+        if not bot_id:
+            return {"success": False, "error": "No se pudo determinar el bot"}
+        ok = await delete_faq(faq_id, bot_id)
+        return {"success": ok}
+
+    @staticmethod
+    async def handle_get_workflow(update: Update, context: ContextTypes.DEFAULT_TYPE, faq_id: int) -> Dict[str, Any]:
+        bot_id = await FAQWorkflow.get_bot_id(update, context)
+        if not bot_id:
+            return {"success": False, "error": "No se pudo determinar el bot"}
+        faq = await get_faq(faq_id, bot_id)
+        if not faq:
+            return {"success": False, "error": "FAQ no encontrada o no pertenece a este bot"}
+        return {"success": True, "faq": faq}
+
+    @staticmethod
+    async def handle_list_workflow(update: Update, context: ContextTypes.DEFAULT_TYPE, action: str = "modify") -> Dict[str, Any]:
+        bot_id = await FAQWorkflow.get_bot_id(update, context)
+        if not bot_id:
+            return {"success": False, "error": "No se pudo determinar el bot"}
+        items = await list_faqs(bot_id)
+        if not items:
+            return {"success": False, "error": f"No hay FAQs para {action}"}
+        kb = await faqs_for_action_keyboard(items, action)
+        return {"success": True, "keyboard": kb}
 
 class WorkflowState:
-    """Estados del workflow para conversaciones - Usando enteros para compatibilidad con ConversationHandler"""
-    IDLE = 0
     AWAITING_QUESTION = 1
     AWAITING_ANSWER = 2
     AWAITING_MOD_QUESTION = 3
     AWAITING_MOD_ANSWER = 4
-    AWAITING_HEADER = 5
-

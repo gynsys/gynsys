@@ -127,18 +127,13 @@ class AdminService:
     async def remove_doctor_permanently(self, doctor_id):
         """
         Elimina permanentemente un médico.
-
+        
         Args:
             doctor_id: ID del médico
         """
         async with get_session() as session:
             repo = DoctorRepository(session)
-            result = await repo.remove_doctor_permanently(doctor_id)
-            if result:
-                await session.commit()
-            else:
-                await session.rollback()
-            return result
+            await repo.remove_doctor_permanently(doctor_id)
     
     async def cleanup_doctor_patient_associations(self):
         """

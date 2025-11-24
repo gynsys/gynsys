@@ -15,18 +15,15 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
         keyboard = [
             # Fila 1: Sobre GynSys y Galería
             [
-                InlineKeyboardButton("ℹ️ Sobre GynSys", callback_data="marketing_about"),
-                InlineKeyboardButton("🖼️ Galería", callback_data="gallery_admin_hub")
-            ],
+                InlineKeyboardButton("ℹ️ Sobre GynSys", callback_data="marketing_about")],
+            [    InlineKeyboardButton("🖼️ Galería", callback_data="gallery_admin_hub")],
             # Fila 2: Quiero mi Bot
             [
                 InlineKeyboardButton("🤖 Quiero mi Bot", callback_data="request_bot")
             ],
             # Fila 3: FAQs y Precios
-            [
-                InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub"),
-                InlineKeyboardButton("💰 Precios", callback_data="marketing_pricing")
-            ],
+            [ InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub")],
+            [ InlineKeyboardButton("💰 Precios", callback_data="marketing_pricing")],
             # Fila 4: Editar Mensaje de Bienvenida
             [
                 InlineKeyboardButton("✏️ Editar msg Bienvenida", callback_data="edit_welcome_message")
@@ -67,21 +64,30 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
         # Fila 1
         keyboard.append([
             InlineKeyboardButton("📅 Citas", callback_data="citas_menu"),
-            InlineKeyboardButton("👥 Panel", callback_data="admin_panel")
         ])
         # Fila 2
         keyboard.append([
             InlineKeyboardButton("🖼️ Galería", callback_data="gallery_tenant_hub"),
-            InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub")
-        ])
+            
+        ])    
+        
         # Fila 3
         keyboard.append([
-            InlineKeyboardButton("💡 Consejos", callback_data="consejos_menu"),
-            InlineKeyboardButton("📍 Ubicaciones", callback_data="locations_admin_hub")
+            
+            InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub")
         ])
         # Fila 4
         keyboard.append([
-            InlineKeyboardButton("📞 Contacto", callback_data="contacto_menu"),
+           
+            InlineKeyboardButton("📍 Ubicaciones", callback_data="locations_admin_hub")
+        ])
+        # Fila 5
+        keyboard.append([
+            InlineKeyboardButton("📞 Contacto", callback_data="contacto_menu")
+           
+        ])
+        keyboard.append([
+          
             InlineKeyboardButton("💰 Precios", callback_data="prices_admin_hub")
         ])
         # Fila 5 - Configuración PDF

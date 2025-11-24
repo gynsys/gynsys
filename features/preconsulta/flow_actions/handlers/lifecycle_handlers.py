@@ -4,16 +4,20 @@ Interacción con Telegram y contexto del flujo.
 """
 import asyncio
 import logging
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from common import texts
+from common.helpers import escape_html
 from database import preconsulta_db
 from ..services.history_saver import build_history_data
+from utils.role_manager import RoleManager
+from config import DB_PATH
 # Import local dentro de la función para evitar import circular
 
 logger = logging.getLogger(__name__)
+role_manager = RoleManager(DB_PATH)
 
 
 async def check_if_pregnant_for_fertility(update: Update, context: ContextTypes.DEFAULT_TYPE, node: dict):
@@ -76,6 +80,10 @@ async def finish_preconsultation(update: Update, context: ContextTypes.DEFAULT_T
             text=texts.get_text("preconsulta.end_message"),
             parse_mode=ParseMode.HTML
         )
+
+        # Notificar al médico responsable
+        await _notify_doctor_preconsulta_completion(context, doctor_id, history_id, user_data)
+
         await asyncio.sleep(4)
         
         # Borrar mensaje de éxito
@@ -86,9 +94,6 @@ async def finish_preconsultation(update: Update, context: ContextTypes.DEFAULT_T
         
         # Mostrar menú principal del paciente
         from features.patient_menu.patient_handler import patient_main_menu
-        from utils.role_manager import RoleManager
-        from config import DB_PATH
-        role_manager = RoleManager(DB_PATH)
         assigned_doctor = await role_manager.get_assigned_doctor(user_id)
         if assigned_doctor:
             class FakeUpdate:
@@ -110,4 +115,53 @@ async def finish_preconsultation(update: Update, context: ContextTypes.DEFAULT_T
     # Finalizar
     context.user_data.clear()
     return "END_CONVERSATION"
+
+
+async def _notify_doctor_preconsulta_completion(
+    context: ContextTypes.DEFAULT_TYPE,
+    doctor_id: int,
+    history_id: int,
+    user_data: dict,
+) -> None:
+    """Envía una notificación al médico cuando una preconsulta se completa."""
+    try:
+        doctor = await role_manager.get_doctor_by_id(doctor_id)
+        if not doctor:
+            logger.warning("No se encontró doctor con id=%s para enviar notificación.", doctor_id)
+            return
+
+        doctor_telegram_id = doctor[2]
+        if not doctor_telegram_id:
+            logger.warning(
+                "El doctor %s no tiene telegram_id asociado; no se envía notificación.",
+                doctor_id,
+            )
+            return
+
+        patient_name = escape_html(user_data.get('full_name') or "Paciente sin nombre")
+        consult_type = escape_html(user_data.get('consultation_type') or "Sin especificar")
+        reason = escape_html(user_data.get('reason_for_visit') or "Sin motivo")
+
+        notification_text = (
+            "🩺 <b>Preconsulta completada</b>\n\n"
+            f"👤 <b>Paciente:</b> {patient_name}\n"
+            f"📋 <b>Consulta:</b> {consult_type}\n"
+            f"🎯 <b>Motivo:</b> {reason}\n"
+            f"🆔 <b>ID Historia:</b> #{history_id}\n\n"
+            "Puedes continuar desde el panel de preconsultas."
+        )
+
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🗑️ En cuenta", callback_data=f"preconsulta_dismiss_{history_id}")]
+        ])
+
+        await context.bot.send_message(
+            chat_id=doctor_telegram_id,
+            text=notification_text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=keyboard,
+        )
+        logger.info("Notificación de preconsulta #%s enviada al doctor %s.", history_id, doctor_id)
+    except Exception as exc:
+        logger.exception("Error al enviar notificación de preconsulta al doctor %s: %s", doctor_id, exc)
 

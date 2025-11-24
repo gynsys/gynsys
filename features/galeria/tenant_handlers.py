@@ -65,7 +65,6 @@ async def galeria_hub(update: Update, context: ContextTypes.DEFAULT_TYPE, send_n
         [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
         [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
         [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton(f"🔄 Reordenar {CONFIG['plural']}", callback_data=f"{CONFIG['prefix']}_reorder_list")],
         # El callback 'open_superadmin_panel' parece ser el correcto según tu main.py
         [InlineKeyboardButton("🔙 Volver a Panel Admin", callback_data='doctor_panel')]
     ]
@@ -113,9 +112,19 @@ async def confirm_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     payload = _strip_prefix(query.data)
     item_id = int(payload.split('_')[-1])
-    item_details = await content_db.get_item_details(item_id, CONFIG['table'], CONFIG['title_col'], CONFIG['content_col'])
+
+    item_details = await content_db.get_item_details_with_media(
+        item_id, CONFIG['table'], CONFIG['title_col'], CONFIG['content_col']
+    )
+
+    # VALIDACIÓN MULTI-TENANT
+    if not item_details:
+        await query.answer("Ítem no encontrado o no pertenece a este bot.", show_alert=True)
+        return
+
     item_name = item_details.get('title', 'este elemento')
     callback = f"{CONFIG['prefix']}_delete_execute_confirm_{item_id}"
+
     await query.message.edit_text(
         f"<b>⚠️ ¿Seguro que quieres eliminar?</b>\n<blockquote>{escape_html(item_name)}</blockquote>",
         reply_markup=InlineKeyboardMarkup([
@@ -124,7 +133,7 @@ async def confirm_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
         ]),
         parse_mode='HTML'
     )
-
+    
 @admin_required
 async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -147,35 +156,6 @@ async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
     await list_items_for_action(type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})(), context)
 
 
-# --- REORDER ---
-@admin_required
-async def list_items_for_reorder(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    tenant_id = await get_tenant_id(update, context)
-    reply_markup = await admin_keyboards.get_gallery_reorder_keyboard(
-        tenant_id,
-        prefix=CONFIG['prefix'],
-        done_callback=f"{CONFIG['prefix']}_hub"
-    )
-    if not reply_markup:
-        await query.answer("No hay suficientes elementos para reordenar.", show_alert=True)
-        return
-    await query.message.edit_text(f"🔄 <b>Reordenar {CONFIG['plural']}</b>", reply_markup=reply_markup, parse_mode='HTML')
-
-@admin_required
-async def execute_reorder_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer(cache_time=1)
-
-    payload = _strip_prefix(query.data)
-    _, direction, item_id_str = payload.split('_')
-    item_id = int(item_id_str)
-    tenant_id = await get_tenant_id(update, context)
-    if await content_db.reorder_item(tenant_id, CONFIG['table'], item_id, direction):
-        await list_items_for_reorder(update, context)
-    else:
-        await query.answer("❌ No se pudo mover.", show_alert=True)
 
 # --- ADD ITEM CONVERSATION ---
 @admin_required
@@ -221,25 +201,22 @@ async def save_new_item_with_media(update: Update, context: ContextTypes.DEFAULT
             except Exception as e:
                 logger.warning(f"Error editando mensaje: {e}")
         
-        # Volver al hub de galería usando un callback query simulado
-        from telegram import CallbackQuery, Message, Chat
-        fake_chat = Chat(id=update.effective_chat.id, type=update.effective_chat.type)
-        fake_message = Message(
-            message_id=main_conv_message_id or update.effective_message.message_id,
-            date=update.effective_message.date,
-            chat=fake_chat,
-            from_user=update.effective_user
-        )
-        fake_query = CallbackQuery(
-            id="fake",
-            from_user=update.effective_user,
-            chat_instance="fake",
-            message=fake_message,
-            data=f"{CONFIG['prefix']}_hub"
-        )
-        fake_update = Update(update_id=update.update_id, callback_query=fake_query)
-        
+        # Objeto completo para galeria_hub
+        fake_chat = type('obj', (object,), {'id': update.effective_chat.id, 'type': update.effective_chat.type})()
+        fake_message = type('obj', (object,), {
+            'message_id': main_conv_message_id,
+            'chat': fake_chat,
+            'date': update.effective_message.date,
+            'from_user': update.effective_user
+        })()
+        fake_update = type('obj', (object,), {
+            'effective_user': update.effective_user,
+            'effective_chat': update.effective_chat,
+            'effective_message': fake_message,
+            'callback_query': None
+        })()
         await galeria_hub(fake_update, context, send_new=False)
+        
         context.user_data.clear()
         return ConversationHandler.END
     except Exception as e:

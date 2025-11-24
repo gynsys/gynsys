@@ -38,6 +38,20 @@ async def _get_doctor_id(update: Update) -> int:
         return doctor[0]
     return None
 
+
+@admin_required
+async def dismiss_preconsulta_notification(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Permite que el médico marque en cuenta la notificación de una preconsulta."""
+    query = update.callback_query
+    if not query:
+        return
+
+    await query.answer("🗑️ Notificación marcada en cuenta.", show_alert=False)
+    try:
+        await query.message.delete()
+    except Exception as exc:
+        logger.warning("No se pudo eliminar la notificación de preconsulta: %s", exc)
+
 @admin_required
 async def generate_summary_pdf_hub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
@@ -100,6 +114,9 @@ async def generate_summary_pdf_hub(update: Update, context: ContextTypes.DEFAULT
             back_text = "🔙 "
         elif source == 'patienthistory':
             back_callback = f"patient_history_{param}"
+            back_text = "🔙 "
+        elif source == 'completion':
+            back_callback = f"view_history_{history_id}_pendinglist_{param}"
             back_text = "🔙 "
     except IndexError:
         pass
@@ -362,7 +379,7 @@ async def receive_plan_and_finish(update: Update, context: ContextTypes.DEFAULT_
         final_text = "✅ ¡Informe médico completado y guardado con éxito!"
         # --- ¡NUEVOS BOTONES! ---
         reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton("📄 Generar Informe (PDF)", callback_data=f"generate_pdf_{history_id}")],
+            [InlineKeyboardButton("📋 Generar Informe (PDF)", callback_data=f"generate_summary_pdf_{history_id}")],
             [InlineKeyboardButton("🔙 ", callback_data="list_histories_0")]
         ])
     else:
@@ -781,7 +798,17 @@ async def view_history_details(update: Update, context: ContextTypes.DEFAULT_TYP
         text += f" (NHM: {escape_html(history_number)})"
     text += "**\n\n"
 
-    text += f"🗓️ **Fecha:** {details['created_at'].split(' ')[0]}\n"
+    from datetime import datetime
+
+    created_at = details.get('created_at')
+    if isinstance(created_at, datetime):
+        created_at_str = created_at.strftime('%Y-%m-%d')
+    elif isinstance(created_at, str):
+        created_at_str = created_at.split(' ')[0]
+    else:
+        created_at_str = '-'
+
+    text += f"🗓️ **Fecha:** {created_at_str}\n"
     text += f"👤 **Paciente:** {escape_html(details.get('full_name', 'N/A'))}\n"
     text += f"🎯 **Tipo de Consulta:** {escape_html(details.get('consultation_type', 'N/A'))}\n"
     text += f"📌 **Motivo de Consulta:** {escape_html(details.get('reason_for_visit', 'N/A'))}\n\n"
@@ -944,6 +971,7 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(descartar_pdf_handler, pattern="^descartar_pdf_"))
     app.add_handler(CallbackQueryHandler(confirm_delete_history, pattern=r'^confirm_delete_history_'))
     app.add_handler(CallbackQueryHandler(execute_delete_history, pattern=r'^execute_delete_history_'))
+    app.add_handler(CallbackQueryHandler(dismiss_preconsulta_notification, pattern=r'^preconsulta_dismiss_\d+$'))
 
     # 3. Handlers de PDF con patrones específicos (sin duplicados)
     app.add_handler(CallbackQueryHandler(generate_pdf_hub, pattern=r'^generate_pdf_\d+'))

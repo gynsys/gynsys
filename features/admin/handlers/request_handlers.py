@@ -30,7 +30,7 @@ async def show_requests_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     text = format_request_list(pending)
     keyboard = get_requests_list_keyboard(pending) if pending else InlineKeyboardMarkup([
-        [InlineKeyboardButton("🏠 Inicio", callback_data="main_menu")]
+        [InlineKeyboardButton("🏠 ", callback_data="main_menu")]
     ])
     
     await safe_edit_message(query, text, keyboard, context)

@@ -65,8 +65,8 @@
     "footer_text": "Información confidencial - Solo uso médico"
   },
   "extra_modules": {
-    "default_active": ["test", "quiz"],
-    "description": "Los módulos 'test' (Test Endometriosis) y 'quiz' (Aprende Jugando) están activados por defecto. Puedes gestionarlos desde Panel Admin > Módulos Extras."
+    "default_active": ["quiz", "citas", "faqs", "contacto", "ubicaciones"],
+    "description": "Los módulos 'quiz' (Aprende Jugando), 'citas' (Sistema de citas), 'faqs' (Preguntas frecuentes), 'contacto' (Información de contacto) y 'ubicaciones' (Ubicaciones y horarios) están activados por defecto. Puedes gestionarlos desde Panel Admin > Módulos Extras."
   },
   "welcome_message": {
     "text": "Bienvenido/a a mi consulta. Estoy aquí para ayudarte con tus necesidades de salud ginecológica. Puedes agendar citas, consultar información y contactarme cuando lo necesites."

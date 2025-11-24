@@ -71,8 +71,6 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(admin_handlers.list_items_for_action, pattern=f"^{SA_CONFIG['prefix']}_(modify|delete)_list$"))
     app.add_handler(CallbackQueryHandler(admin_handlers.confirm_delete_item, pattern=f"^{SA_CONFIG['prefix']}_delete_\\d+$"))
     app.add_handler(CallbackQueryHandler(admin_handlers.execute_delete_item, pattern=f"^{SA_CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
-    app.add_handler(CallbackQueryHandler(admin_handlers.list_items_for_reorder, pattern=f"^{SA_CONFIG['prefix']}_reorder_list$"))
-    app.add_handler(CallbackQueryHandler(admin_handlers.execute_reorder_item, pattern=f"^{SA_CONFIG['prefix']}_reorder_(up|down)_\\d+$"))
 
 
     # =================================================================
@@ -127,8 +125,6 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(tenant_handlers.list_items_for_action, pattern=f"^{TN_CONFIG['prefix']}_(modify|delete)_list$"))
     app.add_handler(CallbackQueryHandler(tenant_handlers.confirm_delete_item, pattern=f"^{TN_CONFIG['prefix']}_delete_\\d+$"))
     app.add_handler(CallbackQueryHandler(tenant_handlers.execute_delete_item, pattern=f"^{TN_CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
-    app.add_handler(CallbackQueryHandler(tenant_handlers.list_items_for_reorder, pattern=f"^{TN_CONFIG['prefix']}_reorder_list$"))
-    app.add_handler(CallbackQueryHandler(tenant_handlers.execute_reorder_item, pattern=f"^{TN_CONFIG['prefix']}_reorder_(up|down)_\\d+$"))
 
 
     # ===================================================================

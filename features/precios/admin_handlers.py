@@ -29,7 +29,6 @@ async def prices_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
         [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
         [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton(f"🔄 Reordenar {CONFIG['plural']}", callback_data=f"{CONFIG['prefix']}_reorder_list")],
         [InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel'), InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
     ]
     await query.edit_message_text(f"🔧 <b>Gestión de {CONFIG['plural']}</b>", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
@@ -70,32 +69,6 @@ async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
     await list_items_for_action(fake_update, context)
 
 @doctor_required
-async def list_items_for_reorder(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer()
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await query.answer("❌ No se pudo obtener el tenant ID.", show_alert=True)
-        return
-    reply_markup = await admin_keyboards.get_precios_reorder_keyboard(bot_id)
-    if not reply_markup:
-        await query.answer("No hay suficientes elementos para reordenar.", show_alert=True); return
-    await query.edit_message_text(f"🔄 <b>Reordenar {CONFIG['plural']}</b>", reply_markup=reply_markup, parse_mode="HTML")
-
-@doctor_required
-async def execute_reorder_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query; await query.answer(cache_time=1)
-    _, _, direction, item_id_str = query.data.split('_')
-    item_id = int(item_id_str)
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await query.answer("❌ No se pudo obtener el tenant ID.", show_alert=True)
-        return
-    if await content_db.reorder_item(bot_id, CONFIG['table'], item_id, direction):
-        fake_query = type('obj', (object,), {'data': f"{CONFIG['prefix']}_reorder_list", 'message': query.message, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': query.message.edit_text, 'edit_message_reply_markup': query.message.edit_reply_markup})()
-        fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user, 'effective_chat': query.message.chat})()
-        await list_items_for_reorder(fake_update, context)
-    else:
-        await query.answer("❌ No se pudo mover.", show_alert=True)
 
 # --- CONVERSATION HANDLERS ---
 @doctor_required
@@ -195,5 +168,3 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(list_items_for_action, pattern=f"^{CONFIG['prefix']}_(modify|delete)_list$"))
     app.add_handler(CallbackQueryHandler(confirm_delete_item, pattern=f"^{CONFIG['prefix']}_delete_\\d+$"))
     app.add_handler(CallbackQueryHandler(execute_delete_item, pattern=f"^{CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
-    app.add_handler(CallbackQueryHandler(list_items_for_reorder, pattern=f"^{CONFIG['prefix']}_reorder_list$"))
-    app.add_handler(CallbackQueryHandler(execute_reorder_item, pattern=f"^{CONFIG['prefix']}_reorder_(up|down)_\\d+$"))

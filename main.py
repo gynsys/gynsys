@@ -66,13 +66,18 @@ def run_polling_mode(application: Application):
     """Ejecuta el bot en modo polling (desarrollo local)"""
     print("🤖 Bot médico iniciado en modo POLLING...")
     print(f"👑 SuperAdmin ID: {SUPER_ADMIN_ID}")
-    
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        application.run_polling()
+        loop.run_until_complete(application.initialize())
+        application.run_polling(close_loop=False)
     finally:
-        # Cerrar engine al finalizar
-        print("🔒 Cerrando SQLAlchemy engine...")
-        asyncio.run(close_engine())
+        try:
+            print("🔒 Cerrando SQLAlchemy engine...")
+            asyncio.run(close_engine())
+        finally:
+            loop.close()
+            asyncio.set_event_loop(None)
 
 
 def run_webhook_mode(application: Application):

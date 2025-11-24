@@ -24,17 +24,3 @@ async def get_precios_for_action_keyboard(bot_id: int, action: str):
     keyboard = [[InlineKeyboardButton(f"{emoji} {item['title']}", callback_data=f"precio_{action}_{item['id']}")] for item in items]
     keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data="prices_admin_hub")])
     return InlineKeyboardMarkup(keyboard)
-
-async def get_precios_reorder_keyboard(bot_id: int):
-    """Muestra la lista de Precios con botones para reordenar."""
-    items = await content_db.get_all_items(bot_id, 'precios', 'title')
-    if not items or len(items) < 2: return None
-
-    keyboard = []
-    for i, item in enumerate(items):
-        row = [InlineKeyboardButton(item['title'], callback_data="ignore")]
-        if i > 0: row.append(InlineKeyboardButton("🔼", callback_data=f"precio_reorder_up_{item['id']}"))
-        if i < len(items) - 1: row.append(InlineKeyboardButton("🔽", callback_data=f"precio_reorder_down_{item['id']}"))
-        keyboard.append(row)
-    keyboard.append([InlineKeyboardButton("✅ Listo", callback_data="prices_admin_hub")])
-    return InlineKeyboardMarkup(keyboard)

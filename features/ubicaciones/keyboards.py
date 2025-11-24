@@ -46,20 +46,3 @@ async def get_locations_for_action_keyboard(bot_id: int, action: str):
     keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data="locations_admin_hub")])
     return InlineKeyboardMarkup(keyboard)
 
-
-async def get_locations_reorder_keyboard(bot_id: int):
-    """Muestra la lista de Ubicaciones con botones para reordenar."""
-    items = await content_db.get_all_items(bot_id, 'locations', 'name')
-    if not items or len(items) < 2:
-        return None
-
-    keyboard = []
-    for index, item in enumerate(items):
-        row = [InlineKeyboardButton(item['title'], callback_data="ignore")]
-        if index > 0:
-            row.append(InlineKeyboardButton("🔼", callback_data=f"loc_reorder_up_{item['id']}"))
-        if index < len(items) - 1:
-            row.append(InlineKeyboardButton("🔽", callback_data=f"loc_reorder_down_{item['id']}"))
-        keyboard.append(row)
-    keyboard.append([InlineKeyboardButton("✅ Listo", callback_data="locations_admin_hub")])
-    return InlineKeyboardMarkup(keyboard)

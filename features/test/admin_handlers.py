@@ -44,7 +44,6 @@ async def test_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
         [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
         [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton(f"🔄 Reordenar {CONFIG['plural']}", callback_data=f"{CONFIG['prefix']}_reorder_list")],
         [InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel')]
     ]
     await query.edit_message_text(
@@ -124,78 +123,6 @@ async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
     await list_items_for_action(fake_update, context)
 
 @doctor_required
-async def list_items_for_reorder(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
-    # Verificar módulo activo
-    user_id = update.effective_user.id
-    doctor = await role_manager.get_doctor_by_telegram_id(user_id)
-    if not doctor:
-        await query.answer("❌ Error: No se encontró el doctor.", show_alert=True)
-        return
-    
-    doctor_id = doctor[0]
-    is_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'test')
-    if not is_active:
-        await query.answer("❌ El módulo Test no está activo.", show_alert=True)
-        return
-    
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await query.answer("❌ Error al obtener tenant ID.", show_alert=True)
-        return
-    
-    items = await content_db.get_all_items(bot_id, CONFIG['table'], CONFIG['title_col'])
-    if not items or len(items) < 2:
-        await query.answer("No hay suficientes elementos para reordenar.", show_alert=True); return
-
-    keyboard = []
-    for i, item in enumerate(items):
-        row = [InlineKeyboardButton(item['title'][:50]+"...", callback_data="ignore")]
-        if i > 0: row.append(InlineKeyboardButton("🔼", callback_data=f"{CONFIG['prefix']}_reorder_up_{item['id']}"))
-        if i < len(items) - 1: row.append(InlineKeyboardButton("🔽", callback_data=f"{CONFIG['prefix']}_reorder_down_{item['id']}"))
-        keyboard.append(row)
-
-    # --- LÍNEA CORREGIDA ---
-    # El callback ahora apunta al hub correcto de este módulo
-    keyboard.append([InlineKeyboardButton("✅ Listo", callback_data="test_admin_hub")])
-
-    await query.edit_message_text(
-        f"🔄 <b>Reordenar {CONFIG['plural']}</b>",
-        reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode="HTML"
-    )
-
-@doctor_required
-async def execute_reorder_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer(cache_time=1)
-    
-    # Verificar módulo activo
-    user_id = update.effective_user.id
-    doctor = await role_manager.get_doctor_by_telegram_id(user_id)
-    if not doctor:
-        await query.answer("❌ Error: No se encontró el doctor.", show_alert=True)
-        return
-    
-    doctor_id = doctor[0]
-    is_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'test')
-    if not is_active:
-        await query.answer("❌ El módulo Test no está activo.", show_alert=True)
-        return
-    
-    _, _, direction, item_id_str = query.data.split('_')
-    item_id = int(item_id_str)
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await query.answer("❌ Error al obtener tenant ID.", show_alert=True)
-        return
-    if await content_db.reorder_item(bot_id, CONFIG['table'], item_id, direction):
-        fake_query = type('obj', (object,), {'data': f"{CONFIG['prefix']}_reorder_list", 'message': query.message, 'answer': lambda *a, **k: asyncio.sleep(0), 'edit_message_text': query.message.edit_text})()
-        fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user, 'effective_chat': query.message.chat})()
-        await list_items_for_reorder(fake_update, context)
-    else: await query.answer("❌ No se pudo mover.", show_alert=True)
 
 # --- CONVERSATION HANDLER PARA AÑADIR ---
 @doctor_required
@@ -299,5 +226,3 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(list_items_for_action, pattern=f"^{CONFIG['prefix']}_(modify|delete)_list$"))
     app.add_handler(CallbackQueryHandler(confirm_delete_item, pattern=f"^{CONFIG['prefix']}_delete_\\d+$"))
     app.add_handler(CallbackQueryHandler(execute_delete_item, pattern=f"^{CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
-    app.add_handler(CallbackQueryHandler(list_items_for_reorder, pattern=f"^{CONFIG['prefix']}_reorder_list$"))
-    app.add_handler(CallbackQueryHandler(execute_reorder_item, pattern=f"^{CONFIG['prefix']}_reorder_(up|down)_\\d+$"))
