@@ -150,7 +150,8 @@ async def admin_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Construir mensaje final
     message = (
         #f"👋 Hello! Soy {doctor_name}</b>\n"
-        f"👋<b> Hello! Soy 💘 {doctor_name}</b>\n {mensaje_bienvenida}\n\n"
+        #f"👋<b> Hello! Soy 💘 {doctor_name}</b>\n {mensaje_bienvenida}\n\n"
+        f"{mensaje_bienvenida}"
       
         
     )
@@ -290,6 +291,5 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
         await show_doctor_share_link(update, context, doctor_id, doctor_name)
     elif callback_data == "admin_panel" or callback_data == "settings_menu":
         # Redirigir al panel de administración
-        from features.admin_hub.handlers import show_full_admin_panel
-        await show_full_admin_panel(update, context)
+        await show_doctor_panel(update, context)
     # Edición de FAQ removida
