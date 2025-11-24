@@ -6,6 +6,7 @@ from database.session import get_session
 from database.models.bot import Bot
 from database.models.user import Doctor
 from sqlalchemy import select
+from common import texts
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     Application, ConversationHandler, CallbackQueryHandler, ContextTypes
@@ -346,22 +347,50 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         logger.info(f"[cancel_test] Redirigiendo usuario {user_id} (rol: {user_role}) al menú principal")
         
         if user_role == 'doctor':
-            # Para doctores, enviar nuevo mensaje con el menú principal
+            # Para doctores, construir el mensaje completo como en admin_main_menu
+            doctor = await role_mgr.get_doctor_by_telegram_id(user_id)
+            if doctor:
+                doctor_name = doctor[1]  # name está en índice 1
+            else:
+                doctor_name = "Doctor"
+            
+            # Obtener bot_id
+            bot_id = None
+            if doctor:
+                from database.session import get_session
+                from database.models.bot import Bot
+                from sqlalchemy import select
+                async with get_session() as session:
+                    stmt = select(Bot.id).where(Bot.admin_user_id == doctor[2])  # telegram_id
+                    result = await session.execute(stmt)
+                    bot_id = result.scalar_one_or_none()
+            
+            if not bot_id:
+                bot_id = 1  # Fallback
+            
+            # Obtener mensaje de bienvenida personalizado (igual que admin_main_menu)
+            from common import texts
+            user_name = update.effective_user.first_name or "Usuario"
+            mensaje_bienvenida = await texts.get_mensaje_bienvenida(nombre_usuario=user_name, bot_id=bot_id)
+            
+            # Construir mensaje final (igual que admin_main_menu)
+            message = f"👋<b> Hello! Soy 💘 {doctor_name}</b>\n {mensaje_bienvenida}\n\n"
+            
             keyboard = await get_doctor_public_keyboard(user_id)
-            menu_text = "✅ Test cancelado.\n\n🏠 <b>Menú Principal</b>"
             
             try:
                 # Intentar editar primero
                 await query.edit_message_text(
-                    text=menu_text,
+                    text=message,
                     reply_markup=keyboard,
                     parse_mode="HTML"
                 )
-            except Exception:
+            except Exception as e:
+                logger.warning(f"[cancel_test] No se pudo editar mensaje: {e}, enviando nuevo mensaje")
                 # Si falla, enviar nuevo mensaje
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text=menu_text,
+                    text=message,
                     reply_markup=keyboard,
                     parse_mode="HTML"
                 )
