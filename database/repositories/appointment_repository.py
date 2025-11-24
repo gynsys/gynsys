@@ -152,6 +152,8 @@ class AppointmentRepository(BaseRepository[Appointment]):
         reason: Optional[str] = None,
         location: Optional[str] = None,
         status: str = "pending",
+        is_first_pregnancy: Optional[bool] = None,
+        has_been_pregnant: Optional[bool] = None,
     ) -> bool:
         """
         Reserva un slot para un paciente.
@@ -165,6 +167,8 @@ class AppointmentRepository(BaseRepository[Appointment]):
             reason: Motivo de la consulta (opcional)
             location: Ubicación (opcional)
             status: Estado de la cita (default: "pending")
+            is_first_pregnancy: True si es primer embarazo (Prenatal) (opcional)
+            has_been_pregnant: True si ha estado embarazada (Ginecológica) (opcional)
         
         Returns:
             True si se reservó correctamente, False si el slot no está disponible
@@ -191,7 +195,9 @@ class AppointmentRepository(BaseRepository[Appointment]):
             reason=reason,
             location=location,
             status=status,
-            booked_at=int(datetime.utcnow().timestamp())
+            booked_at=int(datetime.utcnow().timestamp()),
+            is_first_pregnancy=is_first_pregnancy,
+            has_been_pregnant=has_been_pregnant
         )
         self.session.add(appointment)
         await self.session.flush()

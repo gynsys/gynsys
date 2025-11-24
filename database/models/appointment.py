@@ -40,6 +40,9 @@ class Appointment(Base, IDMixin):
     location = Column(String)
     status = Column(String, default='pending', nullable=False)
     booked_at = Column(Integer, nullable=False)  # Timestamp Unix
+    # Campos para determinar el flujo obstétrico (HO)
+    is_first_pregnancy = Column(Boolean, nullable=True)  # True si es primer embarazo (Prenatal)
+    has_been_pregnant = Column(Boolean, nullable=True)  # True si ha estado embarazada (Ginecológica)
     
     # Relaciones
     slot = relationship("Slot", back_populates="appointments")

@@ -104,6 +104,8 @@ async def _create_appointment(doctor_id: int, user_id: int, user_name: str, fech
                 reason,
                 ubicacion,
                 status,
+                is_first_pregnancy=is_first_pregnancy,
+                has_been_pregnant=has_been_pregnant
             )
             
             if success:
