@@ -77,7 +77,10 @@ def run_polling_mode(application: Application):
 
 def run_webhook_mode(application: Application):
     """Ejecuta el bot en modo webhook (producción)"""
-    from flask import Flask, request, jsonify
+    try:
+        from flask import Flask, request, jsonify
+    except ImportError:
+        raise ImportError("Flask no está instalado. Instálalo con: pip install flask")
     
     if not WEBHOOK_URL:
         raise ValueError("WEBHOOK_URL debe estar configurado cuando WEBHOOK=ON")
