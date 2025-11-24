@@ -1,5 +1,8 @@
 """
 Punto de entrada principal del bot
+Soporta dos modos:
+- Polling: Para desarrollo local (WEBHOOK=OFF)
+- Webhook: Para producción (WEBHOOK=ON)
 """
 import logging
 import asyncio
@@ -15,7 +18,7 @@ try:
 except ImportError:
     pass  # nest_asyncio no está instalado, pero no es crítico
 
-from config import BOT_TOKEN, SUPER_ADMIN_ID
+from config import BOT_TOKEN, SUPER_ADMIN_ID, WEBHOOK, WEBHOOK_URL, WEBHOOK_PORT
 from database.connection import init_db
 from database.engine import init_engine, close_engine
 from utils.startup import cleanup_on_start
@@ -59,8 +62,101 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
             pass  # Si no podemos enviar el mensaje, simplemente ignoramos
 
 
+def run_polling_mode(application: Application):
+    """Ejecuta el bot en modo polling (desarrollo local)"""
+    print("🤖 Bot médico iniciado en modo POLLING...")
+    print(f"👑 SuperAdmin ID: {SUPER_ADMIN_ID}")
+    
+    try:
+        application.run_polling()
+    finally:
+        # Cerrar engine al finalizar
+        print("🔒 Cerrando SQLAlchemy engine...")
+        asyncio.run(close_engine())
+
+
+def run_webhook_mode(application: Application):
+    """Ejecuta el bot en modo webhook (producción)"""
+    from flask import Flask, request, jsonify
+    
+    if not WEBHOOK_URL:
+        raise ValueError("WEBHOOK_URL debe estar configurado cuando WEBHOOK=ON")
+    
+    # Crear aplicación Flask
+    flask_app = Flask(__name__)
+    
+    # Inicializar la aplicación del bot (necesario para webhooks)
+    print("🔧 Inicializando Application para webhook...")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(application.initialize())
+    print("✅ Application inicializada.")
+    
+    @flask_app.route('/', methods=['GET'])
+    def index():
+        """Endpoint de salud"""
+        return jsonify({
+            "status": "ok",
+            "service": "GynSys Bot Webhook",
+            "superadmin_id": SUPER_ADMIN_ID,
+            "mode": "webhook"
+        }), 200
+    
+    @flask_app.route('/webhook', methods=['POST'])
+    def webhook():
+        """Endpoint para recibir updates de Telegram"""
+        try:
+            update_data = request.get_json()
+            if not update_data:
+                return jsonify({"ok": False, "error": "No data"}), 400
+            
+            # Crear objeto Update y procesarlo
+            update = Update.de_json(update_data, application.bot)
+            loop.run_until_complete(application.process_update(update))
+            return jsonify({"ok": True}), 200
+        except Exception as e:
+            logger.error(f"Error procesando webhook: {e}", exc_info=True)
+            return jsonify({"ok": False, "error": str(e)}), 500
+    
+    @flask_app.route('/set_webhook', methods=['POST'])
+    def set_webhook():
+        """Endpoint para configurar el webhook"""
+        try:
+            loop.run_until_complete(application.bot.set_webhook(url=WEBHOOK_URL))
+            return jsonify({"ok": True, "webhook_url": WEBHOOK_URL}), 200
+        except Exception as e:
+            logger.error(f"Error configurando webhook: {e}", exc_info=True)
+            return jsonify({"ok": False, "error": str(e)}), 500
+    
+    @flask_app.route('/delete_webhook', methods=['POST'])
+    def delete_webhook():
+        """Endpoint para eliminar el webhook"""
+        try:
+            loop.run_until_complete(application.bot.delete_webhook())
+            return jsonify({"ok": True}), 200
+        except Exception as e:
+            logger.error(f"Error eliminando webhook: {e}", exc_info=True)
+            return jsonify({"ok": False, "error": str(e)}), 500
+    
+    print("🤖 Bot médico iniciado en modo WEBHOOK...")
+    print(f"👑 SuperAdmin ID: {SUPER_ADMIN_ID}")
+    print(f"🌐 Webhook URL: {WEBHOOK_URL}")
+    print(f"🔌 Puerto: {WEBHOOK_PORT}")
+    
+    # Configurar webhook automáticamente al iniciar
+    try:
+        print("🔗 Configurando webhook...")
+        loop.run_until_complete(application.bot.set_webhook(url=WEBHOOK_URL))
+        print("✅ Webhook configurado correctamente.")
+    except Exception as e:
+        logger.error(f"Error configurando webhook: {e}", exc_info=True)
+        print("⚠️ No se pudo configurar el webhook automáticamente.")
+    
+    # Iniciar servidor Flask
+    flask_app.run(host='0.0.0.0', port=WEBHOOK_PORT, debug=False)
+
+
 def main():
-    """Inicia el bot"""
+    """Inicia el bot en modo polling o webhook según configuración"""
     # Limpiar asociaciones incorrectas al iniciar
     cleanup_on_start()
     
@@ -83,15 +179,11 @@ def main():
     asyncio.run(init_engine())
     print("✅ SQLAlchemy engine inicializado.")
     
-    print("🤖 Bot médico iniciado...")
-    print(f"👑 SuperAdmin ID: {SUPER_ADMIN_ID}")
-    
-    try:
-        application.run_polling()
-    finally:
-        # Cerrar engine al finalizar
-        print("🔒 Cerrando SQLAlchemy engine...")
-        asyncio.run(close_engine())
+    # Ejecutar en modo polling o webhook según configuración
+    if WEBHOOK == 'ON':
+        run_webhook_mode(application)
+    else:
+        run_polling_mode(application)
 
 
 if __name__ == "__main__":

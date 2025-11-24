@@ -54,6 +54,12 @@ if not ENCRYPTION_KEY:
 # ============================================================================
 LOGS_SYS = os.getenv('LOGS_SYS', 'True').lower() == 'true'
 
+# Modo de ejecución: 'ON' para webhook, 'OFF' para polling
+# Por defecto: OFF (polling para desarrollo local)
+WEBHOOK = os.getenv('WEBHOOK', 'OFF').upper()
+WEBHOOK_URL = os.getenv('WEBHOOK_URL', '')  # URL del webhook (solo necesario si WEBHOOK=ON)
+WEBHOOK_PORT = int(os.getenv('WEBHOOK_PORT', '8443'))  # Puerto para webhook (solo necesario si WEBHOOK=ON)
+
 # Estados para ConversationHandler
 (MAIN_MENU, CITAS, GALERIA, FAQ, CONSEJOS, 
  UBICACIONES, CONTACTO, PRECIOS, ADMIN_PANEL) = range(9)
