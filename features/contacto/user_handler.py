@@ -225,16 +225,46 @@ async def receive_contact_value(update: Update, context: ContextTypes.DEFAULT_TY
                     disable_web_page_preview=True,
                 )
             # Reemplazar por el menú principal en el mismo mensaje
-            from features.main_menu.user_handler import get_doctor_public_keyboard
+            from features.main_menu.user_handler import get_doctor_public_keyboard, admin_main_menu
             import asyncio as _aio
             logger.info("receive_contact_value: switching message to main menu")
             await _aio.sleep(0.3)
+            
+            # Obtener bot_id para el mensaje de bienvenida
+            bot_id = None
+            doctor_telegram_id = doctor[2]  # telegram_id está en índice 2
+            import aiosqlite
+            from config import DB_PATH
+            async with aiosqlite.connect(DB_PATH) as conn:
+                conn.row_factory = aiosqlite.Row
+                cursor = await conn.execute(
+                    'SELECT id FROM bots WHERE admin_user_id = ? AND is_active = 1',
+                    (doctor_telegram_id,)
+                )
+                result = await cursor.fetchone()
+                if result:
+                    bot_id = result['id']
+            
+            if not bot_id:
+                bot_id = 1
+            
+            # Obtener mensaje de bienvenida personalizado (igual que admin_main_menu)
+            from common import texts
+            user_name = update.effective_user.first_name or "Usuario"
+            mensaje_bienvenida = await texts.get_mensaje_bienvenida(nombre_usuario=user_name, bot_id=bot_id)
+            
+            # Construir mensaje final (igual que admin_main_menu)
+            doctor_name = doctor[1] if doctor else "Tu perfil"
+            message = f"👋<b> Hello! Soy 💘 {doctor_name}</b>\n {mensaje_bienvenida}\n\n"
+            
+            # Obtener teclado con módulos activos
+            keyboard = await get_doctor_public_keyboard(user_id=update.effective_user.id)
+            
             await context.bot.edit_message_text(
                 chat_id=message_ref[0],
                 message_id=message_ref[1],
-                #text=f"👩‍⚕️ <b>Menú Principal - {html.escape(doctor[1])}</b>\n"
-                 #    "Comparte estos accesos con tus pacientes y personalízalos desde Panel Admin.",
-                reply_markup=get_doctor_public_keyboard(),
+                text=message,
+                reply_markup=keyboard,
                 parse_mode="HTML",
                 disable_web_page_preview=True,
             )
