@@ -331,17 +331,10 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     # Limpiar datos del test
     context.user_data.clear()
     
-    # Eliminar el mensaje del test si existe
-    try:
-        if query.message:
-            await query.message.delete()
-            logger.info(f"[cancel_test] Mensaje del test eliminado")
-    except Exception as e:
-        logger.warning(f"[cancel_test] No se pudo eliminar el mensaje: {e}")
-    
     # Redirigir al menú principal según el rol del usuario
+    # IMPORTANTE: Enviar nuevo mensaje en lugar de editar, porque el mensaje del test puede haber sido eliminado
     try:
-        from features.main_menu.user_handler import admin_main_menu
+        from features.main_menu.user_handler import get_doctor_public_keyboard, admin_main_menu
         from features.patient_menu.patient_handler import patient_main_menu
         from utils.role_manager import RoleManager
         from config import DB_PATH
@@ -353,25 +346,57 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         logger.info(f"[cancel_test] Redirigiendo usuario {user_id} (rol: {user_role}) al menú principal")
         
         if user_role == 'doctor':
-            await admin_main_menu(update, context)
+            # Para doctores, enviar nuevo mensaje con el menú principal
+            keyboard = await get_doctor_public_keyboard(user_id)
+            menu_text = "✅ Test cancelado.\n\n🏠 <b>Menú Principal</b>"
+            
+            try:
+                # Intentar editar primero
+                await query.edit_message_text(
+                    text=menu_text,
+                    reply_markup=keyboard,
+                    parse_mode="HTML"
+                )
+            except Exception:
+                # Si falla, enviar nuevo mensaje
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=menu_text,
+                    reply_markup=keyboard,
+                    parse_mode="HTML"
+                )
+                
         elif user_role == 'patient':
             doctor = await role_mgr.get_assigned_doctor(user_id)
             if doctor:
+                # Para pacientes, usar patient_main_menu que maneja el envío de nuevo mensaje
                 await patient_main_menu(update, context, doctor[0])
             else:
                 # Si no tiene doctor, enviar mensaje simple
+                try:
+                    await query.edit_message_text(
+                        text="✅ Test cancelado. Usa /start para comenzar.",
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text="✅ Test cancelado. Usa /start para comenzar.",
+                        parse_mode="HTML"
+                    )
+        else:
+            # Para otros roles, enviar mensaje simple
+            try:
+                await query.edit_message_text(
+                    text="✅ Test cancelado. Usa /start para comenzar.",
+                    parse_mode="HTML"
+                )
+            except Exception:
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text="✅ Test cancelado. Usa /start para comenzar.",
                     parse_mode="HTML"
                 )
-        else:
-            # Para otros roles, enviar mensaje simple
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="✅ Test cancelado. Usa /start para comenzar.",
-                parse_mode="HTML"
-            )
         
         logger.info(f"[cancel_test] Redirección completada")
         
@@ -379,13 +404,19 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         logger.error(f"[cancel_test] Error al redirigir al menú: {e}", exc_info=True)
         # Fallback: enviar mensaje simple
         try:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
+            await query.edit_message_text(
                 text="✅ Test cancelado. Usa /start para comenzar.",
                 parse_mode="HTML"
             )
-        except Exception as e2:
-            logger.error(f"[cancel_test] Error enviando mensaje de fallback: {e2}")
+        except Exception:
+            try:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="✅ Test cancelado. Usa /start para comenzar.",
+                    parse_mode="HTML"
+                )
+            except Exception as e2:
+                logger.error(f"[cancel_test] Error enviando mensaje de fallback: {e2}")
     
     return ConversationHandler.END
 
