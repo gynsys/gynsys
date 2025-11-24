@@ -371,7 +371,7 @@ async def cancel_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             mensaje_bienvenida = await texts.get_mensaje_bienvenida(nombre_usuario=user_name, bot_id=bot_id)
             
             # Construir mensaje final (igual que admin_main_menu)
-            message = f"👋<b> Hello! Soy 💘 {doctor_name}</b>\n {mensaje_bienvenida}\n\n"
+            message = f" {mensaje_bienvenida}"
             
             # Obtener teclado con módulos activos (igual que admin_main_menu)
             # get_doctor_public_keyboard ya verifica los módulos activos internamente
