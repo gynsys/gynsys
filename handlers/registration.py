@@ -222,16 +222,6 @@ def register_all_handlers(application: Application):
     # Handler central de callbacks (debe ir al final)
     # ⚠️ IMPORTANTE: Los callbacks del test son manejados por el ConversationHandler
     # El ConversationHandler del test debe estar registrado ANTES de este handler
-    # Usamos un filtro personalizado para excluir callbacks del test
-    def exclude_test_callbacks(update):
-        """Filtro que excluye callbacks del test"""
-        if not update.callback_query:
-            return False
-        callback_data = update.callback_query.data
-        # Excluir callbacks del test
-        if callback_data.startswith("test_answer_") or callback_data == "cancel_test" or callback_data == "begin_test":
-            return False
-        return True
-    
-    application.add_handler(CallbackQueryHandler(handle_all_callbacks, filters=exclude_test_callbacks))
+    # Si un callback del test llega aquí, handle_all_callbacks lo ignorará
+    application.add_handler(CallbackQueryHandler(handle_all_callbacks))
 
