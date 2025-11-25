@@ -348,7 +348,7 @@ async def process_logo_upload(update: Update, context: ContextTypes.DEFAULT_TYPE
     if message:
         await message.delete()
 
-    if not all([editor_message_id, message, message.photo, logo_key]):
+    if not all([editor_message_id, message, logo_key]):
         logger.warning("[LOGO UPLOAD] Faltan datos críticos. Abortando.")
         if editor_message_id:
             await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="❌ Error en la subida. Vuelve a intentarlo.")
@@ -356,17 +356,39 @@ async def process_logo_upload(update: Update, context: ContextTypes.DEFAULT_TYPE
             await show_logos_section(update, context, message_to_edit_id=editor_message_id)
         return ConversationHandler.END
 
+    file_to_download = None
+    file_extension = '.jpg'
+    if message.photo:
+        photo = message.photo[-1]
+        file_to_download = await photo.get_file()
+        file_extension = os.path.splitext(file_to_download.file_path)[1] or '.jpg'
+    elif (
+        message.document
+        and message.document.mime_type
+        and message.document.mime_type.startswith('image/')
+    ):
+        file_to_download = await message.document.get_file()
+        file_name = message.document.file_name or file_to_download.file_path
+        file_extension = os.path.splitext(file_name)[1] or '.jpg'
+    else:
+        logger.warning("[LOGO UPLOAD] Archivo recibido no es una imagen válida.")
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=editor_message_id,
+            text="❌ Debes enviar una imagen (como foto o documento)."
+        )
+        await asyncio.sleep(3)
+        await show_logos_section(update, context, message_to_edit_id=editor_message_id)
+        return ConversationHandler.END
+
     await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="⏳ Procesando imagen...")
 
     try:
         logos_dir = "logos"
         os.makedirs(logos_dir, exist_ok=True)
-        photo = message.photo[-1]
-        photo_file = await photo.get_file()
-        file_extension = os.path.splitext(photo_file.file_path)[1] or '.jpg'
         new_filename = f"logo_{doctor_id}_{logo_key}{file_extension}"
         file_path = os.path.join(logos_dir, new_filename)
-        await photo_file.download_to_drive(file_path)
+        await file_to_download.download_to_drive(file_path)
 
         old_path = await pdf_db.get_setting_value(doctor_id, logo_key)
         if old_path and os.path.exists(old_path) and old_path != file_path:
@@ -492,7 +514,10 @@ def register(app: Application):
         entry_points=[CallbackQueryHandler(start_logo_upload, pattern='^pdf_upload_logo:')],
         states={
             states.AWAITING_LOGO_UPLOAD: [
-                MessageHandler(filters.PHOTO, process_logo_upload),
+                MessageHandler(
+                    filters.PHOTO | filters.Document.IMAGE,
+                    process_logo_upload
+                ),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, cancel_operation_from_message)
             ]
         },
