@@ -8,6 +8,20 @@ from telegram.error import BadRequest
 
 logger = logging.getLogger(__name__)
 
+async def cleanup_extra_messages(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
+    """
+    Limpia cualquier mensaje 'extra' (como de galería o vistas detalladas)
+    guardado en el contexto del usuario.
+    """
+    if extra_ids := context.user_data.pop('extra_message_ids', None):
+        logger.info(f"Limpiando {len(extra_ids)} mensajes extra...")
+        for msg_id in extra_ids:
+            try:
+                await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
+            except BadRequest:
+                pass # Ignorar si ya fue borrado
+            except Exception as e:
+                logger.error(f"Error inesperado al borrar mensaje extra {msg_id}: {e}")
 # --- FUNCIÓN DE ESCAPE ---
 def escape_html(text: str) -> str:
     """
