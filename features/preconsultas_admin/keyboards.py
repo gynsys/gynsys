@@ -51,7 +51,17 @@ def build_histories_list_keyboard(histories: list, current_page: int) -> InlineK
     # Crea un botón para cada historia en la lista
     for history in histories:
         callback_data = f"view_history_{history['id']}_pendinglist_{current_page}"
-        keyboard.append([InlineKeyboardButton(f"👤 {history['full_name']} ({history['created_at'].split(' ')[0]})", callback_data=callback_data)])
+        # Manejar created_at que puede ser datetime o string
+        created_at = history.get('created_at', '')
+        if hasattr(created_at, 'strftime'):
+            # Es un objeto datetime
+            date_str = created_at.strftime('%Y-%m-%d')
+        elif isinstance(created_at, str):
+            # Es un string
+            date_str = created_at.split(' ')[0] if ' ' in created_at else created_at
+        else:
+            date_str = '-'
+        keyboard.append([InlineKeyboardButton(f"👤 {history['full_name']} ({date_str})", callback_data=callback_data)])
 
 
     # Lógica de paginación
