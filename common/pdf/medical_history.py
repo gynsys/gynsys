@@ -16,6 +16,22 @@ from .utils import format_simple_antecedente, format_family_history, create_logo
 
 logger = logging.getLogger(__name__)
 
+# Meses en español
+SPANISH_MONTHS = {
+    1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+    5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+    9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+}
+
+def format_date_spanish(date: datetime = None) -> str:
+    """Formatea una fecha en español: 'dd de mes de yyyy'"""
+    if date is None:
+        date = datetime.now()
+    day = date.day
+    month = SPANISH_MONTHS[date.month]
+    year = date.year
+    return f"{day} de {month} de {year}"
+
 
 async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
     """
@@ -230,7 +246,7 @@ async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
 
     # Ciudad del pie de página (dinámica)
     footer_city = get_pdf_setting('footer_city', 'Guarenas')
-    today_str = datetime.now().strftime("%d de %B de %Y")
+    today_str = format_date_spanish()
     pre_signature_text = f"Sin otro particular se suscribe en {footer_city} a los {today_str}."
     story.append(Paragraph(pre_signature_text, ParagraphStyle(name='PreFooter', fontSize=8, alignment=TA_CENTER, spaceAfter=12)))
 
