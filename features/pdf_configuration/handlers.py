@@ -65,7 +65,7 @@ async def show_pdf_configuration(update: Update, context: ContextTypes.DEFAULT_T
     text = await templates.get_configuration_text(settings)
     keyboard = keyboards.get_configuration_keyboard(settings)
 
-    await query.edit_message_text(text=text, reply_markup=keyboard)
+    await query.edit_message_text(text=text, reply_markup=keyboard, parse_mode='HTML')
 
 async def show_pdf_configuration_from_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Muestra la configuración principal desde un mensaje (no callback query)"""
@@ -79,7 +79,7 @@ async def show_pdf_configuration_from_message(update: Update, context: ContextTy
     text = await templates.get_configuration_text(settings)
     keyboard = keyboards.get_configuration_keyboard(settings)
 
-    await update.message.reply_text(text=text, reply_markup=keyboard)
+    await update.message.reply_text(text=text, reply_markup=keyboard, parse_mode='HTML')
 
 @admin_required
 async def show_medical_section(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -351,52 +351,41 @@ async def start_logo_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 @admin_required
 async def process_logo_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     logger.info("--- [LOGO UPLOAD] Iniciando process_logo_upload ---")
-    message = update.message
+    message = update.effective_message
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
         if message:
             await message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
         return ConversationHandler.END
+
     logo_key = context.user_data.get('uploading_logo_type')
     editor_message_id = context.user_data.get('logo_editor_message_id')
 
-    if message:
-        await message.delete()
-
     if not all([editor_message_id, message, logo_key]):
         logger.warning("[LOGO UPLOAD] Faltan datos críticos. Abortando.")
-        if editor_message_id:
-            await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="❌ Error en la subida. Vuelve a intentarlo.")
-            await asyncio.sleep(3)
-            await show_logos_section(update, context, message_to_edit_id=editor_message_id)
         return ConversationHandler.END
 
     file_to_download = None
     file_extension = '.jpg'
+
     if message.photo:
+        logger.info("[LOGO UPLOAD] Imagen recibida como foto")
         photo = message.photo[-1]
         file_to_download = await photo.get_file()
         file_extension = os.path.splitext(file_to_download.file_path)[1] or '.jpg'
-    elif (
-        message.document
-        and message.document.mime_type
-        and message.document.mime_type.startswith('image/')
-    ):
+    elif message.document and message.document.mime_type.startswith('image/'):
+        logger.info("[LOGO UPLOAD] Imagen recibida como documento")
         file_to_download = await message.document.get_file()
         file_name = message.document.file_name or file_to_download.file_path
         file_extension = os.path.splitext(file_name)[1] or '.jpg'
     else:
-        logger.warning("[LOGO UPLOAD] Archivo recibido no es una imagen válida.")
+        logger.warning("[LOGO UPLOAD] Archivo no válido")
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=editor_message_id,
-            text="❌ Debes enviar una imagen (como foto o documento)."
+            text="❌ Debes enviar una imagen válida."
         )
-        await asyncio.sleep(3)
-        await show_logos_section(update, context, message_to_edit_id=editor_message_id)
         return ConversationHandler.END
-
-    await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="⏳ Procesando imagen...")
 
     try:
         LOGOS_DIR.mkdir(parents=True, exist_ok=True)
@@ -404,32 +393,35 @@ async def process_logo_upload(update: Update, context: ContextTypes.DEFAULT_TYPE
         file_path = LOGOS_DIR / new_filename
         await file_to_download.download_to_drive(str(file_path))
 
-        old_path = await pdf_db.get_setting_value(doctor_id, logo_key)
-        resolved_old = _resolve_logo_path(old_path)
-        if resolved_old and resolved_old.exists() and resolved_old != file_path:
-            try:
-                resolved_old.unlink()
-                logger.info(f"[LOGO UPLOAD] Logo anterior eliminado: {resolved_old}")
-            except Exception as e:
-                logger.error(f"[LOGO UPLOAD] Error eliminando logo anterior {resolved_old}: {e}")
-
         relative_path = file_path.relative_to(BASE_DIR).as_posix()
         success = await pdf_db.update_pdf_setting(doctor_id, logo_key, relative_path)
 
         if success:
-            logo_names = {'logo_header_1': 'Logo Superior Izquierdo', 'logo_header_2': 'Logo Superior Derecho', 'logo_signature': 'Firma y Sello'}
-            logo_name = logo_names.get(logo_key, 'Logo')
-            success_message = f"✅ ¡{logo_name} actualizado con éxito!"
-            await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text=success_message)
+            await context.bot.edit_message_text(
+                chat_id=update.effective_chat.id,
+                message_id=editor_message_id,
+                text="✅ Logo actualizado con éxito."
+            )
         else:
-            await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="❌ Hubo un error al guardar en la base de datos.")
+            await context.bot.edit_message_text(
+                chat_id=update.effective_chat.id,
+                message_id=editor_message_id,
+                text="❌ Error al guardar en la base de datos."
+            )
+
     except Exception as e:
-        logger.error(f"[LOGO UPLOAD] Excepción en bloque try: {e}", exc_info=True)
-        await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="❌ Ocurrió un error inesperado.")
+        logger.error(f"[LOGO UPLOAD] Excepción: {e}", exc_info=True)
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=editor_message_id,
+            text="❌ Error inesperado."
+        )
 
-    await asyncio.sleep(2.5)
-
+    await asyncio.sleep(2)
     await show_logos_section(update, context, message_to_edit_id=editor_message_id)
+
+    if message:
+        await message.delete()
 
     context.user_data.clear()
     return ConversationHandler.END
