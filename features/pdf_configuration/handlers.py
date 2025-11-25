@@ -3,6 +3,7 @@ import logging
 import tempfile
 import os
 import asyncio
+from pathlib import Path
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -20,6 +21,20 @@ from . import keyboards
 from . import database as pdf_db
 
 logger = logging.getLogger(__name__)
+
+# Directorio base del proyecto y carpeta de logos
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+LOGOS_DIR = BASE_DIR / "logos"
+
+
+def _resolve_logo_path(path_str: str) -> Path:
+    """Convierte una ruta relativa (guardada en BD) a ruta absoluta."""
+    if not path_str:
+        return None
+    path = Path(path_str)
+    if not path.is_absolute():
+        path = BASE_DIR / path
+    return path
 
 # Helper para obtener doctor_id (multi-tenant)
 role_manager = RoleManager(DB_PATH)
@@ -42,8 +57,8 @@ async def show_pdf_configuration(update: Update, context: ContextTypes.DEFAULT_T
 
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
-        await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
-        return
+        await update.message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
+        return ConversationHandler.END
     
     settings = await pdf_db.get_pdf_settings(doctor_id)
 
@@ -74,8 +89,8 @@ async def show_medical_section(update: Update, context: ContextTypes.DEFAULT_TYP
 
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
-        await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
-        return
+        await update.message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
+        return ConversationHandler.END
     settings = await pdf_db.get_pdf_settings(doctor_id)
 
     text = "👨‍⚕️ <b>Configuración - Datos del Médico</b>\n\nEdita cada campo o controla su visibilidad en el PDF."
@@ -91,8 +106,8 @@ async def show_header_section(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
-        await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
-        return
+        await update.message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
+        return ConversationHandler.END
     settings = await pdf_db.get_pdf_settings(doctor_id)
 
     text = "📝 <b>Configuración - Encabezado y Pie</b>\n\nEdita cada campo o controla su visibilidad en el PDF."
@@ -108,8 +123,8 @@ async def show_logos_section(update: Update, context: ContextTypes.DEFAULT_TYPE,
 
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
-        await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
-        return
+        await update.message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
+        return ConversationHandler.END
     settings = await pdf_db.get_pdf_settings(doctor_id)
 
     text = "🖼️ <b>Configuración - Logos y Firmas</b>\n\nSube imágenes o controla su visibilidad en el PDF."
@@ -197,8 +212,8 @@ async def start_edit_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
-        await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
-        return
+        await update.message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
+        return ConversationHandler.END
     current_value = await pdf_db.get_setting_value(doctor_id, field_key)
 
     # Nombres amigables para los campos
@@ -233,8 +248,8 @@ async def process_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     doctor_id = await _get_doctor_id(update)
     if not doctor_id:
-        await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
-        return
+        await update.message.reply_text("❌ Error: No se pudo identificar tu perfil de médico.")
+        return ConversationHandler.END
     success = await pdf_db.update_pdf_setting(doctor_id, field_key, new_value)
 
     if success:
@@ -384,17 +399,22 @@ async def process_logo_upload(update: Update, context: ContextTypes.DEFAULT_TYPE
     await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=editor_message_id, text="⏳ Procesando imagen...")
 
     try:
-        logos_dir = "logos"
-        os.makedirs(logos_dir, exist_ok=True)
+        LOGOS_DIR.mkdir(parents=True, exist_ok=True)
         new_filename = f"logo_{doctor_id}_{logo_key}{file_extension}"
-        file_path = os.path.join(logos_dir, new_filename)
-        await file_to_download.download_to_drive(file_path)
+        file_path = LOGOS_DIR / new_filename
+        await file_to_download.download_to_drive(str(file_path))
 
         old_path = await pdf_db.get_setting_value(doctor_id, logo_key)
-        if old_path and os.path.exists(old_path) and old_path != file_path:
-            os.remove(old_path)
+        resolved_old = _resolve_logo_path(old_path)
+        if resolved_old and resolved_old.exists() and resolved_old != file_path:
+            try:
+                resolved_old.unlink()
+                logger.info(f"[LOGO UPLOAD] Logo anterior eliminado: {resolved_old}")
+            except Exception as e:
+                logger.error(f"[LOGO UPLOAD] Error eliminando logo anterior {resolved_old}: {e}")
 
-        success = await pdf_db.update_pdf_setting(doctor_id, logo_key, file_path)
+        relative_path = file_path.relative_to(BASE_DIR).as_posix()
+        success = await pdf_db.update_pdf_setting(doctor_id, logo_key, relative_path)
 
         if success:
             logo_names = {'logo_header_1': 'Logo Superior Izquierdo', 'logo_header_2': 'Logo Superior Derecho', 'logo_signature': 'Firma y Sello'}
@@ -447,10 +467,11 @@ async def execute_logo_delete(update: Update, context: ContextTypes.DEFAULT_TYPE
         current_value = await pdf_db.get_setting_value(doctor_id, logo_key)
 
         # Eliminar el archivo físico si existe
-        if current_value and os.path.exists(current_value):
+        resolved_current = _resolve_logo_path(current_value)
+        if resolved_current and resolved_current.exists():
             try:
-                os.remove(current_value)
-                logger.info(f"Archivo de logo eliminado: {current_value}")
+                resolved_current.unlink()
+                logger.info(f"Archivo de logo eliminado: {resolved_current}")
             except Exception as e:
                 logger.error(f"Error eliminando archivo de logo: {e}")
 

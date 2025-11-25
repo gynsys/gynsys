@@ -4,11 +4,22 @@ import os
 import io
 import json
 import logging
+from pathlib import Path
 from reportlab.platypus import Image
 from reportlab.lib.units import inch
 import qrcode
 
 logger = logging.getLogger(__name__)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+def _resolve_path(path_str):
+    if not path_str:
+        return None
+    path = Path(path_str)
+    if not path.is_absolute():
+        path = BASE_DIR / path
+    return path
 
 
 def format_simple_antecedente(value: str) -> str:
@@ -48,13 +59,14 @@ def format_family_history(mother_history: str, father_history: str) -> str:
 
 def create_logo_image(logo_path, width=0.8*inch, height=0.8*inch):
     """Crea una imagen de logo manejando errores"""
-    if not logo_path or not os.path.exists(logo_path):
+    resolved_path = _resolve_path(logo_path)
+    if not resolved_path or not resolved_path.exists():
         logger.warning(f"❌ Logo path no existe o está vacío: {logo_path}")
         return ""
 
     try:
-        logger.info(f"✅ Cargando logo: {logo_path}")
-        return Image(logo_path, width=width, height=height)
+        logger.info(f"✅ Cargando logo: {resolved_path}")
+        return Image(str(resolved_path), width=width, height=height)
     except Exception as e:
         logger.error(f"❌ Error cargando logo {logo_path}: {e}")
         return ""
