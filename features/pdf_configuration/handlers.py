@@ -232,8 +232,8 @@ async def start_edit_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     field_name = field_names.get(field_key, field_key)
     text = templates.get_edit_field_text(field_name, current_value)
     keyboard = keyboards.get_cancel_keyboard()
-
-    await query.edit_message_text(text=text, reply_markup=keyboard)
+    
+    await query.edit_message_text(text=text, reply_markup=keyboard, parse_mode='HTML')
     return states.AWAITING_TEXT_INPUT
 
 async def process_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -498,75 +498,98 @@ async def cancel_operation_from_message(update: Update, context: ContextTypes.DE
     await show_pdf_configuration_from_message(update, context)
     return ConversationHandler.END
 
+async def invalid_input_in_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Informa al usuario sobre una entrada inválida durante la subida de logo."""
+    editor_message_id = context.user_data.get('logo_editor_message_id')
+    if update.message:
+        await update.message.delete()
+    if editor_message_id:
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id, message_id=editor_message_id,
+            text="❌ **Entrada no válida.**\n\nPor favor, envía una imagen o escribe 'cancelar'.",
+            reply_markup=keyboards.get_cancel_keyboard(), parse_mode='HTML'
+        )
+    return states.AWAITING_LOGO_UPLOAD
+
+async def invalid_input_in_text_edit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Informa al usuario que ha enviado un tipo de mensaje incorrecto durante la edición de texto."""
+    await update.message.reply_text(
+        "❌ **Entrada no válida.**\n\nPor favor, envía solo texto o escribe 'cancelar' para abortar."
+    )
+    # Mantenemos al usuario en el mismo estado
+    return states.AWAITING_TEXT_INPUT
 # ===== REGISTRO DE HANDLERS =====
 
 def register(app: Application):
-    """Registra todos los handlers del módulo"""
+    """Registra todos los handlers del módulo de forma robusta."""
 
-    # PRIMERO: Conversation Handlers (manejan estados)
+    # ---------- 1) CONVERSATION HANDLERS (SIEMPRE PRIMERO) ----------
 
-    # Conversación para edición de texto
+    # Conversación para edición de texto (CORREGIDA)
     text_edit_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(start_edit_text, pattern='^pdf_edit_text:')],
-        states={
-            states.AWAITING_TEXT_INPUT: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, process_text_input)
-            ]
-        },
-        fallbacks=[
-            CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'),
-            MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message)
-        ],
-        per_message=True,
-        per_chat=True,
-        per_user=True
-    )
+    entry_points=[CallbackQueryHandler(start_edit_text, pattern='^pdf_edit_text:')],
+    states={
+        states.AWAITING_TEXT_INPUT: [
+            MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, process_text_input),
+            MessageHandler(~filters.TEXT & ~filters.COMMAND, invalid_input_in_text_edit),
+        ]
+    },
+    fallbacks=[
+        CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$')
+    ],
+    # --- CAMBIOS CLAVE AQUÍ ---
+    name="pdf_text_edit_conversation", # Nombre único para la conversación
+    persistent=False, # Si usas persistencia, configúrala globalmente en ApplicationBuilder
+    allow_reentry=True # Buena práctica
+    # Eliminamos per_message, per_chat y per_user, PTB usará su comportamiento por defecto que es per_user y per_chat
+)
 
-    # Conversación: Subida de logos
+    # Conversación: Subida de logos (CORREGIDA)
     logo_upload_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(start_logo_upload, pattern='^pdf_upload_logo:')],
-        states={
-            states.AWAITING_LOGO_UPLOAD: [
-                MessageHandler(
-                    filters.PHOTO | filters.Document.IMAGE,
-                    process_logo_upload
-                ),
-                MessageHandler(filters.TEXT & ~filters.COMMAND, cancel_operation_from_message)
-            ]
-        },
-        fallbacks=[
-            CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'),
-            MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message)
-        ],
-        per_message=True,
-        per_chat=True,
-        per_user=True
-    )
-
-    # Conversación: Eliminación de logos
+    entry_points=[CallbackQueryHandler(start_logo_upload, pattern='^pdf_upload_logo:')],
+    states={
+        states.AWAITING_LOGO_UPLOAD: [
+            MessageHandler(filters.PHOTO | filters.Document.IMAGE, process_logo_upload),
+            MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message),
+            MessageHandler(filters.ALL & ~filters.COMMAND, invalid_input_in_upload)
+        ]
+    },
+    fallbacks=[
+        CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$')
+    ],
+    # --- APLICAMOS LA MISMA SIMPLIFICACIÓN AQUÍ ---
+    name="pdf_logo_upload_conversation",  # Nombre único para la conversación
+    persistent=False,
+    allow_reentry=True
+    # Eliminamos per_message, per_chat y per_user
+)
+    # Conversación: Eliminación de logos (Ligeramente simplificada)
     logo_delete_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(confirm_logo_delete, pattern='^pdf_delete_logo:')],
         states={
             states.CONFIRMING_DELETE: [
+                # El usuario solo puede interactuar con botones en este estado
                 CallbackQueryHandler(execute_logo_delete, pattern='^pdf_delete_confirm:'),
+                # El botón de cancelar general también funciona aquí
                 CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$')
             ]
         },
         fallbacks=[
-            CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'),
-            MessageHandler(filters.TEXT & filters.Regex('^(cancelar|Cancelar)$'), cancel_operation_from_message)
+            # Un fallback general por si la conversación se interrumpe
+            CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$')
         ],
         per_message=True,
         per_chat=True,
         per_user=True
     )
 
-    # Registrar ConversationHandler PRIMERO
+    # Registrar ConversationHandlers
     app.add_handler(text_edit_conv)
     app.add_handler(logo_upload_conv)
     app.add_handler(logo_delete_conv)
 
-    # LUEGO: Handlers básicos de navegación (sin estados)
+    # ---------- 2) HANDLERS BÁSICOS DE NAVEGACIÓN (SIN ESTADOS) ----------
     app.add_handler(CallbackQueryHandler(show_pdf_configuration, pattern='^pdf_configuration_menu$'))
     app.add_handler(CallbackQueryHandler(show_pdf_configuration, pattern='^pdf_config_main$'))
     app.add_handler(CallbackQueryHandler(show_medical_section, pattern='^pdf_config_medical_section$'))
@@ -574,6 +597,8 @@ def register(app: Application):
     app.add_handler(CallbackQueryHandler(show_logos_section, pattern='^pdf_config_logos_section$'))
     app.add_handler(CallbackQueryHandler(toggle_visibility, pattern='^pdf_toggle_visibility:'))
     app.add_handler(CallbackQueryHandler(toggle_functional_exam, pattern='^pdf_toggle_functional_exam$'))
+    # No es necesario registrar cancel_operation aquí de nuevo, ya está en los fallbacks.
+    # Pero no hace daño tenerlo por si se llama desde un contexto fuera de una conversación.
     app.add_handler(CallbackQueryHandler(cancel_operation, pattern='^pdf_config_cancel$'))
 
     logger.info("Módulo PDF Configuration registrado correctamente")

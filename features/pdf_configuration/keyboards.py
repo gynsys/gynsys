@@ -97,7 +97,7 @@ def get_logos_section_keyboard(settings: dict) -> InlineKeyboardMarkup:
 
     logo_fields = [
         ('logo_header_1', '🖼️ Logo Izquierdo'),
-        ('logo_header_2', '🖼️ Logo Derecho'),
+        #('logo_header_2', '🖼️ Logo Derecho'),
         ('logo_signature', '🖋️ Firma/Sello')
     ]
 
