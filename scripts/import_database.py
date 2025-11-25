@@ -6,6 +6,11 @@ import json
 import sys
 import asyncio
 from pathlib import Path
+
+# Agregar el directorio raíz al path para importar módulos
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from sqlalchemy import text
 from database.engine import engine
 from database.session import get_session

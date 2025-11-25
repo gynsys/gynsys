@@ -227,7 +227,14 @@ class GenericContentRepository:
             """)
             result = await self.session.execute(query, {'item_id': item_id})
             row = result.first()
-            return dict(row) if row else None
+            if row:
+                # Convertir Row a diccionario correctamente
+                if hasattr(row, '_mapping'):
+                    return dict(row._mapping)
+                else:
+                    # Fallback: construir diccionario manualmente
+                    return {'title': row[0], 'content': row[1]}
+            return None
         except Exception as e:
             logger.error(f"Error en get_item_details: {e}")
             return None
