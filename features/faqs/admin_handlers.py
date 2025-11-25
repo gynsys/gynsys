@@ -24,7 +24,7 @@ async def faqs_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     kb = [
-        [IKB("✏️ Editar Encabezado", callback_data="faq_edit_header")],
+        # [IKB("✏️ Editar Encabezado", callback_data="faq_edit_header")],
         [IKB(f"➕ Añadir {CONFIG['singular']}", callback_data="faq_add_start")],
         [IKB(f"✏️ Modificar {CONFIG['singular']}", callback_data="faq_modify_list")],
         [IKB(f"🗑️ Eliminar {CONFIG['singular']}", callback_data="faq_delete_list")],

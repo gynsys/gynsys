@@ -29,7 +29,7 @@ async def locations_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # --- TECLADO CORREGIDO Y COMPLETO ---
     keyboard = [
         # --- ¡BOTÓN AÑADIDO! ---
-        [InlineKeyboardButton(f"✏️ Editar Encabezado", callback_data=f"{CONFIG['prefix']}_edit_header")],
+        # [InlineKeyboardButton(f"✏️ Editar Encabezado", callback_data=f"{CONFIG['prefix']}_edit_header")],
 
 
 
