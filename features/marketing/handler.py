@@ -145,9 +145,10 @@ async def handle_marketing_callback(update: Update, context: ContextTypes.DEFAUL
                 parse_mode="HTML"
             )
     elif data == "marketing_pricing":
-        # show_precios_menu ya hace query.answer()
-        from features.precios.user_handlers import show_precios_menu
-        await show_precios_menu(update, context)
+        await query.answer(
+            text="El costo de lanzamiento de GynSys sera de 3$ mensuales.",
+            show_alert=True
+        )
         return
     elif data == "marketing_about":
         # El texto es demasiado largo para un alert (max 200 chars). Lo acortamos.
