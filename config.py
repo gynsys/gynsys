@@ -24,7 +24,8 @@ if SUPER_ADMIN_ID == 0:
 # ============================================================================
 # CONFIGURACIÓN DE BASE DE DATOS
 # ============================================================================
-DB_PATH = os.getenv('DB_PATH', 'database/medical_bot.db')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.getenv('DB_PATH', os.path.join(BASE_DIR, 'database', 'medical_bot.db'))
 DATABASE_NAME = DB_PATH
 
 # ============================================================================

@@ -9,6 +9,7 @@ from telegram.error import BadRequest
 from common.helpers import escape_html
 from common.context_manager import get_tenant_id
 from .faq_service import list_faqs, get_faq   # mismo nombre
+from config import SUPER_ADMIN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -20,12 +21,42 @@ async def show_faqs_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not bot_id:
         await query.answer("No se pudo determinar el perfil.", show_alert=True)
         return
-    items = await list_faqs(bot_id)
-    if not items:
+    
+    try:
+        items = await list_faqs(bot_id)
+    except Exception as e:
+        logger.error(f"Error listing FAQs: {e}")
+        await query.answer("Error interno al cargar FAQs.", show_alert=True)
+        return
+
+    # Permitir ver el menú vacío si es admin para poder añadir
+    user_id = update.effective_user.id
+    is_superadmin = (user_id == SUPER_ADMIN_ID)
+    
+    if not items and not is_superadmin:
         await query.answer("No hay FAQs.", show_alert=True)
         return
-    kb = [[IKB(q["question"], callback_data=f"faq_view_{q['id']}")] for q in items] + [[IKB("🏠 Menú Principal", callback_data="main_menu")]]
-    await query.edit_message_text("❓ Preguntas Frecuentes", reply_markup=IKM(kb))
+        
+    kb = [[IKB(q["question"], callback_data=f"faq_view_{q['id']}")] for q in items]
+    
+    kb.append([IKB("🏠 Menú Principal", callback_data="main_menu")])
+    
+    text = "❓ Preguntas Frecuentes"
+    reply_markup = IKM(kb)
+    
+    try:
+        await query.edit_message_text(text, reply_markup=reply_markup)
+    except BadRequest:
+        # Si falla (ej. es una foto), borrar y enviar nuevo
+        try:
+            await query.message.delete()
+        except:
+            pass
+        await context.bot.send_message(
+            chat_id=query.message.chat.id,
+            text=text,
+            reply_markup=reply_markup
+        )
 
 # ---------- VER FAQ ----------
 async def faq_user_view(update: Update, context: ContextTypes.DEFAULT_TYPE):

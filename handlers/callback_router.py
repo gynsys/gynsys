@@ -50,7 +50,7 @@ def _is_callback_handled_by_router(callback_data: str, user_role: str) -> bool:
         admin_callbacks = {
             "doctor_main_menu", "doctor_panel", "doctor_contact",
             "contacto_menu", "contact_preview", "doctor_pricing",
-            "doctor_citas", "locations_admin_hub", "faqs_admin_hub",
+            "doctor_citas", "locations_admin_hub", "faqs_admin_hub", "faqs_admin_hub_v2",
             "prices_admin_hub", "test_admin_hub", "precios_menu",
             "doctor_locations", "doctor_faq", "doctor_share_link",
             "admin_panel", "settings_menu"
@@ -75,7 +75,7 @@ def _is_callback_handled_by_router(callback_data: str, user_role: str) -> bool:
             "restrict_doctor", "delete_doctor_menu", "simple_restrict_menu",
             "simple_permit_menu", "refresh_doctors", "refresh_restricted",
             "list_restricted", "extra_modules_hub", "extra_modules_by_doctor",
-            "locations_admin_hub", "faqs_admin_hub", "contacto_menu", "contact_preview"
+            "locations_admin_hub", "faqs_admin_hub", "faqs_admin_hub_v2", "contacto_menu", "contact_preview"
         }
         
         superadmin_patterns = [
@@ -113,6 +113,7 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     callback_data = query.data
     
+    print(f"🔍 [DEBUG] Callback recibido: '{callback_data}' | Usuario: {user_id} | Rol: {user_role}")
     logger.info(f"[handle_all_callbacks] Callback recibido: {callback_data} - Usuario: {user_id} - Rol: {user_role}")
     print(f"🔔 Callback: {callback_data} - Usuario: {user_id} - Rol: {user_role}")  # DEBUG
     

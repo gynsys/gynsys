@@ -43,7 +43,7 @@ ABOUT_TEXT = (
 
 async def send_marketing_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, *, is_superadmin=False, is_doctor=False):
     keyboard = get_marketing_keyboard(is_superadmin=is_superadmin, is_doctor=is_doctor)
-    
+
     # Enviar imagen con caption
     if update.message:
         with open(LOGO_PATH, 'rb') as photo:
@@ -113,6 +113,107 @@ async def send_marketing_menu(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 async def handle_marketing_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    # await query.answer() # Eliminado para manejarlo individualmente
+    user_role = await role_manager.get_user_role(update.effective_user.id)
+    keyboard = get_marketing_keyboard(
+        is_superadmin=user_role == "superadmin",
+        is_doctor=user_role == "doctor",
+    )
+
+    data = query.data
+    if data == "marketing_gallery":
+        await query.answer()
+        text = GALLERY_TEXT
+        # Para otros callbacks, mostrar texto normal
+        try:
+            await query.edit_message_text(
+                text,
+                reply_markup=keyboard,
+                parse_mode="HTML",
+            )
+        except BadRequest:
+            # Si falla (ej. es imagen), borrar y enviar nuevo
+            try:
+                await query.message.delete()
+            except:
+                pass
+            await context.bot.send_message(
+                chat_id=query.message.chat.id,
+                text=text,
+                reply_markup=keyboard,
+                parse_mode="HTML"
+            )
+    elif data == "marketing_pricing":
+        # show_precios_menu ya hace query.answer()
+        from features.precios.user_handlers import show_precios_menu
+        await show_precios_menu(update, context)
+        return
+    elif data == "marketing_about":
+        # El texto es demasiado largo para un alert (max 200 chars). Lo acortamos.
+        await query.answer(
+            text="SaaS especializado en ginecología. Brindamos a cada especialista un bot personalizado para gestionar citas y ofrecer experiencias digitales seguras.",
+            show_alert=True
+        )
+        return
+    else:
+        await query.answer()
+        # Volver al menú principal (mostrar imagen con caption)
+        # Transición fluida: Paso 1 - Editar botones primero, Paso 2 - Luego renderizar imagen
+        try:
+            # Paso 1: Editar primero a texto con los botones (transición fluida)
+            await query.edit_message_text(
+                text=MARKETING_TEXT,
+                reply_markup=keyboard,
+                parse_mode="HTML"
+            )
+            # Paso 2: Luego cambiar a imagen
+            with open(LOGO_PATH, 'rb') as photo_file:
+                media = InputMediaPhoto(media=photo_file, caption=MARKETING_TEXT, parse_mode="HTML")
+                await query.edit_message_media(
+                    media=media,
+                    reply_markup=keyboard,
+                )
+        except BadRequest as e:
+            # Si ya es imagen, editar directamente
+            if "no text" in str(e).lower():
+                try:
+                    with open(LOGO_PATH, 'rb') as photo_file:
+                        media = InputMediaPhoto(media=photo_file, caption=MARKETING_TEXT, parse_mode="HTML")
+                        await query.edit_message_media(
+                            media=media,
+                            reply_markup=keyboard,
+                        )
+                except (BadRequest, TypeError):
+                    # Si falla, eliminar y enviar nuevo
+                    try:
+                        await query.message.delete()
+                    except:
+                        pass
+                    with open(LOGO_PATH, 'rb') as photo:
+                        await context.bot.send_photo(
+                            chat_id=query.message.chat.id,
+                            photo=photo,
+                            caption=MARKETING_TEXT,
+                            reply_markup=keyboard,
+                            parse_mode="HTML",
+                        )
+            else:
+                # Otro error, eliminar y enviar nuevo
+                try:
+                    await query.message.delete()
+                except:
+                    pass
+                with open(LOGO_PATH, 'rb') as photo:
+                    await context.bot.send_photo(
+                        chat_id=query.message.chat.id,
+                        photo=photo,
+                        caption=MARKETING_TEXT,
+                        reply_markup=keyboard,
+                        parse_mode="HTML",
+                    )
+
+'''async def handle_marketing_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     user_role = await role_manager.get_user_role(update.effective_user.id)
@@ -195,5 +296,5 @@ async def handle_marketing_callback(update: Update, context: ContextTypes.DEFAUL
                         caption=MARKETING_TEXT,
                         reply_markup=keyboard,
                         parse_mode="HTML",
-                    )
+                    )'''
 

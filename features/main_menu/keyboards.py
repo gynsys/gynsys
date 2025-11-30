@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import asyncio
+
 from database import extra_modules_db
 from utils.role_manager import RoleManager
 from config import DB_PATH
@@ -22,7 +22,8 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
                 InlineKeyboardButton("🤖 Quiero mi Bot", callback_data="request_bot")
             ],
             # Fila 3: FAQs y Precios
-            [ InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub")],
+            [ InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub_v2")],
+
             [ InlineKeyboardButton("💰 Precios", callback_data="marketing_pricing")],
             # Fila 4: Editar Mensaje de Bienvenida
             [
@@ -38,7 +39,7 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
         # PANEL ADMIN DEL INQUILINO (NO confundir con menú principal)
         # ============================================================
         # Este teclado se usa en: show_doctor_panel() -> Panel Admin
-        # 
+        #
         # DIFERENCIAS IMPORTANTES:
         # - Panel Admin: Para GESTIONAR el bot (configurar, administrar)
         #   - Incluye: "🧪 Gestionar Test" (para administrar preguntas)
@@ -50,7 +51,7 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
         #   - Generado por: get_doctor_public_keyboard()
         # ============================================================
         keyboard = []
-        
+
         # Verificar si el módulo test está activo para mostrar "Gestionar Test"
         test_manage_button = None
         if user_id:
@@ -60,7 +61,7 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
                 is_test_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'test')
                 if is_test_active:
                     test_manage_button = InlineKeyboardButton("🧪 Gestionar Test", callback_data="test_admin_hub")
-        
+
         # Fila 1
         keyboard.append([
             InlineKeyboardButton("📅 Citas", callback_data="citas_menu"),
@@ -68,48 +69,48 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
         # Fila 2
         keyboard.append([
             InlineKeyboardButton("🖼️ Galería", callback_data="gallery_tenant_hub"),
-            
-        ])    
-        
+
+        ])
+
         # Fila 3
         keyboard.append([
-            
+
             InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub")
         ])
         # Fila 4
         keyboard.append([
-           
+
             InlineKeyboardButton("📍 Ubicaciones", callback_data="locations_admin_hub")
         ])
         # Fila 5
         keyboard.append([
             InlineKeyboardButton("📞 Contacto", callback_data="contacto_menu")
-           
+
         ])
         keyboard.append([
-          
+
             InlineKeyboardButton("💰 Precios", callback_data="prices_admin_hub")
         ])
         # Fila 5 - Configuración PDF
         keyboard.append([
             InlineKeyboardButton("⚙️ Config. Informe PDF", callback_data="pdf_configuration_menu")
         ])
-        
+
         # Fila 6 - Editar Mensaje de Bienvenida
         keyboard.append([
             InlineKeyboardButton("✏️ Editar msg Bienvenida", callback_data="edit_welcome_message")
         ])
-        
+
         # Fila 7 - Gestionar Test (solo si el módulo está activo)
         if test_manage_button:
             keyboard.append([test_manage_button])
-        
+
         # Fila 8 - IMPORTANTE: Siempre incluir botón Inicio en el Panel Admin
         # Este botón permite volver al menú principal del doctor
         keyboard.append([
             InlineKeyboardButton("🏠", callback_data="doctor_main_menu")
         ])
-    
+
     return InlineKeyboardMarkup(keyboard)
 
 def get_doctors_management_keyboard():

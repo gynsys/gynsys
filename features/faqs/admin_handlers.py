@@ -21,6 +21,7 @@ CONFIG = dict(singular='FAQ', plural='FAQs', prefix='faq')
 # ---------- HUB ----------
 @admin_required
 async def faqs_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🏁 [DEBUG] Entrando a faqs_hub")
     query = update.callback_query
     await query.answer()
     kb = [
@@ -31,7 +32,21 @@ async def faqs_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [IKB("🔙 Volver", callback_data='doctor_panel'), IKB("🏠 Menú Principal", callback_data='main_menu')]
     ]
     text = f"🔧 <b>Gestión de {CONFIG['plural']}</b>"
-    await query.edit_message_text(text, reply_markup=IKM(kb), parse_mode="HTML")
+    
+    try:
+        await query.edit_message_text(text, reply_markup=IKM(kb), parse_mode="HTML")
+    except Exception:
+        # Si falla (ej. es una foto), borrar y enviar nuevo
+        try:
+            await query.message.delete()
+        except:
+            pass
+        await context.bot.send_message(
+            chat_id=query.message.chat.id,
+            text=text,
+            reply_markup=IKM(kb),
+            parse_mode="HTML"
+        )
 
 # ---------- ADD ----------
 AWAITING_QUESTION, AWAITING_ANSWER = range(2)
@@ -256,7 +271,7 @@ def register(app: Application):
 
     app.add_handler(add_conv)
     app.add_handler(mod_conv)
-    app.add_handler(CallbackQueryHandler(faqs_hub, pattern="^faqs_admin_hub$"))
+    # app.add_handler(CallbackQueryHandler(faqs_hub, pattern="^faqs_admin_hub$")) # Comentado para forzar uso del router
     app.add_handler(CallbackQueryHandler(faq_modify_list, pattern="^faq_modify_list$"))
     app.add_handler(CallbackQueryHandler(faq_delete_list, pattern="^faq_delete_list$"))
     app.add_handler(CallbackQueryHandler(faq_delete_confirm, pattern="^faq_delete_\\d+$"))

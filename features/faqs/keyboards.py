@@ -11,7 +11,8 @@ async def faqs_for_action_keyboard(items: List[Dict[str, str]], action: str) -> 
         [IKB(f"{emoji} {item['question']}", callback_data=f"faq_{action}_{item['id']}")]
         for item in items
     ]
-    buttons.append([IKB("🔙 Volver", callback_data="faqs_admin_hub")])
+    # Usar v2 para asegurar que el botón Volver funcione correctamente
+    buttons.append([IKB("🔙 Volver", callback_data="faqs_admin_hub_v2")])
     return IKM(buttons)
 
 async def faq_user_keyboard(items: List[Dict[str, str]]) -> IKM:

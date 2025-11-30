@@ -24,6 +24,7 @@ from .handlers.request_handlers import (
     approve_request,
     reject_request,
 )
+from features.faqs.admin_handlers import faqs_hub
 
 logger = get_logger("AdminRouter")
 
@@ -40,6 +41,12 @@ async def handle_superadmin_callback(update: Update, context: ContextTypes.DEFAU
     logger.info(f"[handle_superadmin_callback] INICIO - Callback: {callback_data}, User ID: {update.effective_user.id}")
     print(f"🔄 Callback SuperAdmin: {callback_data}")
     
+    # === GESTIÓN DE FAQS (PRIORIDAD ALTA) ===
+    if callback_data == "faqs_admin_hub" or callback_data == "faqs_admin_hub_v2":
+        print("🔄 Router: Redirigiendo a faqs_hub (PRIORIDAD)")
+        await faqs_hub(update, context)
+        return
+
     # === MENÚS PRINCIPALES ===
     if callback_data == "main_menu":
         await superadmin_main_menu(update, context)
@@ -162,19 +169,6 @@ async def handle_superadmin_callback(update: Update, context: ContextTypes.DEFAU
     elif callback_data == "locations_admin_hub":
         from features.ubicaciones.admin_handlers import locations_hub
         await locations_hub(update, context)
-        return
-    
-    # === FAQs ===
-    elif callback_data == "faqs_admin_hub":
-        logger.info(f"[handle_superadmin_callback] ✅ Callback faqs_admin_hub detectado. User ID: {update.effective_user.id}")
-        try:
-            from features.faqs.admin_handlers import faqs_hub
-            logger.info(f"[handle_superadmin_callback] Import exitoso, llamando a faqs_hub...")
-            await faqs_hub(update, context)
-            logger.info(f"[handle_superadmin_callback] ✅ faqs_hub completado exitosamente")
-        except Exception as e:
-            logger.error(f"[handle_superadmin_callback] ❌ Error al llamar faqs_hub: {e}", exc_info=True)
-            await query.edit_message_text(f"❌ Error al acceder a FAQs: {str(e)}")
         return
     
     # === CONTACTO ===
