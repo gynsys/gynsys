@@ -9,7 +9,7 @@ async def get_galeria_keyboard(tenant_id: int):
     """Muestra la lista de ítems de la Galería al usuario final."""
     items = await content_db.get_all_items(tenant_id, 'gallery', 'title')
     keyboard = [[InlineKeyboardButton(item['title'], callback_data=f"{CONFIG['prefix']}_item_{item['id']}")] for item in items]
-    keyboard.append([InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')])
+    keyboard.append([InlineKeyboardButton("🏠", callback_data='main_menu')])
     return InlineKeyboardMarkup(keyboard)
 
 async def get_gallery_for_action_keyboard(

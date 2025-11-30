@@ -8,7 +8,7 @@ from features.contacto.patient_handler import show_patient_contact
 from features.share_link.handlers import show_patient_share_link
 from features.ubicaciones.user_handlers import show_patient_locations_menu
 from features.patient_menu.patient_keyboards import get_patient_main_keyboard
-# FAQ por inquilino (edición) removido
+from common.helpers import cleanup_extra_messages
 
 role_manager = RoleManager(DB_PATH)
  
@@ -22,6 +22,12 @@ def _patient_placeholder(section: str, doctor_name: str) -> str:
 
 
 async def patient_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, doctor_id: int):
+    # --- INICIO DE LA MODIFICACIÓN ---
+    # 1. Limpiamos cualquier mensaje extra antes de hacer nada más.
+    await cleanup_extra_messages(context, update.effective_chat.id)
+    # --- FIN DE LA MODIFICACIÓN ---
+
+    # El resto de tu lógica original se mantiene intacta.
     context.user_data["patient_doctor_id"] = doctor_id
     doctor = await role_manager.get_doctor_by_id(doctor_id)
     doctor_name = html.escape(doctor[1]) if doctor else "tu doctora"
@@ -49,8 +55,6 @@ async def patient_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     
     message = (
         f"{mensaje_bienvenida}\n\n"
-        #f"👤 <b>Menú Principal - {doctor_name}</b>\n"
-       
     )
     
     keyboard = await get_patient_main_keyboard(doctor_id=doctor_id)
@@ -68,8 +72,6 @@ async def patient_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             parse_mode="HTML",
         )
     else:
-        # Caso cuando viene de finish_preconsultation con fake_update (message es None)
-        # Usar context.bot.send_message directamente
         chat_id = update.effective_chat.id
         await context.bot.send_message(
             chat_id=chat_id,
@@ -77,7 +79,6 @@ async def patient_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             reply_markup=keyboard,
             parse_mode="HTML",
         )
-
 
 async def handle_patient_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

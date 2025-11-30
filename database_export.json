@@ -1,0 +1,584 @@
+{
+  "doctors": [
+    {
+      "name": "maariel2",
+      "telegram_id": 5057356565,
+      "is_active": 1,
+      "id": 1,
+      "created_at": "2025-11-23 19:17:22.564602"
+    },
+    {
+      "name": "5618424590",
+      "telegram_id": 5618424590,
+      "is_active": 1,
+      "id": 2,
+      "created_at": "2025-11-24 15:38:39.723610"
+    }
+  ],
+  "bots": [
+    {
+      "id": 4,
+      "doctor_name": "maariel2",
+      "token": "tenant_1_placeholder",
+      "admin_user_id": 5057356565,
+      "is_active": 1
+    },
+    {
+      "id": 5,
+      "doctor_name": "5618424590",
+      "token": "tenant_2_placeholder",
+      "admin_user_id": 5618424590,
+      "is_active": 1
+    }
+  ],
+  "user_tenants": [
+    {
+      "user_id": 5057356565,
+      "bot_id": 4,
+      "id": 1
+    },
+    {
+      "user_id": 5618424590,
+      "bot_id": 5,
+      "id": 2
+    }
+  ],
+  "patient_doctor": [
+    {
+      "patient_telegram_id": 1113298656,
+      "doctor_id": 1,
+      "assigned_at": "2025-11-24 03:30:08.493605",
+      "id": 2
+    }
+  ],
+  "medical_histories": [
+    {
+      "id": 2,
+      "doctor_id": 1,
+      "bot_id": null,
+      "user_id": 1113298656,
+      "history_number": null,
+      "full_name": "gAAAAABpJFXmI3iPbFqTv4JVb7_DLi7WBalV-Rn-F0huv33TRvbC-7Siw6JU512N-fBABrq7bKlXuBRTBH0asdwQ_pf0JTWowQ==",
+      "age": "45",
+      "ci": "gAAAAABpJFXmjB_SPhE-_0hx3fzVBGEWgNGAgUfRunrbJ6_oEwJjoTEEtcc4irGvOTJEtbm5Ri6epE4i_pfjaUBi0WAYTmULZA==",
+      "phone": "gAAAAABpJFXmOfvOq5_5hd0uLArpngdXFRQmt-_2CkX_jbPhkbnarOUFi4KkxIOOpaQ5sXouDUnBxcZv5Wlwr6Yo4BC9GALG-A==",
+      "address": "gAAAAABpJFXmxWxz08Vee_cWJCHOcs3Rp3dFT6J8WgBmjRrcbOIl67-ABT0qYVTl2ysbFrLUgSVi-kCL9sUTsMjTeC2QOQS9_g==",
+      "occupation": "sadasasdhg",
+      "family_history_mother": "gAAAAABpJFXmohjBAN05K_EvTT-ywhBguBkKzUXZJSLXmO2cCRL33FWls_GFxka3L8hpyW47kHjobtniGEfFgkbkkhqfgKvCLQ==",
+      "family_history_father": "gAAAAABpJFXm31M5gTOYpiXPhiSvX5X74hAqc4Ij6sXSGjtZiyOhps9STqWJ0mvRlB6au5Shnxt3kdF7OUGRb7nXMJuOgxgq9A==",
+      "personal_history": "gAAAAABpJFXmGFj-4RiDiBCFk8kW2SRwQ_GVq8F1DRjVOwZ0Hprcor-DWO_N0CbU3WwR_CsdZUxcb2J29gSzJbS8dirWJT_b1Q==",
+      "supplements": "gAAAAABpJFXmJLGDrKvXw3aCQ8TpYABQPVoYsOpR-JbVvbRRIzKbWi6zy6pZM-1ysr4ZYsZ419kG9xsuHSY4qQx19tMj4Ov9gw==",
+      "surgical_history": "gAAAAABpJFXmNjcVIkggWUtDpapiR1A1oGUX3OzOPkhln8-URp9Pikf6vXGR19jLDwvCIAtek1DWFdOx0sFTB9zxyGa3-8ChMg==",
+      "gyn_menarche": "gAAAAABpJFXmL6snDArwCqZQvipmd1QB9w4s0AytL4USwSWOHqeC8-96S_zsIpUb05l6ifOUOjHwzANik8GUzohKMqp2Rg1v5A==",
+      "gyn_ho": "gAAAAABpJFXmKVypVRyhpHqTT1NcmeNFW2Du4yTkr5f-OXqoDRt-STs10u5RqKCYQHo3wfc96ZQfI_JVuNrqKowCA-oCw0Zz_oWAYh1h9rD1Y7oZFJ7VJJo=",
+      "gyn_cycles": "gAAAAABpJFXmavK7XQZFK0bceDc-8UmRH9uLSRs2JFsiHelqotyQh71gm8QPL6CUR66zQRULCvIywlQ8EM4Mg3ZbEZKP4hvvsm-7nyxTiyeZiqHrAJR-VsU=",
+      "gyn_fertility_intent": null,
+      "gyn_dysmenorrhea": "gAAAAABpJFXmY_xPl6V-PPvvhw-IKCPsY3oik4Gh3-WKwLmgx0WyVSB42hU_I0B_MVGo6KYtyrYHVPjQJxFkoye4EpKlIX8CSQ==",
+      "gyn_sexarche": "gAAAAABpJFXmL0nyYWde-f728DiTzlmhyMv-yOxp4E3AqcQl11TynwJK_9uRQ65bf3N7KOThw5mFO11WJikffscNDTKOrTgOGA==",
+      "sexually_active": "gAAAAABpJFXmJ2k8qDLFiLKT-OH8NPBASIL7gWOvHfE6by-GzqvIvXVslnedLzt8Mq3OQfJvTcdTMGiAVz1YLAeoG5dYDJIJMw==",
+      "gyn_fum": "gAAAAABpJFXmU4a901HubUeWoPZBk-byOvOH8ZyhDqxkf08M48R80j35VnkskLmNB_ws5fo2gHVfv1qJ8yQq1yHTeauiHKNSXA==",
+      "gyn_mac": "gAAAAABpJFXm2cVyhpJKhzpvlgHMd6-GMZNlojp_cBhdKZRf4mPUbHSPrA3D5z2_NQvrBu60RbZJGv5VFh8I6dypvLjQ6a2lwg==",
+      "gyn_previous_checkups": "gAAAAABpJFXmFpumobWolM7FUM2wrXsf3V0rYNMiuikmUFZVf4WCsdlhWrgL_CqqxDCnqAg4m1g38D0D6dtTyknFGAiAIeejjQ==",
+      "gyn_last_pap_smear": "gAAAAABpJFXmiLmElWjlHQidoVHthskNawvESuuZyUg2-mzICR48B05NFbsVpxu4rXNsBzNoxvYnNDIeRGkfsQ0o_qNyyX-Vqg==",
+      "leg_pain_type": null,
+      "leg_pain_zone": null,
+      "sexual_pain_dyspareunia": null,
+      "sexual_pain_type": null,
+      "sexual_pain_scale": null,
+      "habits_smoking": "gAAAAABpJFXmIuQTVputMNPbluXChyWX4FpRjItH2JdRoDJrxmvSLP8OHLmcsgWyc3UtyIA0peik4-NwOo86WVt7PV1qiQCnUA==",
+      "habits_alcohol": "gAAAAABpJFXmPm03hkJyd_PkVHtM5aiQabf8VZ9LT8PH69yJDeZ7OhrxZj3EkYGJj1mcUhCkC-EN9mJPmYRbVi1h3apYUb12Tg==",
+      "gastro_symptoms_before_period": null,
+      "gastro_symptoms_during_period": null,
+      "bowel_dischezia": null,
+      "bowel_dischezia_scale": null,
+      "bowel_frequency": null,
+      "habits_urinary": null,
+      "urinary_pain_scale": null,
+      "urinary_irritation": null,
+      "urinary_incontinence": null,
+      "urinary_nocturia": null,
+      "functional_dispareunia": "gAAAAABpJFXmqO8yCWxJ_hIy1lII2w17ZPoA7swJIll6afv-esXs5Fc1AVcDg_76yUEnx6-Yx_26gO2hl5MzQQEW-8b6-AZs0g==",
+      "functional_leg_pain": "gAAAAABpJFXmnm5puGA2bP6S21AhitbqEnpBA5jXYHnXc46nnHTTNVek4aikWrqv8ajM3JrRjJVGP8sB5vVrGsJD-_ohKsH0JA==",
+      "functional_gastro_before": "gAAAAABpJFXmPLqzYhZ8QFaSuDcwL6sBzcOJDm2HtzK65XIPLIFKJ-Kp7lAbQRutFFFOF6IDuwN1bQveSsfol4WM0CWXk3ikUw==",
+      "functional_gastro_during": "gAAAAABpJFXm1D5vkGuVZ_L_W0ggnZ0TF7dhvNMsLbYo3xIMrLLz6QlW04JP0p1HhE9Fin9cPNI9ZdRH2yZ9VZyCHWtpRCYrHw==",
+      "functional_dischezia": "gAAAAABpJFXmI5ods7BbsIQ2eEVxAHeQNVJ4NEynsE5qrtnVHTj3IvAL4Gkggh3k3T_TCQk_MGdbBBbm5IJG3T2oFSYPDcQ4Lg==",
+      "functional_bowel_freq": "gAAAAABpJFXmEiXISbbQTQZT_gBNTxvk5rpTEX8JLcpEXtBBPTy--cRSvKEDwpni6EJECl-KpOcfyQywat6cx10wU3Zew26PUA==",
+      "functional_urinary_problem": "gAAAAABpJFXmvW8sPVPPitfQ8TaM6oIVgC6aDrBMNWBd4dGwVmgNL19DfOgo2ohuL0XE5AGDXDh5_YvnxrLhGSRz-pFURs8TsQ==",
+      "functional_urinary_pain": null,
+      "functional_urinary_irritation": null,
+      "functional_urinary_incontinence": null,
+      "functional_urinary_nocturia": null,
+      "habits_physical_activity": "gAAAAABpJFXmRvxJ1NTbIit91kTFmrts9AIiMOFvPJK-Hd-Glu79wj8Wx22frJi5rlgI7ndYZvsVR8_jkbyUL2gCQh3sxVCp9Q==",
+      "habits_substance_use": "gAAAAABpJFXmvUknRDfCZ4p5n7nf84Aq_zwxNfoxWkVbImNPIZ6pIsNsTLQI1aDBULCbXaNu-EJs7Ic5DmOAJtx7y8KZrR7eRg==",
+      "summary_functional_exam": "gAAAAABpJFXmC-ye5L5NrPz4KUp3c1aDpZPkPF-d1mlkLnXxverdbo44gNhgDE9lSNprGmwB4yp1n9-yVv0huKjgNaNf2itMUBFa5GDmk0gDwdwhMzNAApsGJf4FKF8RMWij5loX9Oe8ebU1iHRWzgNUN6EUjTg6hwJhattZOZVUNL4C6hi3DpRQ5fX1R57ZIzSMWRYFWH_pC6st_eHaz0QGeXdbpSWuCUJ4YQZ8AhoWSErWJ8nDsuWfVIyL1Cn-kRIgdaO9MEPF4-cTuLDowYyzHDvh3zeAcHA9Evwhk339DMk290ADazWO9k_V_KRrAUw2R7nnYAD8FYb9HXCA09rd9cA-tyXW72AK8FFuvd3kigiAbqJdlKg=",
+      "summary_gyn_obstetric": "gAAAAABpJFXmJlqLzEUQfui5dEtag0pm4KeqLof_QB_rjre7o0f3CVPUVCEjbQZAqZfQxHfo9GLXBNWdkbEStvuDLS_Yom9T036rPtkrO70Oh-9Uep_o5dl2Fy__A2pueRN7Vt9tnLSXpcwn7up9HCYpI3Sb9_5fssmFWKtzH55LqZodwPS_LQZHJ9dfC5t4GRGSO5NXzuPVBvVOvrLoE1-0MMTPh6N28-vW98Q5TYul8HPnvM7tq8DLCgU7ABCa1vUR17Xg5Hwp1OlQeciDbuL_0hYkJ6hXtH4fwlJIQj-2J26ITG6h9e76bRfE9jiJG6Ly_IPay495btoGJViuqBFRaKbMYaKx_w3vMnt0LB4rc6b4kGAtMODi93eyZPPmem3P0XVEfljk_S9Fnbl-CxFfcjYHD1wo6IlJf3wE6gK-BsCFWkNBaSw=",
+      "summary_habits": "gAAAAABpJFXmLafSYj-s5Pm3Zycw3hHgq-bKXISp0V8LA7_nwfp22O1Z-5UfD7BsUsWWKkkL66miZxd0dz2_lYdSLDoRcc7hRNKnLUXGbSorzipNfARO3QkMSLyCob9kQVdbFPdMFaPryKMkfAXK_3sMIsd9t59hw-IbhaWmSW6MdtGErMRQQFSTyUIum4QVDEBtlFkHPcrH8M28wrtBoXy7pUxrjKhoHjy-kVox_2cqsz-2aOGROfIVeiO9Ppvfc2enCiNPI_Ab",
+      "consultation_type": null,
+      "reason_for_visit": "gAAAAABpJFXm9ESSOQGV8etAo2O9lgIMeLYzv6ujeIENu24UvwXmmCGUI1N8CvsIumAaMcAmk6aUJectJUXF_jnUVca2_mEvU2Ol80afSNqyqF9rRZyZ0Qw=",
+      "prenatal_details": null,
+      "admin_physical_exam": null,
+      "admin_ultrasound": "gAAAAABpJFb_G3tZz80zOp31jJOW0lyqBpbIfu1hRe_1tQAVptnJBINoYCu5bqQfyox2jm15sEexXEnTyAM2BSkI71tn-J3_ww==",
+      "admin_diagnosis": "gAAAAABpJFb_dL0MNlqM84IVrmmzC6Cqik0ztZfS4zg-i3Qsn5NP_xV86rLlEmDqfLde7t-cLWPsth_LN-Jp809V_-ayiSN_ag==",
+      "admin_plan": "gAAAAABpJFb_PQP-1DxYAPoKsnQdGcvpzWn-0ZU_TKHAwmOlVc13PJA4xWGR2yMeqHifsJRpVepLDpXbjiMxhIDRIt7u69C1hw==",
+      "admin_observations": "gAAAAABpJFb_psCmrioWWq0n-fRRSazkq0VghMVs-sQLHnQEVNWCnZIbCeRpLxBiDkfLNzvyVdbC9aWdsKcPzB37_BOyE2lpiQ==",
+      "status": "completed",
+      "created_at": "2025-11-24 12:56:06.209584"
+    }
+  ],
+  "text_content": [
+    {
+      "key": "header_contacto",
+      "value": "📞 Información de Contacto",
+      "bot_id": 4
+    },
+    {
+      "key": "description_contacto",
+      "value": "Configura tu información de contacto desde el Panel Admin. Aquí podrás agregar:\n\n• Números de teléfono\n• Correo electrónico\n• Horarios de atención\n• Redes sociales\n\nVe a Panel Admin > Contacto para personalizar esta información.",
+      "bot_id": 4
+    },
+    {
+      "key": "msg_bienvenida_editable",
+      "value": "Bienvenido/a a mi consulta. Estoy aquí para ayudarte con tus necesidades de salud ginecológica. Puedes agendar citas, consultar información y contactarme cuando lo necesites.",
+      "bot_id": 4
+    },
+    {
+      "key": "header_contacto",
+      "value": "📞 Información de Contacto",
+      "bot_id": 5
+    },
+    {
+      "key": "description_contacto",
+      "value": "Configura tu información de contacto desde el Panel Admin. Aquí podrás agregar:\n\n• Números de teléfono\n• Correo electrónico\n• Horarios de atención\n• Redes sociales\n\nVe a Panel Admin > Contacto para personalizar esta información.",
+      "bot_id": 5
+    },
+    {
+      "key": "msg_bienvenida_editable",
+      "value": "Bienvenido/a a mi consulta. Estoy aquí para ayudarte con tus necesidades de salud ginecológica. Puedes agendar citas, consultar información y contactarme cuando lo necesites.",
+      "bot_id": 5
+    }
+  ],
+  "locations": [
+    {
+      "id": 3,
+      "bot_id": 4,
+      "name": "Guarenas",
+      "address": "Calle Principal de Trapichito,  Centro Médico Rembrandt, PB, Sector Trapichito, Guarenas, Estado Miranda",
+      "schedule": "Sabados de 8:00 a.m hasta  1:00 p.m.",
+      "Maps_url": "https://maps.app.goo.gl/TEqK1jG8WWtRxPVy5",
+      "is_active": 1,
+      "display_order": 1
+    },
+    {
+      "id": 4,
+      "bot_id": 4,
+      "name": "Caracas",
+      "address": "Av. el Carmen, Caracas 1071, Miranda",
+      "schedule": "Martes de 8:00 a.n a 4:00 pm",
+      "Maps_url": "https://maps.app.goo.gl/q2NPUkoubsSMPV4i7",
+      "is_active": 1,
+      "display_order": 2
+    },
+    {
+      "id": 5,
+      "bot_id": 5,
+      "name": "📋 Configura tu Ubicación",
+      "address": "Aquí puedes agregar la dirección de tu consultorio",
+      "schedule": "Lunes a Viernes: 9:00 AM - 6:00 PM\nSábados: 9:00 AM - 1:00 PM",
+      "Maps_url": "https://maps.google.com",
+      "is_active": 1,
+      "display_order": 1
+    }
+  ],
+  "faqs": [
+    {
+      "id": 12,
+      "bot_id": 4,
+      "question": "¿Cuáles son los horarios de atención?",
+      "answer": "Los horarios de atención están disponibles en la sección '📍 Ubicaciones' del menú principal. Allí encontrarás toda la información sobre nuestros horarios y ubicaciones.",
+      "display_order": 2
+    },
+    {
+      "id": 13,
+      "bot_id": 4,
+      "question": "¿Cómo puedo contactar directamente?",
+      "answer": "Puedes contactarnos directamente a través del botón '📞 Contacto' en el menú principal, donde encontrarás nuestros números de teléfono y canales de comunicación.",
+      "display_order": 3
+    },
+    {
+      "id": 14,
+      "bot_id": 4,
+      "question": "¿Dónde están ubicadas las consultas?",
+      "answer": "Nuestras ubicaciones están disponibles en la sección '📍 Ubicaciones' del menú principal. Allí encontrarás direcciones, mapas y horarios de cada consultorio.",
+      "display_order": 4
+    },
+    {
+      "id": 15,
+      "bot_id": 4,
+      "question": "¿Cuáles son los precios de las consultas?",
+      "answer": "Los precios de nuestras consultas y servicios están disponibles en la sección '💰 Precios' del menú principal. Puedes consultar los costos de cada tipo de consulta.",
+      "display_order": 5
+    },
+    {
+      "id": 20,
+      "bot_id": 5,
+      "question": "¿Cómo puedo agendar una cita?",
+      "answer": "Puedes agendar una cita presionando el botón '📅 Citas' en el menú principal. Selecciona la fecha y hora que mejor se adapte a tu disponibilidad.",
+      "display_order": 1
+    },
+    {
+      "id": 21,
+      "bot_id": 5,
+      "question": "¿Cuáles son los horarios de atención?",
+      "answer": "Los horarios de atención están disponibles en la sección '📍 Ubicaciones' del menú principal. Allí encontrarás toda la información sobre nuestros horarios y ubicaciones.",
+      "display_order": 2
+    },
+    {
+      "id": 22,
+      "bot_id": 5,
+      "question": "¿Cómo puedo contactar directamente?",
+      "answer": "Puedes contactarnos directamente a través del botón '📞 Contacto' en el menú principal, donde encontrarás nuestros números de teléfono y canales de comunicación.",
+      "display_order": 3
+    },
+    {
+      "id": 23,
+      "bot_id": 5,
+      "question": "¿Dónde están ubicadas las consultas?",
+      "answer": "Nuestras ubicaciones están disponibles en la sección '📍 Ubicaciones' del menú principal. Allí encontrarás direcciones, mapas y horarios de cada consultorio.",
+      "display_order": 4
+    },
+    {
+      "id": 24,
+      "bot_id": 5,
+      "question": "¿Cuáles son los precios de las consultas?",
+      "answer": "Los precios de nuestras consultas y servicios están disponibles en la sección '💰 Precios' del menú principal. Puedes consultar los costos de cada tipo de consulta.",
+      "display_order": 5
+    }
+  ],
+  "gallery": [
+    {
+      "id": 3,
+      "bot_id": 4,
+      "title": "🖼️ Configura tu Galería",
+      "content": "Agrega imágenes y contenido a tu galería desde el Panel Admin.\n\nVe a Panel Admin > Galería para subir fotos, videos y contenido visual que quieras compartir con tus pacientes.",
+      "media_file_id": null,
+      "media_type": null,
+      "display_order": 1
+    },
+    {
+      "id": 4,
+      "bot_id": 5,
+      "title": "🖼️ Configura tu Galería",
+      "content": "Agrega imágenes y contenido a tu galería desde el Panel Admin.\n\nVe a Panel Admin > Galería para subir fotos, videos y contenido visual que quieras compartir con tus pacientes.",
+      "media_file_id": null,
+      "media_type": null,
+      "display_order": 1
+    },
+    {
+      "id": 5,
+      "bot_id": 1,
+      "title": "creacion de citas",
+      "content": "ve como se hace una cita",
+      "media_file_id": "AgACAgEAAxkBAAIBEGkkiZb14_dAMW8d1S85v3snQxpWAAIWC2sbiTooRZPFUcnr_SHmAQADAgADbQADNgQ",
+      "media_type": "photo",
+      "display_order": 0
+    },
+    {
+      "id": 6,
+      "bot_id": 1,
+      "title": "dffdssdf",
+      "content": "gsdgdsfdsf",
+      "media_file_id": "AgACAgEAAxkBAAIBP2kkpvr5q2dQvKju2j4Bq1thMVObAAIlC2sbiTooRYoc2_AnpTVPAQADAgADeQADNgQ",
+      "media_type": "photo",
+      "display_order": 1
+    },
+    {
+      "id": 9,
+      "bot_id": 4,
+      "title": "Cirugia Paralascopica",
+      "content": "Cirugia para tratamiento de endometroisi por laparoscopia",
+      "media_file_id": "AgACAgEAAxkBAAIBUGkkqit9j-G_3PAaH97xPz5Ql7uLAAJGC2sbNFYhRYfgR6GoP3BhAQADAgADeQADNgQ",
+      "media_type": "photo",
+      "display_order": 2
+    },
+    {
+      "id": 10,
+      "bot_id": 4,
+      "title": "Endometrioma de ovario",
+      "content": "Imagen obtenida por videolaparoscopia que muestra un endometrioma ovárico. Esta patología, una manifestación común de la endometriosis, consiste en la formación de quistes llenos de sangre antigua en el ovario. En la imagen se aprecia la relación del quiste con el útero",
+      "media_file_id": "AgACAgEAAxkBAAIBWmkkrjYnNUSnvXkbN_wTfK7-L3b0AAJJC2sbNFYhRVQ1l9YZmKYRAQADAgADeQADNgQ",
+      "media_type": "photo",
+      "display_order": 3
+    }
+  ],
+  "precios": [
+    {
+      "id": 4,
+      "bot_id": 5,
+      "title": "💰 Configura tus Precios",
+      "content": "Personaliza los precios de tus servicios desde el Panel Admin.\n\nVe a Panel Admin > Precios para agregar y editar los costos de tus consultas y servicios médicos.",
+      "display_order": 1
+    },
+    {
+      "id": 5,
+      "bot_id": 4,
+      "title": "Consulta+Eco",
+      "content": "Es costo de la consulta <b>ginecologia</b>, incluyendo <b>ecosonograma</b> tiene un costo de <b>$60</b>",
+      "display_order": 2
+    },
+    {
+      "id": 6,
+      "bot_id": 4,
+      "title": "Mapping",
+      "content": "El Mapeo es la exploración sistemática mediante ecografía. Consiste en localizar y clasificar cada foco de la enfermedad, asegurando así un diagnostico mas preciso.",
+      "display_order": 3
+    }
+  ],
+  "pdf_settings": [
+    {
+      "doctor_id": 1,
+      "setting_key": "doctor_name",
+      "setting_value": "Dra. Mariel Herrera",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.813541"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "specialty",
+      "setting_value": "Especialista en Ginecología y Obstetricia",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.837477"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "location",
+      "setting_value": "Caracas-Guarenas Guatire",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.854432"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "phones",
+      "setting_value": "04244281876-04127738918",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.859418"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "mpps_number",
+      "setting_value": "140.795",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.864406"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "cmdm_number",
+      "setting_value": "38.789",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.871387"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "doctor_id",
+      "setting_value": "23.812.988",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.874378"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "report_title",
+      "setting_value": "INFORME MÉDICO",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.882357"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "footer_city",
+      "setting_value": "Guarenas",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.891333"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "logo_header_1",
+      "setting_value": null,
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.907291"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "logo_header_2",
+      "setting_value": null,
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.911280"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "logo_signature",
+      "setting_value": null,
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.924245"
+    },
+    {
+      "doctor_id": 1,
+      "setting_key": "include_functional_exam",
+      "setting_value": "1",
+      "is_visible": 1,
+      "created_at": "2025-11-24 04:28:39.929232"
+    }
+  ],
+  "extra_modules": [
+    {
+      "id": 1,
+      "doctor_id": 1,
+      "module_name": "test",
+      "is_active": 1,
+      "created_at": "2025-11-23 19:17:23.600749"
+    },
+    {
+      "id": 2,
+      "doctor_id": 1,
+      "module_name": "quiz",
+      "is_active": 1,
+      "created_at": "2025-11-23 19:17:23.644176"
+    },
+    {
+      "id": 3,
+      "doctor_id": 1,
+      "module_name": "faqs",
+      "is_active": 1,
+      "created_at": "2025-11-23 23:26:15.664525"
+    },
+    {
+      "id": 4,
+      "doctor_id": 1,
+      "module_name": "galeria",
+      "is_active": 1,
+      "created_at": "2025-11-23 23:27:03.739465"
+    },
+    {
+      "id": 5,
+      "doctor_id": 1,
+      "module_name": "contacto",
+      "is_active": 1,
+      "created_at": "2025-11-23 23:27:06.427136"
+    },
+    {
+      "id": 6,
+      "doctor_id": 1,
+      "module_name": "precios",
+      "is_active": 1,
+      "created_at": "2025-11-23 23:27:09.609188"
+    },
+    {
+      "id": 7,
+      "doctor_id": 1,
+      "module_name": "citas",
+      "is_active": 1,
+      "created_at": "2025-11-23 23:32:38.776719"
+    },
+    {
+      "id": 8,
+      "doctor_id": 1,
+      "module_name": "ubicaciones",
+      "is_active": 1,
+      "created_at": "2025-11-23 23:32:41.873781"
+    },
+    {
+      "id": 9,
+      "doctor_id": 2,
+      "module_name": "test",
+      "is_active": 1,
+      "created_at": "2025-11-24 15:38:44.940995"
+    },
+    {
+      "id": 10,
+      "doctor_id": 2,
+      "module_name": "quiz",
+      "is_active": 1,
+      "created_at": "2025-11-24 15:38:45.251940"
+    },
+    {
+      "id": 11,
+      "doctor_id": 2,
+      "module_name": "citas",
+      "is_active": 1,
+      "created_at": "2025-11-24 18:51:14.163512"
+    },
+    {
+      "id": 12,
+      "doctor_id": 2,
+      "module_name": "contacto",
+      "is_active": 1,
+      "created_at": "2025-11-24 18:51:25.922977"
+    },
+    {
+      "id": 13,
+      "doctor_id": 2,
+      "module_name": "faqs",
+      "is_active": 1,
+      "created_at": "2025-11-24 18:51:30.480799"
+    }
+  ],
+  "test_questions": [
+    {
+      "id": 1,
+      "bot_id": 4,
+      "question": "¿Experimentas dolor pélvico intenso durante la menstruación que interfiere con tus actividades diarias?",
+      "display_order": 0
+    },
+    {
+      "id": 2,
+      "bot_id": 4,
+      "question": "¿Tienes dolor durante o después de las relaciones sexuales?",
+      "display_order": 1
+    },
+    {
+      "id": 3,
+      "bot_id": 4,
+      "question": "¿Sufres de dolor al orinar o al defecar, especialmente durante la menstruación?",
+      "display_order": 2
+    },
+    {
+      "id": 4,
+      "bot_id": 4,
+      "question": "¿Has sido diagnosticada previamente con infertilidad o tienes dificultades para concebir?",
+      "display_order": 3
+    },
+    {
+      "id": 5,
+      "bot_id": 4,
+      "question": "¿Experimentas fatiga crónica o falta de energía sin una causa aparente?",
+      "display_order": 4
+    },
+    {
+      "id": 6,
+      "bot_id": 4,
+      "question": "¿Tienes problemas digestivos como hinchazón, estreñimiento o diarrea, especialmente durante la menstruación?",
+      "display_order": 5
+    },
+    {
+      "id": 7,
+      "bot_id": 4,
+      "question": "¿Experimentas sangrado menstrual abundante o irregular?",
+      "display_order": 6
+    },
+    {
+      "id": 8,
+      "bot_id": 4,
+      "question": "¿Sientes dolor en la parte baja de la espalda o en las piernas durante la menstruación?",
+      "display_order": 7
+    },
+    {
+      "id": 9,
+      "bot_id": 4,
+      "question": "¿Has tenido quistes ováricos o masas pélvicas detectadas en exámenes médicos?",
+      "display_order": 8
+    },
+    {
+      "id": 10,
+      "bot_id": 4,
+      "question": "¿Tienes antecedentes familiares de endometriosis (madre, tía, hermana)?",
+      "display_order": 9
+    }
+  ]
+}
