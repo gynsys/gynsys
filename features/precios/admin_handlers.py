@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, ConversationHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters, CommandHandler
 
 from database import content_db
-from common.decorators import doctor_required
+from common.decorators import admin_required
 from common.helpers import escape_html
 from common.keyboards import get_delete_confirmation_keyboard
 from common.conversation_utils import cancel_conv
@@ -20,21 +20,29 @@ CONFIG = {'singular': 'Precio', 'plural': 'Precios', 'table': 'precios', 'title_
 (AWAITING_TITLE, AWAITING_CONTENT, AWAITING_MOD_TITLE, AWAITING_MOD_CONTENT, AWAITING_HEADER_TEXT) = range(5)
 
 # --- HUB DE GESTIÓN ---
-@doctor_required
+@admin_required
 async def prices_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query; await query.answer()
+    
+    # Determinar callback de retorno según rol
+    user_id = update.effective_user.id
+    from config import SUPER_ADMIN_ID
+    back_callback = 'doctor_panel'
+    # Si es superadmin, también volvemos al doctor_panel (que debe ser manejado por el router)
+    # o al menú principal si no está impersonando (pero asumimos que quiere ver el panel)
+    
     keyboard = [
         # [InlineKeyboardButton(f"✏️ Editar Encabezado", callback_data=f"{CONFIG['prefix']}_edit_header")],
 
         [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
         [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
         [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel'), InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
+        [InlineKeyboardButton("🔙 Volver", callback_data=back_callback), InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')]
     ]
     await query.edit_message_text(f"🔧 <b>Gestión de {CONFIG['plural']}</b>", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
 # --- LÓGICA CRUD ---
-@doctor_required
+@admin_required
 async def list_items_for_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query; await query.answer()
     action = query.data.split('_')[1]
@@ -48,7 +56,7 @@ async def list_items_for_action(update: Update, context: ContextTypes.DEFAULT_TY
     action_text = 'modificar' if action == 'modify' else 'eliminar'
     await query.edit_message_text(f"Selecciona el {CONFIG['singular'].lower()} que deseas {action_text}:", reply_markup=reply_markup, parse_mode="HTML")
 
-@doctor_required
+@admin_required
 async def confirm_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query; await query.answer()
     item_id = int(query.data.split('_')[-1])
@@ -58,7 +66,7 @@ async def confirm_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.edit_message_text(f"<b>⚠️ ¿Seguro que quieres eliminar?</b>\n\n<blockquote>{escape_html(item_name)}</blockquote>",
         reply_markup=get_delete_confirmation_keyboard(item_type_callback=callback_for_confirmation, back_callback=f"{CONFIG['prefix']}_delete_list"))
 
-@doctor_required
+@admin_required
 async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query; await query.answer()
     item_id = int(query.data.split('_')[-1])
@@ -68,10 +76,10 @@ async def execute_delete_item(update: Update, context: ContextTypes.DEFAULT_TYPE
     fake_update = type('obj', (object,), {'callback_query': fake_query, 'effective_user': update.effective_user})()
     await list_items_for_action(fake_update, context)
 
-@doctor_required
+@admin_required
 
 # --- CONVERSATION HANDLERS ---
-@doctor_required
+@admin_required
 async def start_header_edit(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query; await query.answer()
     bot_id = await get_tenant_id(update, context)
@@ -99,7 +107,7 @@ async def save_modified_header(update: Update, context: ContextTypes.DEFAULT_TYP
     await prices_hub(fake_update, context)
     return ConversationHandler.END
 
-@doctor_required
+@admin_required
 async def add_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query; await query.answer()
     context.user_data['main_conv_message_id'] = query.message.message_id
@@ -126,7 +134,7 @@ async def save_new_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     await prices_hub(fake_update, context)
     return ConversationHandler.END
 
-@doctor_required
+@admin_required
 async def modify_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query; await query.answer()
     item_id = int(query.data.split('_')[-1])

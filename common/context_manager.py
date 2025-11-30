@@ -11,6 +11,10 @@ SUPERADMIN_TENANT_ID = 1
 async def get_tenant_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int | None:
     user_id = update.effective_user.id
 
+    # Permitir override para que el SuperAdmin pueda gestionar otros tenants
+    if context and context.user_data and 'tenant_id_override' in context.user_data:
+        return context.user_data['tenant_id_override']
+
     if user_id == SUPER_ADMIN_ID:
         return SUPERADMIN_TENANT_ID
 

@@ -58,6 +58,12 @@ async def handle_superadmin_callback(update: Update, context: ContextTypes.DEFAU
         await show_requests_menu(update, context)
         return
     
+    # === PANEL DE DOCTOR (IMPERSONATION) ===
+    elif callback_data == "doctor_panel":
+        from features.main_menu.user_handler import show_doctor_panel
+        await show_doctor_panel(update, context)
+        return
+    
     # === GESTIÓN DE MÉDICOS ===
     elif callback_data == "add_doctor":
         # Este se maneja en el ConversationHandler, no aquí
