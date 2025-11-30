@@ -63,7 +63,18 @@ async def galeria_hub(update: Update, context: ContextTypes.DEFAULT_TYPE, send_n
     if send_new or not message_to_use:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=text, reply_markup=reply_markup, parse_mode='HTML')
     else:
-        try: await message_to_use.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+        try:
+            if hasattr(message_to_use, 'edit_text'):
+                await message_to_use.edit_text(text, reply_markup=reply_markup, parse_mode='HTML')
+            else:
+                # Es un objeto fake, usar bot.edit_message_text
+                await context.bot.edit_message_text(
+                    chat_id=message_to_use.chat.id,
+                    message_id=message_to_use.message_id,
+                    text=text,
+                    reply_markup=reply_markup,
+                    parse_mode='HTML'
+                )
         except Exception:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=text, reply_markup=reply_markup, parse_mode='HTML')
 
@@ -292,6 +303,6 @@ async def save_modified_header(update: Update, context: ContextTypes.DEFAULT_TYP
 
     message_to_edit = await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data.pop('main_conv_message_id'), text="✅ Encabezado actualizado.")
     await asyncio.sleep(2)
-    await galeria_hub(type('obj', (object,), {'message': message_to_edit, 'callback_query': None, 'effective_user': update.effective_user})(), context)
+    await galeria_hub(type('obj', (object,), {'effective_message': message_to_edit, 'callback_query': None, 'effective_user': update.effective_user})(), context)
     context.user_data.clear()
     return ConversationHandler.END

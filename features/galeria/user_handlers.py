@@ -82,7 +82,7 @@ async def show_galeria_content(update: Update, context: ContextTypes.DEFAULT_TYP
         await query.answer("Contenido no disponible.", show_alert=True); return
 
     context.user_data['gallery_extra_message_ids'] = []
-    
+
     # 1. EDITAR PRIMERO (Lógica de "Ir hacia un ítem")
     # Editamos el mensaje del menú para mostrar el primer trozo de contenido (el texto largo).
     # Esto evita la pantalla en blanco.
@@ -116,8 +116,8 @@ async def show_galeria_content(update: Update, context: ContextTypes.DEFAULT_TYP
     texto_botones = "👇 Selecciona una opción:"
     reply_markup = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🔙 Volver a Galería", callback_data='galeria_menu'),
-            InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')
+            InlineKeyboardButton("🔙 Volver a Galería", callback_data='galeria_menu')
+            #InlineKeyboardButton("🏠 Menú Principal", callback_data='main_menu')
         ]
     ])
     await context.bot.send_message(chat_id=chat_id, text=texto_botones, reply_markup=reply_markup)
