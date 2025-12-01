@@ -150,3 +150,35 @@ class RequestRepository(BaseRepository[DoctorRequest]):
             await self.session.rollback()
             return False
 
+    async def mark_as_approved(self, request_id: int, doctor_id: int) -> bool:
+        """
+        Marca una solicitud como aprobada, manejando duplicados anteriores.
+        """
+        try:
+            request = await self.get_by_id(request_id)
+            if not request:
+                return False
+            
+            # Buscar solicitudes aprobadas anteriores de este usuario
+            stmt = select(DoctorRequest).where(
+                DoctorRequest.telegram_id == request.telegram_id,
+                DoctorRequest.status == 'approved',
+                DoctorRequest.id != request_id
+            )
+            result = await self.session.execute(stmt)
+            previous_approved = result.scalars().all()
+            
+            # Archivar anteriores para evitar violación de constraint único
+            for prev in previous_approved:
+                prev.status = f"archived_{prev.id}"
+            
+            request.status = 'approved'
+            request.doctor_id = doctor_id
+            
+            await self.session.flush()
+            return True
+        except Exception as e:
+            logger.error(f"Error al marcar solicitud como aprobada: {e}")
+            await self.session.rollback()
+            return False
+

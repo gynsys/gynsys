@@ -54,7 +54,15 @@ class RequestService:
         """
         async with get_session() as session:
             repo = RequestRepository(session)
-            await repo.update_status(request_id, status, doctor_id)
+            return await repo.update_status(request_id, status, doctor_id)
+
+    async def mark_as_approved(self, request_id, doctor_id):
+        """
+        Marca una solicitud como aprobada, manejando duplicados.
+        """
+        async with get_session() as session:
+            repo = RequestRepository(session)
+            return await repo.mark_as_approved(request_id, doctor_id)
     
     async def approve_request(self, request_id, admin_service):
         """
@@ -115,8 +123,10 @@ class RequestService:
         # Limpiar asociaciones incorrectas
         await admin_service.cleanup_doctor_patient_associations()
         
-        # Actualizar estado de la solicitud
-        await self.update_status(request_id, "approved", doctor_id)
+        # Actualizar estado de la solicitud usando mark_as_approved para manejar duplicados
+        success = await self.mark_as_approved(request_id, doctor_id)
+        if not success:
+            self.logger.error(f"❌ Error al marcar solicitud {request_id} como aprobada (posible duplicado o error DB)")
         
         return doctor_id, full_name, telegram_id
     
