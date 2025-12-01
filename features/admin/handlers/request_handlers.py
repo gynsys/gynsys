@@ -91,7 +91,14 @@ async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE, re
     # cuando is_new=True, así que no necesitamos hacerlo aquí de nuevo
     
     # Generar información de compartir
-    bot_username = context.bot.username or "<tu_bot>"
+    bot_username = context.bot.username
+    if not bot_username:
+        try:
+            me = await context.bot.get_me()
+            bot_username = me.username
+        except Exception:
+            bot_username = "GynSysBot"  # Fallback
+
     share_code, deeplink = request_service.generate_share_info(doctor_id, bot_username)
     
     # Mostrar mensaje de éxito
@@ -105,13 +112,15 @@ async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE, re
     # Enviar notificación al médico
     try:
         welcome_text = format_welcome_notification(deeplink, share_code)
+        admin_service.logger.info(f"Enviando notificación de bienvenida a {telegram_id}...")
         await context.bot.send_message(
             chat_id=telegram_id,
             text=welcome_text,
             parse_mode="HTML",
         )
+        admin_service.logger.info(f"Notificación enviada correctamente a {telegram_id}")
     except Exception as exc:
-        admin_service.logger.warning(f"No se pudo notificar al médico {telegram_id}: {exc}")
+        admin_service.logger.error(f"No se pudo notificar al médico {telegram_id}: {exc}", exc_info=True)
 
 
 async def reject_request(update: Update, context: ContextTypes.DEFAULT_TYPE, request_id: int):
