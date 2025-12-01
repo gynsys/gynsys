@@ -37,7 +37,7 @@ def register(app: Application):
         states={
             admin_handlers.AWAITING_TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_handlers.receive_title)],
             admin_handlers.AWAITING_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_handlers.receive_content)],
-            admin_handlers.AWAITING_MEDIA: [MessageHandler(filters.PHOTO | filters.VIDEO, admin_handlers.save_new_item_with_media)],
+            admin_handlers.AWAITING_MEDIA: [MessageHandler(filters.PHOTO, admin_handlers.save_new_item_with_media)],
         },
         fallbacks=sa_cancel_handlers,
         name="gallery_sa_add_conv"
@@ -48,7 +48,7 @@ def register(app: Application):
         states={
             admin_handlers.AWAITING_MOD_TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_handlers.receive_modified_title)],
             admin_handlers.AWAITING_MOD_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_handlers.receive_modified_content)],
-            admin_handlers.AWAITING_MOD_MEDIA: [MessageHandler(filters.PHOTO | filters.VIDEO | (filters.TEXT & ~filters.COMMAND), admin_handlers.receive_modified_media_or_skip)],
+            admin_handlers.AWAITING_MOD_MEDIA: [MessageHandler(filters.PHOTO | (filters.TEXT & ~filters.COMMAND), admin_handlers.receive_modified_media_or_skip)],
         },
         fallbacks=sa_cancel_handlers,
         name="gallery_sa_modify_conv"
@@ -91,7 +91,7 @@ def register(app: Application):
         states={
             tenant_handlers.AWAITING_TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, tenant_handlers.receive_title)],
             tenant_handlers.AWAITING_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, tenant_handlers.receive_content)],
-            tenant_handlers.AWAITING_MEDIA: [MessageHandler(filters.PHOTO | filters.VIDEO, tenant_handlers.save_new_item_with_media)],
+            tenant_handlers.AWAITING_MEDIA: [MessageHandler(filters.PHOTO, tenant_handlers.save_new_item_with_media)],
         },
         fallbacks=tn_cancel_handlers,
         name="gallery_tn_add_conv"
@@ -102,7 +102,7 @@ def register(app: Application):
         states={
             tenant_handlers.AWAITING_MOD_TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, tenant_handlers.receive_modified_title)],
             tenant_handlers.AWAITING_MOD_CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, tenant_handlers.receive_modified_content)],
-            tenant_handlers.AWAITING_MOD_MEDIA: [MessageHandler(filters.PHOTO | filters.VIDEO | (filters.TEXT & ~filters.COMMAND), tenant_handlers.receive_modified_media_or_skip)],
+            tenant_handlers.AWAITING_MOD_MEDIA: [MessageHandler(filters.PHOTO | (filters.TEXT & ~filters.COMMAND), tenant_handlers.receive_modified_media_or_skip)],
         },
         fallbacks=tn_cancel_handlers,
         name="gallery_tn_modify_conv"

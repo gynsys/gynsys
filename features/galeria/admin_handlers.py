@@ -166,7 +166,7 @@ async def receive_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 async def receive_content(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['item_content'] = update.message.text_html
     await update.message.delete()
-    await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data['main_conv_message_id'], text=f"🖼️ <b>Paso 3/3:</b> Ahora, <b>envía la foto o video</b> para este {CONFIG['singular']}.", parse_mode='HTML')
+    await context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=context.user_data['main_conv_message_id'], text=f"🖼️ <b>Paso 3/3:</b> Ahora, <b>envía la imagen o foto</b> para este {CONFIG['singular']}.", parse_mode='HTML')
     return AWAITING_MEDIA
 
 async def save_new_item_with_media(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
