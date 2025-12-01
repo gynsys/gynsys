@@ -367,87 +367,116 @@ async def receive_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def receive_telegram_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    telegram_id_text = update.message.text.strip()
-    await update.message.delete()
+    try:
+        telegram_id_text = update.message.text.strip()
+        try:
+            await update.message.delete()
+        except Exception:
+            pass
 
-    message_ref = context.user_data.get("doctor_request_message")
-    full_name = context.user_data.get("doctor_request_name")
+        message_ref = context.user_data.get("doctor_request_message")
+        full_name = context.user_data.get("doctor_request_name")
 
-    if not telegram_id_text.isdigit():
-        await context.bot.edit_message_text(
-            chat_id=message_ref[0],
-            message_id=message_ref[1],
-            text="❌ El ID debe ser numérico. Intenta nuevamente:",
-            reply_markup=get_cancel_keyboard(),
-            parse_mode="HTML",
-        )
-        return REQUEST_WAITING_TELEGRAM_ID
-
-    telegram_id = int(telegram_id_text)
-
-    # Recuperar datos de pago
-    payment_method = context.user_data.get("payment_method", "unknown")
-    payment_ref = context.user_data.get("payment_reference", "N/A")
-    paypal_order = context.user_data.get("paypal_order_id", "N/A")
-    
-    payment_info = ""
-    if payment_method == "pago_movil":
-        payment_info = f"\n<b>Pago Móvil Ref:</b> {payment_ref}"
-    elif payment_method == "paypal":
-        payment_info = f"\n<b>PayPal Order:</b> {paypal_order}"
-
-    async with get_session() as session:
-        repo = RequestRepository(session)
-        if await repo.has_pending_request(telegram_id):
-            await context.bot.edit_message_text(
-                chat_id=message_ref[0],
-                message_id=message_ref[1],
-                text="⚠️ Este ID ya tiene una solicitud pendiente. Espera la aprobación.",
-                reply_markup=get_success_keyboard(),
-                parse_mode="HTML",
+        # Validar datos críticos
+        if not message_ref:
+            logger.error("receive_telegram_id: message_ref is None")
+            await update.message.reply_text("❌ Error de sesión. Por favor inicia de nuevo con /start")
+            return ConversationHandler.END
+            
+        if not full_name:
+            logger.error("receive_telegram_id: full_name is None")
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="❌ Error: Nombre no encontrado. Por favor inicia de nuevo."
             )
             return ConversationHandler.END
 
-        request_id = await repo.create_request(full_name, telegram_id, status="pending")
+        if not telegram_id_text.isdigit():
+            await context.bot.edit_message_text(
+                chat_id=message_ref[0],
+                message_id=message_ref[1],
+                text="❌ El ID debe ser numérico. Intenta nuevamente:",
+                reply_markup=get_cancel_keyboard(),
+                parse_mode="HTML",
+            )
+            return REQUEST_WAITING_TELEGRAM_ID
 
-        if request_id:
-            try:
-                await context.bot.send_message(
-                    chat_id=SUPER_ADMIN_ID,
-                    text=(
-                        "🆕 <b>Nueva solicitud de médico</b>\n\n"
-                        f"<b>Nombre:</b> {html.escape(full_name)}\n"
-                        f"<b>Telegram ID:</b> {telegram_id}"
-                        f"{payment_info}"
-                    ),
-                    reply_markup=InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton("✅ Aprobar", callback_data=f"request_approve_{request_id}"),
-                                InlineKeyboardButton("❌ Rechazar", callback_data=f"request_reject_{request_id}")
-                            ]
-                        ]
-                    ),
+        telegram_id = int(telegram_id_text)
+
+        # Recuperar datos de pago
+        payment_method = context.user_data.get("payment_method", "unknown")
+        payment_ref = context.user_data.get("payment_reference", "N/A")
+        paypal_order = context.user_data.get("paypal_order_id", "N/A")
+        
+        payment_info = ""
+        if payment_method == "pago_movil":
+            payment_info = f"\n<b>Pago Móvil Ref:</b> {html.escape(str(payment_ref))}"
+        elif payment_method == "paypal":
+            payment_info = f"\n<b>PayPal Order:</b> {html.escape(str(paypal_order))}"
+
+        async with get_session() as session:
+            repo = RequestRepository(session)
+            if await repo.has_pending_request(telegram_id):
+                await context.bot.edit_message_text(
+                    chat_id=message_ref[0],
+                    message_id=message_ref[1],
+                    text="⚠️ Este ID ya tiene una solicitud pendiente. Espera la aprobación.",
+                    reply_markup=get_success_keyboard(),
                     parse_mode="HTML",
                 )
-            except Exception as exc:
-                print(f"No se pudo notificar al superadmin: {exc}")
+                return ConversationHandler.END
 
-        await context.bot.edit_message_text(
-            chat_id=message_ref[0],
-            message_id=message_ref[1],
-            text=(
-                "✅ <b>Solicitud enviada</b>\n\n"
-                "Nuestro equipo verificará tus datos y te notificará cuando tu bot esté listo.\n"
-                "Gracias por elegir GynSys."
-            ),
-            reply_markup=get_success_keyboard(),
-            parse_mode="HTML",
-        )
+            request_id = await repo.create_request(full_name, telegram_id, status="pending")
 
-    context.user_data.pop("doctor_request_name", None)
-    context.user_data.pop("doctor_request_message", None)
-    return ConversationHandler.END
+            if request_id:
+                try:
+                    await context.bot.send_message(
+                        chat_id=SUPER_ADMIN_ID,
+                        text=(
+                            "🆕 <b>Nueva solicitud de médico</b>\n\n"
+                            f"<b>Nombre:</b> {html.escape(full_name)}\n"
+                            f"<b>Telegram ID:</b> {telegram_id}"
+                            f"{payment_info}"
+                        ),
+                        reply_markup=InlineKeyboardMarkup(
+                            [
+                                [
+                                    InlineKeyboardButton("✅ Aprobar", callback_data=f"request_approve_{request_id}"),
+                                    InlineKeyboardButton("❌ Rechazar", callback_data=f"request_reject_{request_id}")
+                                ]
+                            ]
+                        ),
+                        parse_mode="HTML",
+                    )
+                except Exception as exc:
+                    logger.error(f"No se pudo notificar al superadmin: {exc}")
+
+            await context.bot.edit_message_text(
+                chat_id=message_ref[0],
+                message_id=message_ref[1],
+                text=(
+                    "✅ <b>Solicitud enviada</b>\n\n"
+                    "Nuestro equipo verificará tus datos y te notificará cuando tu bot esté listo.\n"
+                    "Gracias por elegir GynSys."
+                ),
+                reply_markup=get_success_keyboard(),
+                parse_mode="HTML",
+            )
+
+        context.user_data.pop("doctor_request_name", None)
+        context.user_data.pop("doctor_request_message", None)
+        return ConversationHandler.END
+
+    except Exception as e:
+        logger.error(f"Error crítico en receive_telegram_id: {e}", exc_info=True)
+        try:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="❌ Ocurrió un error inesperado al procesar tu solicitud. Por favor contacta a soporte."
+            )
+        except:
+            pass
+        return ConversationHandler.END
 
 
 async def cancel_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
