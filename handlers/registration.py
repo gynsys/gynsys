@@ -30,8 +30,11 @@ from features.doctor_requests.handler import (
     receive_full_name,
     receive_telegram_id,
     cancel_request,
+    handle_payment_creation,
+    check_payment_status,
     REQUEST_WAITING_NAME,
     REQUEST_WAITING_TELEGRAM_ID,
+    REQUEST_WAITING_PAYMENT,
 )
 from features.galeria import register as register_galeria_handlers
 from features.ubicaciones.user_handlers import register as register_locations_handlers
@@ -126,6 +129,11 @@ def register_all_handlers(application: Application):
     request_bot_conv = ConversationHandler(
         entry_points=[CallbackQueryHandler(start_request_bot, pattern="^request_bot$")],
         states={
+            REQUEST_WAITING_PAYMENT: [
+                CallbackQueryHandler(handle_payment_creation, pattern="^pay_subscription$"),
+                CallbackQueryHandler(check_payment_status, pattern="^check_payment$"),
+                CallbackQueryHandler(cancel_request, pattern="^request_cancel$")
+            ],
             REQUEST_WAITING_NAME: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, receive_full_name),
                 CallbackQueryHandler(cancel_request, pattern="^request_cancel$")

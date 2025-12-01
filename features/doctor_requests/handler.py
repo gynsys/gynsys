@@ -4,13 +4,14 @@ from telegram.error import BadRequest
 import html
 import logging
 
-from config import DB_PATH, SUPER_ADMIN_ID
+from config import DB_PATH, SUPER_ADMIN_ID, PAYPAL_SUBSCRIPTION_COST
 from database.session import get_session
 from database.repositories.request_repository import RequestRepository
+from utils.paypal_service import PayPalService
 
 logger = logging.getLogger(__name__)
 
-REQUEST_WAITING_NAME, REQUEST_WAITING_TELEGRAM_ID = range(2)
+REQUEST_WAITING_PAYMENT, REQUEST_WAITING_NAME, REQUEST_WAITING_TELEGRAM_ID = range(3)
 
 
 def get_cancel_keyboard():
@@ -60,14 +61,24 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Guardar referencia al mensaje después de limpiar user_data
     context.user_data["doctor_request_message"] = (query.message.chat_id, query.message.message_id)
+    
+    keyboard = [
+        [InlineKeyboardButton(f"💳 Pagar ${PAYPAL_SUBSCRIPTION_COST} USD", callback_data="pay_subscription")],
+        [InlineKeyboardButton("❌ Cancelar", callback_data="request_cancel")]
+    ]
+    
+    text = (
+        "💎 <b>Suscripción GynSys</b>\n\n"
+        f"Para activar tu bot, es necesaria una suscripción de <b>${PAYPAL_SUBSCRIPTION_COST} USD/mes</b>.\n"
+        "El pago se realiza de forma segura a través de PayPal.\n\n"
+        "Haz clic en el botón de abajo para generar tu enlace de pago."
+    )
+
     # Manejo específico para cuando el mensaje anterior es una imagen
     try:
         await query.edit_message_text(
-            "🩺 <b>Solicitud para tu Bot GynSys</b>\n\n"
-            "1️⃣ Escribe tu <b>Nombre y Apellido</b>.\n"
-            "2️⃣ Luego te pediremos tu <b>ID de Telegram</b>.\n\n"
-            "Envía tu nombre ahora:",
-            reply_markup=get_cancel_keyboard(),
+            text=text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML",
         )
     except BadRequest as e:
@@ -79,16 +90,99 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
             new_message = await context.bot.send_message(
                 chat_id=query.message.chat.id,
-                text="🩺 <b>Solicitud para tu Bot GynSys</b>\n\n"
-                     "1️⃣ Escribe tu <b>Nombre y Apellido</b>.\n"
-                     "2️⃣ Luego te pediremos tu <b>ID de Telegram</b>.\n\n"
-                     "Envía tu nombre ahora:",
-                reply_markup=get_cancel_keyboard(),
+                text=text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="HTML",
             )
             # Actualizar la referencia del mensaje en user_data
             context.user_data["doctor_request_message"] = (new_message.chat_id, new_message.message_id)
-    return REQUEST_WAITING_NAME
+    return REQUEST_WAITING_PAYMENT
+
+
+async def handle_payment_creation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Genera el enlace de pago de PayPal"""
+    query = update.callback_query
+    await query.answer("Generando enlace de pago...")
+    
+    paypal_service = PayPalService()
+    order = await paypal_service.create_order(amount=PAYPAL_SUBSCRIPTION_COST)
+    
+    if not order or "links" not in order:
+        await query.edit_message_text(
+            "❌ Error al generar el pago. Por favor intenta nuevamente más tarde.",
+            reply_markup=get_cancel_keyboard()
+        )
+        return REQUEST_WAITING_PAYMENT
+        
+    # Buscar el link de aprobación
+    approve_link = next((link["href"] for link in order["links"] if link["rel"] == "approve"), None)
+    order_id = order["id"]
+    
+    if not approve_link:
+        await query.edit_message_text(
+            "❌ Error: No se recibió enlace de aprobación de PayPal.",
+            reply_markup=get_cancel_keyboard()
+        )
+        return REQUEST_WAITING_PAYMENT
+        
+    # Guardar order_id en user_data para verificar después
+    context.user_data["paypal_order_id"] = order_id
+    
+    keyboard = [
+        [InlineKeyboardButton("🔗 Ir a Pagar en PayPal", url=approve_link)],
+        [InlineKeyboardButton("✅ Ya he pagado", callback_data="check_payment")],
+        [InlineKeyboardButton("❌ Cancelar", callback_data="request_cancel")]
+    ]
+    
+    await query.edit_message_text(
+        f"💳 <b>Orden de Pago Generada</b>\n\n"
+        f"1️⃣ Haz clic en el botón para pagar en PayPal.\n"
+        f"2️⃣ Completa el pago de <b>${PAYPAL_SUBSCRIPTION_COST} USD</b>.\n"
+        f"3️⃣ Regresa aquí y presiona 'Ya he pagado'.\n\n"
+        f"ID de Orden: <code>{order_id}</code>",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode="HTML"
+    )
+    return REQUEST_WAITING_PAYMENT
+
+
+async def check_payment_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Verifica si el pago fue completado"""
+    query = update.callback_query
+    await query.answer("Verificando pago...")
+    
+    order_id = context.user_data.get("paypal_order_id")
+    if not order_id:
+        await query.edit_message_text(
+            "❌ No se encontró una orden de pago activa. Por favor inicia de nuevo.",
+            reply_markup=get_cancel_keyboard()
+        )
+        return REQUEST_WAITING_PAYMENT
+        
+    paypal_service = PayPalService()
+    # Intentar capturar la orden (si no ha sido capturada aún)
+    result = await paypal_service.capture_order(order_id)
+    
+    if not result:
+        await query.answer("❌ Error al verificar el pago.", show_alert=True)
+        return REQUEST_WAITING_PAYMENT
+        
+    status = result.get("status")
+    
+    if status == "COMPLETED":
+        await query.edit_message_text(
+            "✅ <b>¡Pago Exitoso!</b>\n\n"
+            "Gracias por tu suscripción. Ahora continuemos con el registro.\n\n"
+            "1️⃣ Escribe tu <b>Nombre y Apellido</b>.\n"
+            "2️⃣ Luego te pediremos tu <b>ID de Telegram</b>.\n\n"
+            "Envía tu nombre ahora:",
+            reply_markup=get_cancel_keyboard(),
+            parse_mode="HTML"
+        )
+        return REQUEST_WAITING_NAME
+    else:
+        await query.answer(f"⚠️ El pago aún no está completado. Estado: {status}", show_alert=True)
+        return REQUEST_WAITING_PAYMENT
 
 
 async def receive_full_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
