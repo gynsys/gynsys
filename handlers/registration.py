@@ -34,9 +34,11 @@ from features.doctor_requests.handler import (
     check_payment_status,
     handle_pago_movil_selection,
     confirm_pago_movil,
+    receive_pago_movil_reference,
     REQUEST_WAITING_NAME,
     REQUEST_WAITING_TELEGRAM_ID,
     REQUEST_WAITING_PAYMENT,
+    REQUEST_WAITING_REFERENCE,
 )
 from features.galeria import register as register_galeria_handlers
 from features.ubicaciones.user_handlers import register as register_locations_handlers
@@ -137,6 +139,10 @@ def register_all_handlers(application: Application):
                 CallbackQueryHandler(handle_pago_movil_selection, pattern="^pay_pago_movil$"),
                 CallbackQueryHandler(confirm_pago_movil, pattern="^confirm_pago_movil$"),
                 CallbackQueryHandler(start_request_bot, pattern="^(request_bot|start_request_bot_back)$"),
+                CallbackQueryHandler(cancel_request, pattern="^request_cancel$")
+            ],
+            REQUEST_WAITING_REFERENCE: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_pago_movil_reference),
                 CallbackQueryHandler(cancel_request, pattern="^request_cancel$")
             ],
             REQUEST_WAITING_NAME: [

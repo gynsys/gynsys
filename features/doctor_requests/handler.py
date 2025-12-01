@@ -15,7 +15,7 @@ from utils.currency_service import get_bcv_rate
 
 logger = logging.getLogger(__name__)
 
-REQUEST_WAITING_PAYMENT, REQUEST_WAITING_NAME, REQUEST_WAITING_TELEGRAM_ID = range(3)
+REQUEST_WAITING_PAYMENT, REQUEST_WAITING_REFERENCE, REQUEST_WAITING_NAME, REQUEST_WAITING_TELEGRAM_ID = range(4)
 
 
 def get_cancel_keyboard():
@@ -145,15 +145,39 @@ async def handle_pago_movil_selection(update: Update, context: ContextTypes.DEFA
 
 
 async def confirm_pago_movil(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Confirma el pago móvil (manual) y avanza"""
+    """Confirma el pago móvil (manual) y pide referencia"""
     query = update.callback_query
     await query.answer()
     
-    # Marcamos en user_data que fue pago móvil para que el admin lo sepa (opcional)
+    # Marcamos en user_data que fue pago móvil
     context.user_data["payment_method"] = "pago_movil"
     
     await query.edit_message_text(
         "✅ <b>Pago Reportado</b>\n\n"
+        "Por favor, ingresa los <b>últimos 4 dígitos</b> de la referencia bancaria para facilitar la verificación.\n\n"
+        "Escribe los 4 dígitos ahora:",
+        reply_markup=get_cancel_keyboard(),
+        parse_mode="HTML"
+    )
+    return REQUEST_WAITING_REFERENCE
+
+
+async def receive_pago_movil_reference(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Recibe los 4 dígitos de la referencia"""
+    reference = update.message.text.strip()
+    
+    # Validación simple
+    if not reference.isdigit() or len(reference) < 4:
+        await update.message.reply_text(
+            "⚠️ Por favor ingresa al menos los últimos 4 dígitos numéricos de la referencia.",
+            reply_markup=get_cancel_keyboard()
+        )
+        return REQUEST_WAITING_REFERENCE
+
+    context.user_data["payment_reference"] = reference
+    
+    await update.message.reply_text(
+        f"📝 Referencia recibida: <b>{reference}</b>\n\n"
         "Verificaremos tu transferencia manualmente.\n"
         "Mientras tanto, continuemos con el registro.\n\n"
         "1️⃣ Escribe tu <b>Nombre y Apellido</b>.\n"
@@ -236,6 +260,7 @@ async def check_payment_status(update: Update, context: ContextTypes.DEFAULT_TYP
     status = result.get("status")
     
     if status == "COMPLETED":
+        context.user_data["payment_method"] = "paypal"
         await query.edit_message_text(
             "✅ <b>¡Pago Exitoso!</b>\n\n"
             "Gracias por tu suscripción. Ahora continuemos con el registro.\n\n"
@@ -359,6 +384,18 @@ async def receive_telegram_id(update: Update, context: ContextTypes.DEFAULT_TYPE
         return REQUEST_WAITING_TELEGRAM_ID
 
     telegram_id = int(telegram_id_text)
+
+    # Recuperar datos de pago
+    payment_method = context.user_data.get("payment_method", "unknown")
+    payment_ref = context.user_data.get("payment_reference", "N/A")
+    paypal_order = context.user_data.get("paypal_order_id", "N/A")
+    
+    payment_info = ""
+    if payment_method == "pago_movil":
+        payment_info = f"\n<b>Pago Móvil Ref:</b> {payment_ref}"
+    elif payment_method == "paypal":
+        payment_info = f"\n<b>PayPal Order:</b> {paypal_order}"
+
     async with get_session() as session:
         repo = RequestRepository(session)
         if await repo.has_pending_request(telegram_id):
@@ -381,6 +418,7 @@ async def receive_telegram_id(update: Update, context: ContextTypes.DEFAULT_TYPE
                         "🆕 <b>Nueva solicitud de médico</b>\n\n"
                         f"<b>Nombre:</b> {html.escape(full_name)}\n"
                         f"<b>Telegram ID:</b> {telegram_id}"
+                        f"{payment_info}"
                     ),
                     reply_markup=InlineKeyboardMarkup(
                         [
