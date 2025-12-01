@@ -152,6 +152,9 @@ async def confirm_pago_movil(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Marcamos en user_data que fue pago móvil
     context.user_data["payment_method"] = "pago_movil"
     
+    # Guardar referencia del mensaje para editarlo luego
+    context.user_data["doctor_request_message"] = (query.message.chat_id, query.message.message_id)
+    
     await query.edit_message_text(
         "✅ <b>Pago Reportado</b>\n\n"
         "Por favor, ingresa los <b>últimos 4 dígitos</b> de la referencia bancaria para facilitar la verificación.\n\n"
@@ -166,26 +169,76 @@ async def receive_pago_movil_reference(update: Update, context: ContextTypes.DEF
     """Recibe los 4 dígitos de la referencia"""
     reference = update.message.text.strip()
     
+    # Intentar borrar el mensaje del usuario para mantener limpio el chat
+    try:
+        await update.message.delete()
+    except Exception:
+        pass
+
+    message_ref = context.user_data.get("doctor_request_message")
+
     # Validación simple
     if not reference.isdigit() or len(reference) < 4:
-        await update.message.reply_text(
-            "⚠️ Por favor ingresa al menos los últimos 4 dígitos numéricos de la referencia.",
-            reply_markup=get_cancel_keyboard()
-        )
+        error_text = "⚠️ Por favor ingresa al menos los últimos 4 dígitos numéricos de la referencia."
+        if message_ref:
+            try:
+                await context.bot.edit_message_text(
+                    chat_id=message_ref[0],
+                    message_id=message_ref[1],
+                    text=error_text,
+                    reply_markup=get_cancel_keyboard()
+                )
+            except Exception:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=error_text,
+                    reply_markup=get_cancel_keyboard()
+                )
+        else:
+            await update.message.reply_text(
+                error_text,
+                reply_markup=get_cancel_keyboard()
+            )
         return REQUEST_WAITING_REFERENCE
 
     context.user_data["payment_reference"] = reference
     
-    await update.message.reply_text(
-        f"📝 Referencia recibida: <b>{reference}</b>\n\n"
+    next_step_text = (
+        f"📝 Referencia recibida: <b>{html.escape(reference)}</b>\n\n"
         "Verificaremos tu transferencia manualmente.\n"
         "Mientras tanto, continuemos con el registro.\n\n"
         "1️⃣ Escribe tu <b>Nombre y Apellido</b>.\n"
         "2️⃣ Luego te pediremos tu <b>ID de Telegram</b>.\n\n"
-        "Envía tu nombre ahora:",
-        reply_markup=get_cancel_keyboard(),
-        parse_mode="HTML"
+        "Envía tu nombre ahora:"
     )
+
+    if message_ref:
+        try:
+            await context.bot.edit_message_text(
+                chat_id=message_ref[0],
+                message_id=message_ref[1],
+                text=next_step_text,
+                reply_markup=get_cancel_keyboard(),
+                parse_mode="HTML"
+            )
+        except Exception:
+            # Si falla la edición, enviar nuevo mensaje y actualizar referencia
+            msg = await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=next_step_text,
+                reply_markup=get_cancel_keyboard(),
+                parse_mode="HTML"
+            )
+            context.user_data["doctor_request_message"] = (msg.chat_id, msg.message_id)
+    else:
+        msg = await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=next_step_text,
+            reply_markup=get_cancel_keyboard(),
+            parse_mode="HTML"
+        )
+        context.user_data["doctor_request_message"] = (msg.chat_id, msg.message_id)
+
     return REQUEST_WAITING_NAME
 
 
