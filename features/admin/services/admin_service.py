@@ -111,7 +111,7 @@ class AdminService:
         """
         async with get_session() as session:
             repo = DoctorRepository(session)
-            await repo.activate_doctor(doctor_id)
+            return await repo.activate_doctor(doctor_id)
     
     async def restrict_doctor(self, doctor_id):
         """
@@ -122,7 +122,7 @@ class AdminService:
         """
         async with get_session() as session:
             repo = DoctorRepository(session)
-            await repo.delete_doctor(doctor_id)
+            return await repo.delete_doctor(doctor_id)
     
     async def remove_doctor_permanently(self, doctor_id):
         """
@@ -133,7 +133,7 @@ class AdminService:
         """
         async with get_session() as session:
             repo = DoctorRepository(session)
-            await repo.remove_doctor_permanently(doctor_id)
+            return await repo.remove_doctor_permanently(doctor_id)
     
     async def cleanup_doctor_patient_associations(self):
         """
