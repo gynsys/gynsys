@@ -120,7 +120,7 @@ async def approve_request(update: Update, context: ContextTypes.DEFAULT_TYPE, re
         )
         admin_service.logger.info(f"Notificación enviada correctamente a {telegram_id}")
     except Exception as exc:
-        admin_service.logger.error(f"No se pudo notificar al médico {telegram_id}: {exc}", exc_info=True)
+        admin_service.logger.error(f"No se pudo notificar al médico {telegram_id}: {exc}")
 
 
 async def reject_request(update: Update, context: ContextTypes.DEFAULT_TYPE, request_id: int):
