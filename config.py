@@ -53,8 +53,8 @@ if not ENCRYPTION_KEY:
 # ============================================================================
 # CONFIGURACIÓN DE PAYPAL
 # ============================================================================
-PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', 'AYOYkd8b_AB0fD_A5hAAkBzOxd-XTzEQQkpXJtV-Ps-zcAW_VRHbqES4NgwO-zVzFcY4hA3dr61mO_1z')
-PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', 'EHG2RzaLadZdh9jSN05ZOME7zffuBf4IT5dMfrsSB9bDW02sNZmMEG0h7Uoa7MR1VRbNBJIO_RbbFP-Q')
+PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', 'AU4V9ftxtAz37-8wlMU1V8GIRYuEt6_5eBzuIZJFqbKDq_ItcaazzE18KzvHESa820-sA_4ErTCwNkYn')
+PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', 'EDNSxsciBXjLzCoQcOyBtxdAAK8GYJVh7TyhFxYKWAM-J_SFqEr34o11hBg4HXyEy6g8wxrkcwT3mj7S')
 PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'live')  # 'sandbox' o 'live'
 PAYPAL_API_URL = "https://api-m.paypal.com" if PAYPAL_MODE == "live" else "https://api-m.sandbox.paypal.com"
 PAYPAL_SUBSCRIPTION_COST = "3.49"
