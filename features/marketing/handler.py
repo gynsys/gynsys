@@ -15,8 +15,8 @@ LOGO_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file_
 
 MARKETING_TEXT = (
     "🤖 <b>Bienvenido a GynSysBot</b>\n\n"
-    "Tu aliado virtual para automatizar tu clínica ginecológica.\n"
-    "Explora nuestra galería, conoce los planes y descubre cómo podemos ayudarte.\n"
+    "Tu aliado virtual para automatizar tu ejercicio profesional en ginecología y obstetricia.\n"
+    "Explora nuestra galería, conoce el plan actual y descubre cómo podemos ayudarte.\n"
     "Cuando estés listo, solicita tu propio bot con el botón 🤖 Quiero mi Bot."
 )
 
