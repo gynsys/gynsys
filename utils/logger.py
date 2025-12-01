@@ -34,21 +34,21 @@ class BotLogger:
             # Si los logs están desactivados, usar NullHandler
             self.logger.addHandler(logging.NullHandler())
     
-    def info(self, message):
+    def info(self, message, *args, **kwargs):
         """Log nivel info"""
-        self.logger.info(message)
+        self.logger.info(message, *args, **kwargs)
     
-    def error(self, message):
+    def error(self, message, *args, **kwargs):
         """Log nivel error"""
-        self.logger.error(message)
+        self.logger.error(message, *args, **kwargs)
     
-    def warning(self, message):
+    def warning(self, message, *args, **kwargs):
         """Log nivel warning"""
-        self.logger.warning(message)
+        self.logger.warning(message, *args, **kwargs)
     
-    def debug(self, message):
+    def debug(self, message, *args, **kwargs):
         """Log nivel debug"""
-        self.logger.debug(message)
+        self.logger.debug(message, *args, **kwargs)
 
 # Logger global para uso rápido
 def get_logger(name):
