@@ -32,6 +32,8 @@ from features.doctor_requests.handler import (
     cancel_request,
     handle_payment_creation,
     check_payment_status,
+    handle_pago_movil_selection,
+    confirm_pago_movil,
     REQUEST_WAITING_NAME,
     REQUEST_WAITING_TELEGRAM_ID,
     REQUEST_WAITING_PAYMENT,
@@ -132,6 +134,8 @@ def register_all_handlers(application: Application):
             REQUEST_WAITING_PAYMENT: [
                 CallbackQueryHandler(handle_payment_creation, pattern="^pay_subscription$"),
                 CallbackQueryHandler(check_payment_status, pattern="^check_payment$"),
+                CallbackQueryHandler(handle_pago_movil_selection, pattern="^pay_pago_movil$"),
+                CallbackQueryHandler(confirm_pago_movil, pattern="^confirm_pago_movil$"),
                 CallbackQueryHandler(cancel_request, pattern="^request_cancel$")
             ],
             REQUEST_WAITING_NAME: [

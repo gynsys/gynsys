@@ -57,7 +57,15 @@ PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', 'AU4V9ftxtAz37-8wlMU1V8GIRYuEt6
 PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', 'EDNSxsciBXjLzCoQcOyBtxdAAK8GYJVh7TyhFxYKWAM-J_SFqEr34o11hBg4HXyEy6g8wxrkcwT3mj7S')
 PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'live')  # 'sandbox' o 'live'
 PAYPAL_API_URL = "https://api-m.paypal.com" if PAYPAL_MODE == "live" else "https://api-m.sandbox.paypal.com"
-PAYPAL_SUBSCRIPTION_COST = "1.00"
+PAYPAL_SUBSCRIPTION_COST = "4.05"
+
+# ============================================================================
+# CONFIGURACIÓN DE PAGO MÓVIL
+# ============================================================================
+PAGO_MOVIL_BANK_CODE = os.getenv('PAGO_MOVIL_BANK_CODE', '0102')  # Banco de Venezuela
+PAGO_MOVIL_ID = os.getenv('PAGO_MOVIL_ID', '13409534')
+PAGO_MOVIL_PHONE = os.getenv('PAGO_MOVIL_PHONE', '04120000000')  # ⚠️ CAMBIAR POR EL NÚMERO REAL
+PAGO_MOVIL_COST_USD = "4.00"
 
 
 # ============================================================================

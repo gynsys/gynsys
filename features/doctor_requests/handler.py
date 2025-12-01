@@ -4,10 +4,14 @@ from telegram.error import BadRequest
 import html
 import logging
 
-from config import DB_PATH, SUPER_ADMIN_ID, PAYPAL_SUBSCRIPTION_COST
+from config import (
+    DB_PATH, SUPER_ADMIN_ID, PAYPAL_SUBSCRIPTION_COST,
+    PAGO_MOVIL_BANK_CODE, PAGO_MOVIL_ID, PAGO_MOVIL_PHONE, PAGO_MOVIL_COST_USD
+)
 from database.session import get_session
 from database.repositories.request_repository import RequestRepository
 from utils.paypal_service import PayPalService
+from utils.currency_service import get_bcv_rate
 
 logger = logging.getLogger(__name__)
 
@@ -63,15 +67,16 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["doctor_request_message"] = (query.message.chat_id, query.message.message_id)
     
     keyboard = [
-        [InlineKeyboardButton(f"💳 Pagar ${PAYPAL_SUBSCRIPTION_COST} USD", callback_data="pay_subscription")],
+        [InlineKeyboardButton(f"💳 PayPal (${PAYPAL_SUBSCRIPTION_COST})", callback_data="pay_subscription")],
+        [InlineKeyboardButton(f"📱 Pago Móvil (${PAGO_MOVIL_COST_USD})", callback_data="pay_pago_movil")],
         [InlineKeyboardButton("❌ Cancelar", callback_data="request_cancel")]
     ]
     
     text = (
         "💎 <b>Suscripción GynSys</b>\n\n"
-        f"Para activar tu bot, es necesaria una suscripción de <b>${PAYPAL_SUBSCRIPTION_COST} USD/mes</b>.\n"
-        "El pago se realiza de forma segura a través de PayPal.\n\n"
-        "Haz clic en el botón de abajo para generar tu enlace de pago."
+        "Selecciona tu método de pago preferido para activar tu bot:\n\n"
+        f"• <b>PayPal</b>: ${PAYPAL_SUBSCRIPTION_COST} USD (Automático)\n"
+        f"• <b>Pago Móvil</b>: ${PAGO_MOVIL_COST_USD} USD (Tasa BCV)\n"
     )
 
     # Manejo específico para cuando el mensaje anterior es una imagen
@@ -97,6 +102,67 @@ async def start_request_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Actualizar la referencia del mensaje en user_data
             context.user_data["doctor_request_message"] = (new_message.chat_id, new_message.message_id)
     return REQUEST_WAITING_PAYMENT
+
+
+async def handle_pago_movil_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Muestra los datos para Pago Móvil"""
+    query = update.callback_query
+    await query.answer("Consultando tasa BCV...")
+    
+    # Obtener tasa
+    rate = await get_bcv_rate()
+    if rate:
+        amount_bs = float(PAGO_MOVIL_COST_USD) * rate
+        rate_text = f"Bs. {rate:,.2f}"
+        amount_text = f"Bs. {amount_bs:,.2f}"
+    else:
+        # Fallback si falla la API
+        rate_text = "Consultar BCV"
+        amount_text = f"${PAGO_MOVIL_COST_USD} (al cambio del día)"
+    
+    text = (
+        "📱 <b>Datos Pago Móvil</b>\n\n"
+        f"<b>Banco:</b> Venezuela ({PAGO_MOVIL_BANK_CODE})\n"
+        f"<b>C.I:</b> {PAGO_MOVIL_ID}\n"
+        f"<b>Teléfono:</b> {PAGO_MOVIL_PHONE}\n\n"
+        f"<b>Monto:</b> {amount_text}\n"
+        f"<b>Tasa:</b> {rate_text}\n\n"
+        "⚠️ Realiza el pago y luego presiona el botón de confirmación."
+    )
+    
+    keyboard = [
+        [InlineKeyboardButton("✅ Ya he realizado el pago", callback_data="confirm_pago_movil")],
+        [InlineKeyboardButton("🔙 Volver", callback_data="request_bot")],
+        [InlineKeyboardButton("❌ Cancelar", callback_data="request_cancel")]
+    ]
+    
+    await query.edit_message_text(
+        text=text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode="HTML"
+    )
+    return REQUEST_WAITING_PAYMENT
+
+
+async def confirm_pago_movil(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Confirma el pago móvil (manual) y avanza"""
+    query = update.callback_query
+    await query.answer()
+    
+    # Marcamos en user_data que fue pago móvil para que el admin lo sepa (opcional)
+    context.user_data["payment_method"] = "pago_movil"
+    
+    await query.edit_message_text(
+        "✅ <b>Pago Reportado</b>\n\n"
+        "Verificaremos tu transferencia manualmente.\n"
+        "Mientras tanto, continuemos con el registro.\n\n"
+        "1️⃣ Escribe tu <b>Nombre y Apellido</b>.\n"
+        "2️⃣ Luego te pediremos tu <b>ID de Telegram</b>.\n\n"
+        "Envía tu nombre ahora:",
+        reply_markup=get_cancel_keyboard(),
+        parse_mode="HTML"
+    )
+    return REQUEST_WAITING_NAME
 
 
 async def handle_payment_creation(update: Update, context: ContextTypes.DEFAULT_TYPE):
