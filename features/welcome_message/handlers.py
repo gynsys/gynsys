@@ -207,16 +207,20 @@ async def cancel_edit_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     if user_role == 'superadmin':
         from handlers.callback_router import handle_all_callbacks
+        msg = query.message if query else update.effective_message
         fake_query = type('obj', (object,), {
             'data': 'main_menu',
-            'message': query.message if query else update.effective_message,
-            'answer': lambda *a, **k: None
+            'message': msg,
+            'answer': lambda *a, **k: None,
+            'edit_message_text': msg.edit_text if msg else None,
+            'edit_message_media': msg.edit_media if msg else None
         })()
         fake_update = type('obj', (object,), {
+            'message': None,
             'callback_query': fake_query,
             'effective_user': update.effective_user,
             'effective_chat': update.effective_chat,
-            'effective_message': query.message if query else update.effective_message
+            'effective_message': msg
         })()
         await handle_all_callbacks(fake_update, context)
     else:

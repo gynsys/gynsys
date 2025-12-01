@@ -45,9 +45,10 @@ async def send_marketing_menu(update: Update, context: ContextTypes.DEFAULT_TYPE
     keyboard = get_marketing_keyboard(is_superadmin=is_superadmin, is_doctor=is_doctor)
 
     # Enviar imagen con caption
-    if update.message:
+    message = getattr(update, 'message', None)
+    if message:
         with open(LOGO_PATH, 'rb') as photo:
-            await update.message.reply_photo(
+            await message.reply_photo(
                 photo=photo,
                 caption=MARKETING_TEXT,
                 reply_markup=keyboard,
