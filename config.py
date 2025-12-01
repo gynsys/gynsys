@@ -64,7 +64,7 @@ PAYPAL_SUBSCRIPTION_COST = "4.05"
 # ============================================================================
 PAGO_MOVIL_BANK_CODE = os.getenv('PAGO_MOVIL_BANK_CODE', '0102')  # Banco de Venezuela
 PAGO_MOVIL_ID = os.getenv('PAGO_MOVIL_ID', '13409534')
-PAGO_MOVIL_PHONE = os.getenv('PAGO_MOVIL_PHONE', '04120000000')  # ⚠️ CAMBIAR POR EL NÚMERO REAL
+PAGO_MOVIL_PHONE = os.getenv('PAGO_MOVIL_PHONE', '04129972355')
 PAGO_MOVIL_COST_USD = "4.00"
 
 
