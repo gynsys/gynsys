@@ -232,9 +232,9 @@ async def receive_contact_value(update: Update, context: ContextTypes.DEFAULT_TY
             await context.bot.edit_message_text(
                 chat_id=message_ref[0],
                 message_id=message_ref[1],
-                #text=f"👩‍⚕️ <b>Menú Principal - {html.escape(doctor[1])}</b>\n"
-                 #    "Comparte estos accesos con tus pacientes y personalízalos desde Panel Admin.",
-                reply_markup=get_doctor_public_keyboard(),
+                text=f"👩‍⚕️ <b>Menú Principal - {html.escape(doctor[1])}</b>\n"
+                     "Comparte estos accesos con tus pacientes y personalízalos desde Panel Admin.",
+                reply_markup=await get_doctor_public_keyboard(user_id=message_ref[0]),
                 parse_mode="HTML",
                 disable_web_page_preview=True,
             )
