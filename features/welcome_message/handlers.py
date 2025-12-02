@@ -34,9 +34,6 @@ async def show_edit_welcome_message(update: Update, context: ContextTypes.DEFAUL
         f"✏️ <b>Editar Mensaje de Bienvenida</b>\n\n"
         f"<b>Mensaje actual:</b>\n"
         f"<blockquote>{escape_html(current_message)}</blockquote>\n\n"
-        f"El mensaje completo que verán los usuarios será:\n"
-        f"💖 Hola, <b>[Nombre del Usuario]</b> 💖\n"
-        f"{escape_html(current_message)}\n\n"
         f"📝 <b>Envía el nuevo mensaje de bienvenida:</b>\n"
         f"(Puedes usar HTML para formato: &lt;b&gt;negrita&lt;/b&gt;, &lt;i&gt;cursiva&lt;/i&gt;)\n\n"
         f"Usa /cancelar para cancelar."
@@ -151,10 +148,7 @@ async def receive_welcome_message(update: Update, context: ContextTypes.DEFAULT_
     text = (
         f"✅ <b>Mensaje de bienvenida actualizado</b>\n\n"
         f"<b>Nuevo mensaje:</b>\n"
-        f"<blockquote>{escape_html(new_message)}</blockquote>\n\n"
-        f"Los usuarios verán:\n"
-        f"💖 Hola, <b>[Nombre del Usuario]</b> 💖\n"
-        f"{escape_html(new_message)}"
+        f"<blockquote>{escape_html(new_message)}</blockquote>"
     )
     
     # Determinar el callback de retorno según el rol
