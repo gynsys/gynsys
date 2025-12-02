@@ -44,31 +44,37 @@ async def show_edit_welcome_message(update: Update, context: ContextTypes.DEFAUL
     ])
     
     try:
-        await query.edit_message_text(
+        msg = await query.edit_message_text(
             text=text,
             reply_markup=keyboard,
             parse_mode=ParseMode.HTML
         )
+        context.user_data['welcome_message_id'] = msg.message_id
+        context.user_data['welcome_chat_id'] = msg.chat_id
     except BadRequest as e:
         if "no text" in str(e).lower() or "message to edit not found" in str(e).lower():
             try:
                 await query.message.delete()
             except:
                 pass
-            await context.bot.send_message(
+            msg = await context.bot.send_message(
                 chat_id=query.message.chat.id,
                 text=text,
                 reply_markup=keyboard,
                 parse_mode=ParseMode.HTML
             )
+            context.user_data['welcome_message_id'] = msg.message_id
+            context.user_data['welcome_chat_id'] = msg.chat_id
         else:
             logger.warning(f"Error al editar mensaje de bienvenida: {e}")
-            await context.bot.send_message(
+            msg = await context.bot.send_message(
                 chat_id=query.message.chat.id,
                 text=text,
                 reply_markup=keyboard,
                 parse_mode=ParseMode.HTML
             )
+            context.user_data['welcome_message_id'] = msg.message_id
+            context.user_data['welcome_chat_id'] = msg.chat_id
     
     return AWAITING_WELCOME_MESSAGE
 
@@ -192,6 +198,13 @@ async def cancel_edit_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE
     if query:
         await query.answer()
     
+    # Si es un comando, intentar borrar el mensaje del comando
+    if update.message:
+        try:
+            await update.message.delete()
+        except:
+            pass
+    
     # Determinar el callback de retorno según el rol
     user_id = update.effective_user.id
     from utils.role_manager import RoleManager
@@ -219,7 +232,48 @@ async def cancel_edit_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE
         await handle_all_callbacks(fake_update, context)
     else:
         from features.main_menu.user_handler import show_doctor_panel
-        await show_doctor_panel(update, context)
+        
+        # Si no hay query (es comando) y tenemos el ID del mensaje anterior,
+        # construimos un fake update para que show_doctor_panel edite ese mensaje
+        if not query and context.user_data.get('welcome_message_id'):
+            chat_id = context.user_data.get('welcome_chat_id')
+            message_id = context.user_data.get('welcome_message_id')
+            
+            # Clases fake para simular la estructura necesaria
+            class FakeMessage:
+                def __init__(self, bot, chat_id, message_id):
+                    self.bot = bot
+                    self.chat_id = chat_id
+                    self.message_id = message_id
+                    self.chat = type('obj', (object,), {'id': chat_id})
+                
+                async def edit_text(self, *args, **kwargs):
+                    return await self.bot.edit_message_text(chat_id=self.chat_id, message_id=self.message_id, *args, **kwargs)
+
+            class FakeQuery:
+                def __init__(self, message):
+                    self.message = message
+                    self.data = "doctor_panel"
+                
+                async def answer(self, *args, **kwargs):
+                    pass
+                
+                async def edit_message_text(self, *args, **kwargs):
+                    return await self.message.edit_text(*args, **kwargs)
+
+            fake_msg = FakeMessage(context.bot, chat_id, message_id)
+            fake_query = FakeQuery(fake_msg)
+            
+            fake_update = type('obj', (object,), {
+                'callback_query': fake_query,
+                'effective_user': update.effective_user,
+                'effective_chat': update.effective_chat,
+                'message': None
+            })()
+            
+            await show_doctor_panel(fake_update, context)
+        else:
+            await show_doctor_panel(update, context)
     
     return ConversationHandler.END
 
