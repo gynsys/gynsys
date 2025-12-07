@@ -145,7 +145,7 @@ async def process(update: Update, context: ContextTypes.DEFAULT_TYPE, node: dict
     elif selection == 'other':
         context.user_data['checklist_return_node'] = context.user_data['current_node_id']
         other_prompt_key = node.get('other_prompt_key', 'preconsulta.other_prompt_personal')
-        await query.edit_message_text(text=texts.get_text(other_prompt_key))
+        await query.edit_message_text(text=texts.get_text(other_prompt_key), parse_mode=ParseMode.HTML)
         from ...states import AWAITING_CHECKLIST_OTHER
         return AWAITING_CHECKLIST_OTHER
 
