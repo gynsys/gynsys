@@ -104,8 +104,6 @@ async def process_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_input = update.message.text
         await update.message.delete()
 
-        ### CORRECCIÓN ###: Toda esta lógica debe estar DENTRO del 'if update.message...'
-
         # --- Validación ---
         validation_config = node.get('validation')
         if validation_config:
@@ -120,7 +118,6 @@ async def process_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     is_valid = False
 
             if not is_valid:
-                # La validación falló, mostramos el mensaje de error progresivo
                 attempts = context.user_data.get(error_key, 0) + 1
                 context.user_data[error_key] = attempts
 
@@ -143,7 +140,7 @@ async def process_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     msg = await context.bot.send_message(update.effective_chat.id, error_text, parse_mode=ParseMode.HTML)
                     context.user_data['temp_error_message_id'] = msg.message_id
 
-                return AWAITING_GENERIC_INPUT # Nos quedamos esperando una nueva entrada
+                return AWAITING_GENERIC_INPUT
 
         # Si la validación pasa (o no había validación)
         if 'temp_error_message_id' in context.user_data:
@@ -154,9 +151,18 @@ async def process_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.pop(f"{node['save_to']}_error_attempts", None)
 
         # --- Guardado de datos ---
-        ### CORRECCIÓN ###: Eliminada la indentación extra
-        context.user_data[node['save_to']] = user_input
-        next_node_id = node.get('next_node')
+        # Si es un nodo de texto para "otra patología" (madre, padre, personales), escapamos el HTML y avanzamos correctamente
+        if node['text_key'] in [
+            "preconsulta.other_prompt_mother",
+            "preconsulta.other_prompt_father",
+            "preconsulta.other_prompt_personal"
+        ]:
+            from common.helpers import escape_html
+            context.user_data[node['save_to']] = escape_html(user_input)
+            next_node_id = node.get('next_node')
+        else:
+            context.user_data[node['save_to']] = user_input
+            next_node_id = node.get('next_node')
 
     elif update.callback_query:
         query = update.callback_query

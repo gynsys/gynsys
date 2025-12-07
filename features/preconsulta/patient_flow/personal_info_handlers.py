@@ -34,6 +34,10 @@ async def show_personal_info_summary(update: Update, context: ContextTypes.DEFAU
         await update.callback_query.answer()
 
     user_data = context.user_data
+    def clean_html(text):
+        import re
+        return re.sub(r'<[^>]+>', '', text) if isinstance(text, str) else text
+
     summary_text = (
         "<b>Resumen de tu Información Personal, por favor verifica tus datos, es el momento de corregir de haber cometido algun error, de lo contrario puedes continuar:</b>\n\n"
         f"<b>Nombre:</b> {user_data.get('full_name', 'N/A')}\n"
@@ -43,6 +47,24 @@ async def show_personal_info_summary(update: Update, context: ContextTypes.DEFAU
         f"<b>Dirección:</b> {user_data.get('address', 'N/A')}\n"
         f"<b>Ocupación:</b> {user_data.get('occupation', 'N/A')}\n"
     )
+
+    # Antecedentes familiares y personales
+    mother = clean_html(user_data.get('family_history_mother', 'No especificado'))
+    mother_other = clean_html(user_data.get('family_history_mother_other', ''))
+    father = clean_html(user_data.get('family_history_father', 'No especificado'))
+    father_other = clean_html(user_data.get('family_history_father_other', ''))
+    personal = clean_html(user_data.get('personal_history', 'No especificado'))
+    personal_other = clean_html(user_data.get('personal_history_other', ''))
+
+    summary_text += f"\n<b>Antecedentes familiares:</b>\nMadre: {mother}"
+    if mother_other:
+        summary_text += f"\nOtra patología madre: {mother_other}"
+    summary_text += f"\nPadre: {father}"
+    if father_other:
+        summary_text += f"\nOtra patología padre: {father_other}"
+    summary_text += f"\nPersonales: {personal}"
+    if personal_other:
+        summary_text += f"\nOtras enfermedades/alergias: {personal_other}"
 
     current_node_id = context.user_data.get('current_node_id') # Será 'SHOW_SUMMARY'
 

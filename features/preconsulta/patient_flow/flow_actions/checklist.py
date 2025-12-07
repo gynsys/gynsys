@@ -27,14 +27,17 @@ async def process_other_input(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     selected_items.add(f"Otro: {other_text.strip()}")
 
-    from ..generic_flow_engine import render_node
-
-    # Llamamos a render_node para que MUESTRE el checklist de nuevo
-    await render_node(update, context, return_node_id)
-
-    # Devolvemos el estado correcto para que la conversación continúe esperando
-    from ...states import AWAITING_GENERIC_INPUT
-    return AWAITING_GENERIC_INPUT
+    # Guardar la respuesta de "otro" en el campo correspondiente y avanzar
+    # Si el nodo tiene next_node, avanzar automáticamente
+    if 'next_node' in node:
+        context.user_data[node['save_to'] + '_other'] = other_text.strip()
+        from ..generic_flow_engine import render_node
+        return await render_node(update, context, node['next_node'])
+    else:
+        from ..generic_flow_engine import render_node
+        await render_node(update, context, return_node_id)
+        from ...states import AWAITING_GENERIC_INPUT
+        return AWAITING_GENERIC_INPUT
 
 async def render(update: Update, context: ContextTypes.DEFAULT_TYPE, node: dict, message_id: int = None):
     """Muestra un teclado de checklist editando el mensaje ancla."""
