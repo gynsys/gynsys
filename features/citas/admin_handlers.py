@@ -155,7 +155,7 @@ async def _confirm_and_notify(context: ContextTypes.DEFAULT_TYPE, cita_id: int, 
                 f"🗓️ <b>Fecha:</b> {dt.strftime('%d/%m/%Y')}\n"
                 f"⏰ <b>Hora:</b> {dt.strftime('%H:%M')}\n"
                 f"📍 <b>Ubicación:</b> {escape_html(appointment['location'] or 'Pendiente')}\n\n"
-                f"Para agilizar el proceso, por favor completa tu historia médica de preconsulta."
+                f"Para agilizar el proceso, por favor completa tu historia médica a través del boton 📋 <b>Llenar Preconsulta</b>."
             )
             preconsulta_keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton("📋 Llenar Preconsulta", callback_data=f"preconsulta_start_{cita_id}")]

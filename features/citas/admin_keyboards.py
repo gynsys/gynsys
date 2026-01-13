@@ -30,8 +30,9 @@ def get_citas_list_keyboard(citas_paginadas: list, page_index: int, total_citas:
 def get_cita_detail_keyboard(cita_id: int, filter_type: str, page_index: int):
     keyboard = [
         [
-            InlineKeyboardButton("✅ Completada", callback_data=f"citas_action_complete_{cita_id}_{filter_type}_{page_index}"),
-            InlineKeyboardButton("👍 Confirmar", callback_data=f"citas_action_confirm_{cita_id}_{filter_type}_{page_index}")
+            InlineKeyboardButton("✅ Completada", callback_data=f"citas_action_complete_{cita_id}_{filter_type}_{page_index}")
+
+            #InlineKeyboardButton("👍 Confirmar", callback_data=f"citas_action_confirm_{cita_id}_{filter_type}_{page_index}")
         ],
         [
             InlineKeyboardButton("❌ Cancelar Cita", callback_data=f"citas_action_cancel_{cita_id}_{filter_type}_{page_index}"),

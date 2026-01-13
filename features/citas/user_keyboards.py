@@ -84,7 +84,7 @@ async def get_locations_keyboard(doctor_id: int):
 
     keyboard.append([
         InlineKeyboardButton("❌ Cancelar", callback_data="book_cancel"),
-        InlineKeyboardButton("🏠 Menú Principal", callback_data="patient_main_menu")
+        InlineKeyboardButton("🏠 ", callback_data="patient_main_menu")
     ])
     return InlineKeyboardMarkup(keyboard)
 
@@ -94,14 +94,14 @@ async def get_available_time_slots_keyboard(doctor_id: int, selected_date: str):
         "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
         "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"
     ]
-    
+
     # Obtener slots ocupados para este doctor y día
     occupied_slots = []
     try:
         dt = datetime.strptime(selected_date, "%Y-%m-%d")
         start_ts = int(dt.timestamp())
         end_ts = start_ts + 86400
-        
+
         async with get_session() as session:
             result = await session.execute(
                 select(Slot.start_ts)
@@ -113,14 +113,14 @@ async def get_available_time_slots_keyboard(doctor_id: int, selected_date: str):
                 )
             )
             occupied = result.scalars().all()
-            
+
             for start_ts_value in occupied:
                 dt_slot = datetime.fromtimestamp(start_ts_value)
                 occupied_slots.append(dt_slot.strftime("%H:%M"))
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error al obtener slots ocupados: {e}")
-    
+
     available_slots = [slot for slot in POSSIBLE_SLOTS if slot not in occupied_slots]
 
     keyboard = []
@@ -149,7 +149,7 @@ def get_confirmation_keyboard():
 def get_back_to_main_menu_keyboard():
     """Genera un teclado simple para volver al menú principal después de agendar."""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🏠 Volver al Menú Principal", callback_data="book_back_to_main_menu")]
+        [InlineKeyboardButton("🏠 ", callback_data="book_back_to_main_menu")]
     ])
 
 def get_start_preconsultation_keyboard(appointment_id: int) -> InlineKeyboardMarkup:

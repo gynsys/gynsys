@@ -26,6 +26,18 @@ if SUPER_ADMIN_ID == 0:
 # ============================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv('DB_PATH', os.path.join(BASE_DIR, 'database', 'medical_bot.db'))
+
+
+'''BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Asegurar que la carpeta database exista
+os.makedirs(os.path.join(BASE_DIR, 'database'), exist_ok=True)
+DB_PATH = os.getenv('DB_PATH', os.path.join(BASE_DIR, 'database', 'medical_bot.db'))
+
+
+PROJECT_ROOT = "/home/pablopem/gynsys"          # ruta conocida
+DB_DIR       = os.path.join(PROJECT_ROOT, "database")
+os.makedirs(DB_DIR, exist_ok=True)             # crea la carpeta si falta
+DB_PATH = os.getenv("DB_PATH", os.path.join(DB_DIR, "medical_bot.db"))'''
 DATABASE_NAME = DB_PATH
 
 # ============================================================================
@@ -35,7 +47,7 @@ DATABASE_NAME = DB_PATH
 # - Usar variables de entorno
 # - Usar un gestor de secretos (ej: AWS Secrets Manager, HashiCorp Vault)
 # - Nunca commitear la clave real en el repositorio
-# 
+#
 # Para generar una nueva clave, ejecutar en Python:
 # from cryptography.fernet import Fernet
 # print(Fernet.generate_key().decode('utf-8'))
@@ -80,5 +92,5 @@ WEBHOOK_URL = os.getenv('WEBHOOK_URL', '')  # URL del webhook (solo necesario si
 WEBHOOK_PORT = int(os.getenv('WEBHOOK_PORT', '8443'))  # Puerto para webhook (solo necesario si WEBHOOK=ON)
 
 # Estados para ConversationHandler
-(MAIN_MENU, CITAS, GALERIA, FAQ, CONSEJOS, 
+(MAIN_MENU, CITAS, GALERIA, FAQ, CONSEJOS,
  UBICACIONES, CONTACTO, PRECIOS, ADMIN_PANEL) = range(9)

@@ -11,9 +11,9 @@ def get_month_year_picker_keyboard(callback_prefix: str, year: int, allow_text: 
 
     # Fila con el año actual y navegación
     nav_year_row = [
-        InlineKeyboardButton("⏪ Año", callback_data=f"{callback_prefix}_nav_{year - 1}"),
-        InlineKeyboardButton(f"🗓️ {year} 🗓️", callback_data=f"{callback_prefix}_ignore"),
-        InlineKeyboardButton("Año ⏩", callback_data=f"{callback_prefix}_nav_{year + 1}")
+        InlineKeyboardButton("⏪ ", callback_data=f"{callback_prefix}_nav_{year - 1}"),
+        InlineKeyboardButton(f" {year} ️", callback_data=f"{callback_prefix}_ignore"),
+        InlineKeyboardButton(" ⏩", callback_data=f"{callback_prefix}_nav_{year + 1}")
     ]
     keyboard.append(nav_year_row)
 

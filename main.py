@@ -4,6 +4,8 @@ Soporta dos modos:
 - Polling: Para desarrollo local (WEBHOOK=OFF)
 - Webhook: Para producción (WEBHOOK=ON)
 """
+
+import os
 import logging
 import asyncio
 from telegram import Update
@@ -32,6 +34,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+os.chdir('/home/pablopem/gynsys')
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Maneja errores globales del bot"""

@@ -57,8 +57,10 @@ def format_family_history(mother_history: str, father_history: str) -> str:
     return "<br/>".join(parts) if parts else "Niega antecedentes familiares de importancia."
 
 
-def create_logo_image(logo_path, width=0.8*inch, height=0.8*inch):
-    """Crea una imagen de logo manejando errores"""
+from reportlab.lib.utils import ImageReader
+
+def create_logo_image(logo_path, width=0.8*inch, height=0.8*inch, preserveAspectRatio=True):
+    """Crea una imagen de logo manejando errores y manteniendo aspect ratio si se solicita"""
     resolved_path = _resolve_path(logo_path)
     if not resolved_path or not resolved_path.exists():
         logger.warning(f"❌ Logo path no existe o está vacío: {logo_path}")
@@ -66,7 +68,34 @@ def create_logo_image(logo_path, width=0.8*inch, height=0.8*inch):
 
     try:
         logger.info(f"✅ Cargando logo: {resolved_path}")
-        return Image(str(resolved_path), width=width, height=height)
+        
+        # Calculate Aspect Ratio
+        if preserveAspectRatio:
+            try:
+                img_reader = ImageReader(str(resolved_path))
+                iw, ih = img_reader.getSize()
+                aspect = iw / float(ih)
+                
+                # Check if we are constrained by width or height
+                # Try fitting to width first
+                new_width = width
+                new_height = width / aspect
+                
+                # If height is too big, fit to height instead
+                if new_height > height:
+                    new_height = height
+                    new_width = height * aspect
+                    
+                width = new_width
+                height = new_height
+            except Exception as e:
+                logger.error(f"⚠️ Error calculando aspect ratio para {logo_path}: {e}")
+                # Fallback to provided dimensions if calculation fails
+
+        img = Image(str(resolved_path), width=width, height=height)
+        img.hAlign = 'CENTER'
+        img.vAlign = 'MIDDLE'
+        return img
     except Exception as e:
         logger.error(f"❌ Error cargando logo {logo_path}: {e}")
         return ""

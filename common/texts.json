@@ -32,6 +32,8 @@
     "dismenorrhea_scale_intro": "<b><i>📊 Escala Visual del Dolor (EVA)</i></b>\n\n<b><i>Por favor, selecciona la intensidad de tu dolor menstrual:</i></b>\n\n<b><i>0 = Sin dolor\n10 = Dolor máximo imaginable</i></b>",
     "ask_sexarche": "<b><i>💑 ¿A qué edad tuviste tu primera relación sexual?</i></b>",
     "ask_sexually_active": "<b><i>❤️ ¿Eres sexualmente activa actualmente?</i></b>",
+    "ask_child_weight": "<b><i>⚖️ Peso del recién nacido (en kg y solo numerico Ej:3.2):</i></b>",
+    "ask_child_height": "<b><i>📏 Talla del recién nacido (en cm y solo numerico Ej:50):</i></b>",
     "ask_fum": "<b><i>📅 Por favor, selecciona la fecha de tu última menstruación (FUM):</i></b>",
     "ask_mac": "<b><i>🔒 ¿Usas algún método anticonceptivo (MAC) actualmente?</i></b>",
     "mac_prompt": "<b><i>📋 Por favor, selecciona el, o los método anticonceptivo usas:</i></b>",
@@ -100,6 +102,7 @@
   },
   "exam": {
     "ask_condiciones": "<b><i>🩺 Paso 1: Generales</i></b>\n\n<b><i>Condiciones generales del paciente:</i></b>",
+
     "ask_peso": "<b><i>⚖️ Peso del paciente (en kg Ej: 65):</i></b>",
     "ask_altura": "<b><i>📏 Altura del paciente (en metros Ej: 1.60):</i></b>",
     "ask_mama_derecha_simetria": "<b><i>🩺 Paso 2: Mamas</i></b>\n\n<b><i>Evaluación Mama Derecha (simetría):</i></b>",

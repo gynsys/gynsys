@@ -621,7 +621,7 @@ async def confirm_appointment(update: Update, context: ContextTypes.DEFAULT_TYPE
                 # 2. Definimos el teclado por separado
                 notification_keyboard = InlineKeyboardMarkup([
                     [
-                        InlineKeyboardButton("⏰ Recuérdame ", callback_data=f"appt_remind_later_{new_appointment_id}"),
+                        #InlineKeyboardButton("✅ Confirmar", callback_data=f"citas_action_confirm_{new_appointment_id}_pending_0"),
                         InlineKeyboardButton("🗑️ Descartar", callback_data=f"appt_dismiss_{new_appointment_id}")
                     ]
                 ])
@@ -637,20 +637,24 @@ async def confirm_appointment(update: Update, context: ContextTypes.DEFAULT_TYPE
             logger.error(f"FALLO al enviar notificación de nueva cita al admin: {e}", exc_info=True)
 
         success_text = (
-            f"✅ <b>¡Tu solicitud de cita ha sido enviada con éxito!</b>\n\n"
+            f"✅ <b>¡Agendaste tu cita  con éxito!</b>\n\n"
             f"<b>Resumen:</b>\n"
             f"🎯 <b>Tipo:</b> {escape_html(consultation_type)}\n"
             f"🗓️ {ud['booking_date']} a las {ud['booking_time']}\n"
             f"📍 {escape_html(ud['booking_location_name'])}\n\n"
-            "Recibirás una notificación tan pronto como tu médico confirme la cita. ¡Gracias!"
+            "Para agilizar el proceso, por favor completa tu historia médica de preconsulta."
         )
 
-        reply_markup = keyboards.get_finish_booking_keyboard()
+        # Crear teclado con botón de preconsulta y volver al menú
+        patient_keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📋 Llenar Preconsulta", callback_data=f"preconsulta_start_{new_appointment_id}")],
+            [InlineKeyboardButton("🏠 ", callback_data="book_back_to_main_menu")]
+        ])
         # --- FIN DE LA CORRECCIÓN ---
 
         await query.edit_message_text(
             success_text,
-            reply_markup=reply_markup,
+            reply_markup=patient_keyboard,
             parse_mode=ParseMode.HTML
         )
         return FINAL_STATE
