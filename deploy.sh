@@ -10,8 +10,13 @@ echo "🚀 Iniciando despliegue..."
 cd "$(dirname "$0")"
 
 # Actualizar código desde GitHub
-echo "📥 Actualizando código desde GitHub..."
-git pull origin main
+# Actualizar código desde GitHub (solo si es un repo git)
+if [ -d ".git" ]; then
+    echo "📥 Actualizando código desde GitHub..."
+    git pull origin main
+else
+    echo "📂 Despliegue manual detectado (sin git). Saltando actualización."
+fi
 
 # Activar entorno virtual (ajustar ruta según tu servidor)
 if [ -d "venv" ]; then

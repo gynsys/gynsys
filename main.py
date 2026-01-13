@@ -34,7 +34,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-os.chdir('/home/pablopem/gynsys')
+# os.chdir('/home/pablopem/gynsys')  # Comentado para producción
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Maneja errores globales del bot"""

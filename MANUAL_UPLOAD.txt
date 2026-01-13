@@ -1,0 +1,61 @@
+PASO 1: Subir el archivo ZIP (desde tu PC)
+------------------------------------------
+Abre PowerShell o CMD en la carpeta donde tienes el zip y ejecuta:
+
+scp bot.zip root@167.172.115.154:/root/
+
+(Reemplaza <TU_IP_DIGITAL_OCEAN> por la IP real, ej: 164.20.10.5)
+
+
+PASO 2: Descomprimir en el servidor
+-----------------------------------
+Conéctate por SSH:
+ssh root@167.172.115.154
+
+Instala unzip (si no lo tienes):
+apt-get install unzip
+
+Descomprime:
+unzip gynsys.zip -d bot
+
+Entra, instala venv y despliega:
+cd bot
+apt update && apt install python3.12-venv -y
+python3 -m venv venv
+chmod +x deploy.sh
+./deploy.sh
+
+PASO 3: CÓMO ACTUALIZAR (Si haces cambios)
+------------------------------------------
+1. Sube solo los archivos modificados.
+   Ejemplo: Si cambiaste main.py, sube solo ese:
+   scp main.py root@167.172.115.154:/root/bot/
+
+   O si cambiaste mucho, sube el zip de nuevo (sin venv) y descomprime sobrescribiendo:
+   scp bot.zip root@167.172.115.154:/root/
+   (en el server): unzip -o bot.zip -d bot
+
+2. REINICIA EL BOT (Obligatorio para ver cambios)
+   En el servidor:
+   
+   pkill -f "python3 main.py"
+   nohup python3 main.py > bot.log 2>&1 &
+
+COMANDOS ÚTILES (CHEATSHEET)
+----------------------------
+🔍 VER LOGS (En vivo):
+   tail -f bot.log
+   (Salir con Ctrl + C)
+
+🛑 DETENER EL BOT:
+   pkill -f "python3 main.py"
+
+▶️ INICIAR EL BOT (Con Git):
+   chmod +x deploy.sh
+   ./deploy.sh
+
+▶️ INICIAR EL BOT (Manual):
+   nohup python3 main.py > bot.log 2>&1 &
+
+❓ ESTADO (Ver si corre):
+   ps aux | grep python

@@ -851,8 +851,7 @@ async def view_history_details(update: Update, context: ContextTypes.DEFAULT_TYP
     summary_habits = details.get('summary_habits')
     if summary_habits:
         text += f"--- **Hábitos de Estilo de Vida** ---\n{escape_html(summary_habits)}\n\n"
-    summary_habits = details.get('summary_habits')
-    if summary_habits: text += f"--- **Hábitos de Estilo de Vida** ---\n{escape_html(summary_habits)}\n\n"
+
 
     # --- INICIO DE LA MODIFICACIÓN CLAVE ---
     report_status = details.get('status', 'pending')

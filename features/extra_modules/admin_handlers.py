@@ -282,7 +282,7 @@ def register(app):
     
     app.add_handler(CallbackQueryHandler(extra_modules_hub, pattern='^extra_modules_hub$'))
     app.add_handler(CallbackQueryHandler(list_doctors_for_modules, pattern='^extra_modules_by_doctor$'))
-    app.add_handler(CallbackQueryHandler(list_doctors_for_modules, pattern='^extra_modules_page_\d+$'))
-    app.add_handler(CallbackQueryHandler(show_doctor_modules, pattern='^extra_modules_doctor_\d+$'))
-    app.add_handler(CallbackQueryHandler(toggle_doctor_module, pattern='^extra_modules_toggle_\d+_\w+$'))
+    app.add_handler(CallbackQueryHandler(list_doctors_for_modules, pattern=r'^extra_modules_page_\d+$'))
+    app.add_handler(CallbackQueryHandler(show_doctor_modules, pattern=r'^extra_modules_doctor_\d+$'))
+    app.add_handler(CallbackQueryHandler(toggle_doctor_module, pattern=r'^extra_modules_toggle_\d+_\w+$'))
 
