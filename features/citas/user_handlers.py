@@ -393,12 +393,13 @@ async def handle_location(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def calendar_handler_booking(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Maneja la interacción con el calendario de agendamiento."""
     query = update.callback_query
-    await query.answer()
+    # ⚠️ NO responder aquí - esperar a validar primero
     data = query.data
 
     # --- ¡CAMBIO AQUÍ! ---
     # Este 'if' ahora maneja el botón "Elegir otra fecha" y usa el nombre correcto del método.
     if data == 'book_back_to_calendar':
+        await query.answer()  # OK aquí, no necesita alert
         await query.edit_message_text(
             "📅 Por favor, selecciona un día disponible en el calendario:",
             reply_markup=CustomCalendar().create_booking_calendar() # Corregido de create_calendar()
@@ -406,14 +407,57 @@ async def calendar_handler_booking(update: Update, context: ContextTypes.DEFAULT
         return SELECTING_DATE
 
     if data.startswith("book_cal_nav_"):
+        await query.answer()  # OK aquí, no necesita alert
         parts = data.split('_')
         year, month = map(int, parts[-1].split('-'))
         await query.message.edit_reply_markup(CustomCalendar().create_booking_calendar(year, month))
         return SELECTING_DATE
 
     if not (selected_date := CustomCalendar().process_selection(data)):
+        await query.answer()  # OK aquí, solo navegación
         return SELECTING_DATE
 
+    # --- VALIDACIÓN DE DÍAS DE ATENCIÓN ---
+    location_id = context.user_data.get('booking_location_id')
+    
+    if location_id is not None and location_id >= 0:
+        loc_details = await locations_db.get_location_details(location_id)
+        
+        if loc_details and loc_details.get('open_days'):
+            open_days_str = loc_details['open_days']
+            # Convertir string "0,1,2" a lista [0, 1, 2]
+            open_days = [int(d) for d in open_days_str.split(',') if d.strip().isdigit()]
+            
+            # 0=Lunes, 6=Domingo
+            selected_weekday = selected_date.weekday()
+            
+            if selected_weekday not in open_days:
+                # Mapa de días para el mensaje
+                day_names = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+                open_days_names = [day_names[d] for d in open_days]
+                
+                # Formatear lista legible: "Lunes, Miércoles y Viernes"
+                if len(open_days_names) > 1:
+                    schedule_text = ", ".join(open_days_names[:-1]) + " y " + open_days_names[-1]
+                elif open_days_names:
+                    schedule_text = open_days_names[0]
+                else:
+                    schedule_text = "ningún día (consultar)"
+
+                weekday_name = day_names[selected_weekday]
+                
+                # Mostrar alert al usuario
+                await query.answer(
+                    f"❌ Solo atiende {schedule_text}",
+                    show_alert=True
+                )
+                
+                # No avanzamos, el usuario permanece en el calendario
+                return SELECTING_DATE
+
+    # Si llegamos aquí, la fecha es válida - responder normalmente
+    await query.answer()
+    
     context.user_data['booking_date'] = selected_date.isoformat()
     doctor_id = context.user_data.get('booking_doctor_id')
     reply_markup = await keyboards.get_available_time_slots_keyboard(doctor_id, selected_date.isoformat())

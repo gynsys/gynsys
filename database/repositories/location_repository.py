@@ -42,7 +42,8 @@ class LocationRepository(BaseRepository[Location]):
             'schedule': location.schedule,
             'Maps_url': location.Maps_url,
             'is_active': location.is_active,
-            'display_order': location.display_order
+            'display_order': location.display_order,
+            'open_days': location.open_days
         }
     
     async def add_location(
@@ -51,20 +52,11 @@ class LocationRepository(BaseRepository[Location]):
         name: str, 
         address: str, 
         schedule: str, 
-        gmaps_url: str
+        gmaps_url: str,
+        open_days: str = "0,1,2,3,4"
     ) -> Location:
         """
         Añade una nueva ubicación a la base de datos.
-        
-        Args:
-            bot_id: ID del bot
-            name: Nombre de la ubicación
-            address: Dirección
-            schedule: Horario
-            gmaps_url: URL de Google Maps
-        
-        Returns:
-            Instancia de Location creada
         """
         # Obtener max display_order
         result = await self.session.execute(
@@ -83,7 +75,8 @@ class LocationRepository(BaseRepository[Location]):
             schedule=schedule,
             Maps_url=gmaps_url,
             is_active=True,
-            display_order=max_order + 1
+            display_order=max_order + 1,
+            open_days=open_days
         )
         self.session.add(location)
         await self.session.flush()
@@ -96,20 +89,11 @@ class LocationRepository(BaseRepository[Location]):
         name: str, 
         address: str, 
         schedule: str, 
-        gmaps_url: str
+        gmaps_url: str,
+        open_days: str = None
     ) -> bool:
         """
         Actualiza los datos de una ubicación existente.
-        
-        Args:
-            loc_id: ID de la ubicación
-            name: Nuevo nombre
-            address: Nueva dirección
-            schedule: Nuevo horario
-            gmaps_url: Nueva URL de Google Maps
-        
-        Returns:
-            True si se actualizó correctamente, False si no existe
         """
         location = await self.get_by_id(loc_id)
         if not location:
@@ -119,6 +103,8 @@ class LocationRepository(BaseRepository[Location]):
         location.address = address
         location.schedule = schedule
         location.Maps_url = gmaps_url
+        if open_days is not None:
+            location.open_days = open_days
         
         await self.session.flush()
         return True
@@ -126,24 +112,12 @@ class LocationRepository(BaseRepository[Location]):
     async def delete_location(self, loc_id: int) -> bool:
         """
         Elimina una ubicación de la base de datos.
-        
-        Args:
-            loc_id: ID de la ubicación
-        
-        Returns:
-            True si se eliminó correctamente, False si no existe
         """
         return await self.delete(loc_id)
     
     async def get_locations_for_bot(self, bot_id: int) -> List[Dict[str, Any]]:
         """
         Obtiene todas las ubicaciones activas para un bot/doctor.
-        
-        Args:
-            bot_id: ID del bot
-        
-        Returns:
-            Lista de diccionarios con detalles de ubicaciones activas
         """
         result = await self.session.execute(
             select(Location)
@@ -164,7 +138,8 @@ class LocationRepository(BaseRepository[Location]):
                 'schedule': loc.schedule,
                 'Maps_url': loc.Maps_url,
                 'is_active': loc.is_active,
-                'display_order': loc.display_order
+                'display_order': loc.display_order,
+                'open_days': loc.open_days
             }
             for loc in locations
         ]

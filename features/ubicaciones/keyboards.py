@@ -46,3 +46,31 @@ async def get_locations_for_action_keyboard(bot_id: int, action: str):
     keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data="locations_admin_hub")])
     return InlineKeyboardMarkup(keyboard)
 
+
+def get_days_selection_keyboard(selected_days: list, confirm_callback: str):
+    """
+    Genera un teclado para seleccionar días de la semana.
+    selected_days: Lista de enteros (0=Lunes, 6=Domingo).
+    """
+    days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+    keyboard = []
+    row = []
+    for i, day_name in enumerate(days):
+        # Si el día está seleccionado, ponemos un check
+        text = f"✅ {day_name}" if i in selected_days else day_name
+        callback_data = f"loc_toggle_day_{i}"
+        row.append(InlineKeyboardButton(text, callback_data=callback_data))
+        
+        # Max 3 botones por fila
+        if len(row) == 3:
+            keyboard.append(row)
+            row = []
+    
+    if row:
+        keyboard.append(row)
+        
+    # Botón de confirmar
+    keyboard.append([InlineKeyboardButton("✅ Continuar", callback_data=confirm_callback)])
+    
+    return InlineKeyboardMarkup(keyboard)
+

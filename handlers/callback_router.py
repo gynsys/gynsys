@@ -132,7 +132,8 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
     if not _is_callback_handled_by_router(callback_data, user_role):
         # Callback no reconocido - ignorar y permitir que handlers específicos lo capturen
         logger.debug(f"[handle_all_callbacks] Callback '{callback_data}' no está en la whitelist - ignorando para permitir que handlers específicos lo capturen")
-        await query.answer()  # Responder al callback para evitar que quede colgado
+        # ⚠️ NO responder aquí - deja que el handler específico responda (incluso con show_alert)
+        # await query.answer()  # COMENTADO: Esto previene que handlers muestren alerts
         return
     
     # ⚠️ IMPORTANTE: Los callbacks del test deben ser manejados por el ConversationHandler
@@ -142,7 +143,7 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
     if callback_data in {"test_answer_yes", "test_answer_no", "cancel_test", "begin_test"}:
         logger.warning(f"[handle_all_callbacks] Callback del test '{callback_data}' llegó a handle_all_callbacks - el ConversationHandler debería haberlo capturado")
         # No hacer nada - el callback ya fue procesado o ignorado
-        await query.answer()  # Responder al callback para evitar que quede colgado
+        await query.answer()  # OK aquí porque es un callback órfano
         return
     
     # Si el usuario es médico inactivo, mostrar mensaje de renovación

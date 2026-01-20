@@ -19,6 +19,7 @@ class Location(Base, IDMixin):
     Maps_url = Column(Text)
     is_active = Column(Boolean, default=True, nullable=False)
     display_order = Column(Integer, default=0)
+    open_days = Column(String, default="0,1,2,3,4") # Comma separate string of days (0=Mon, 6=Sun). Default Mon-Fri
     
     # Relaciones
     bot = relationship("Bot", back_populates="locations")
