@@ -966,6 +966,7 @@ def register(app: Application):
             CommandHandler('cancelar', cancel_consultation),
             CallbackQueryHandler(cancel_consultation, pattern='^cancel_consultation_conv$')
         ],
+        name="consultation_report_conversation",
         allow_reentry=True,
         persistent=True
     )
