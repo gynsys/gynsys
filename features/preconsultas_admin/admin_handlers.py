@@ -162,6 +162,16 @@ async def start_consultation(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.answer()
 
     history_id = int(query.data.split('_')[-1])
+    
+    # Limpiar datos de sesiones anteriores para evitar mezclas si se reingresa
+    keys_to_clear = [
+        'diagnosis_list', 'plan_list', 'physical_exam_notes', 'admin_physical_exam',
+        'ultrasound_notes', 'admin_ultrasound', 'diagnosis_notes', 'admin_diagnosis',
+        'plan_notes', 'admin_plan', 'observation_notes', 'admin_observations'
+    ]
+    for k in keys_to_clear:
+        context.user_data.pop(k, None)
+
     context.user_data['current_history_id'] = history_id
     context.user_data['consultation_anchor_message_id'] = query.message.message_id
 
@@ -955,7 +965,9 @@ def register(app: Application):
         fallbacks=[
             CommandHandler('cancelar', cancel_consultation),
             CallbackQueryHandler(cancel_consultation, pattern='^cancel_consultation_conv$')
-        ]
+        ],
+        allow_reentry=True,
+        persistent=True
     )
 
     # --- Registro de Handlers (Orden Corregido) ---
