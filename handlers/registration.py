@@ -120,7 +120,7 @@ def register_all_handlers(application: Application):
         },
         fallbacks=[CommandHandler('cancel', cancel_add_doctor)],
         name="add_doctor_conversation",
-        persistent=False
+        persistent=True
     )
     application.add_handler(add_doctor_conv_handler)
     
@@ -156,7 +156,7 @@ def register_all_handlers(application: Application):
         },
         fallbacks=[CallbackQueryHandler(cancel_request, pattern="^(request_cancel|main_menu)$")],
         name="request_bot_conversation",
-        persistent=False,
+        persistent=True,
     )
     # ⚠️ Este handler debe registrarse ANTES de handlers genéricos de mensajes
     application.add_handler(request_bot_conv)
@@ -175,7 +175,7 @@ def register_all_handlers(application: Application):
         },
         fallbacks=[CallbackQueryHandler(cancel_contact_edit, pattern="^contact_cancel$")],
         name="contact_conversation",
-        persistent=False
+        persistent=True
     )
     application.add_handler(contact_conv_handler)
     
@@ -213,7 +213,7 @@ def register_all_handlers(application: Application):
             CallbackQueryHandler(cancel_booking, pattern="^book_cancel$")
         ],
         name="booking_conversation",
-        persistent=False,
+        persistent=True,
         allow_reentry=True
     )
     application.add_handler(booking_conv)

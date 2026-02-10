@@ -9,7 +9,7 @@ import os
 import logging
 import asyncio
 from telegram import Update
-from telegram.ext import Application, ContextTypes
+from telegram.ext import Application, ContextTypes, PicklePersistence
 from telegram.error import BadRequest, TimedOut, NetworkError
 
 # Aplicar nest_asyncio al inicio para permitir anidar event loops
@@ -183,8 +183,11 @@ def main():
     # Limpiar asociaciones incorrectas al iniciar
     cleanup_on_start()
 
-    # Crear aplicación
-    application = Application.builder().token(BOT_TOKEN).build()
+    # Configurar persistencia
+    persistence = PicklePersistence(filepath='bot_data.pickle')
+
+    # Crear aplicación con persistencia
+    application = Application.builder().token(BOT_TOKEN).persistence(persistence).build()
 
     # Registrar error handler
     application.add_error_handler(error_handler)
