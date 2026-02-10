@@ -206,7 +206,7 @@ def main():
     # Inicializar métricas de salud
     print("📊 Inicializando sistema de métricas de salud...")
     metrics = get_metrics()
-    print(f"✅ Métricas inicializadas. Estado: {metrics.get_health_status()}")
+    print("✅ Métricas inicializadas.")
 
     # Ejecutar en modo polling o webhook según configuración
     if WEBHOOK == 'ON':
