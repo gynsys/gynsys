@@ -25,6 +25,7 @@ from database.connection import init_db
 from database.engine import init_engine, close_engine
 from utils.startup import cleanup_on_start
 from handlers.registration import register_all_handlers
+from utils.health_metrics import get_metrics
 
 # Configurar logging
 logging.basicConfig(
@@ -39,6 +40,11 @@ logger = logging.getLogger(__name__)
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Maneja errores globales del bot"""
     logger.error(f"Exception while handling an update: {context.error}", exc_info=context.error)
+    
+    # Registrar error en métricas
+    metrics = get_metrics()
+    error_type = type(context.error).__name__
+    metrics.log_error(error_type)
 
     # Manejar errores específicos
     if isinstance(context.error, BadRequest):
@@ -190,6 +196,11 @@ def main():
     print("🔧 Inicializando SQLAlchemy engine...")
     asyncio.run(init_engine())
     print("✅ SQLAlchemy engine inicializado.")
+    
+    # Inicializar métricas de salud
+    print("📊 Inicializando sistema de métricas de salud...")
+    metrics = get_metrics()
+    print(f"✅ Métricas inicializadas. Estado: {metrics.get_health_status()}")
 
     # Ejecutar en modo polling o webhook según configuración
     if WEBHOOK == 'ON':
