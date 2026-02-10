@@ -117,6 +117,12 @@ def run_webhook_mode(application: Application):
             "superadmin_id": SUPER_ADMIN_ID,
             "mode": "webhook"
         }), 200
+    
+    @flask_app.route('/health', methods=['GET'])
+    def health():
+        """Endpoint de métricas de salud del bot"""
+        metrics = get_metrics()
+        return jsonify(metrics.get_metrics()), 200
 
     @flask_app.route('/webhook', methods=['POST'])
     def webhook():
