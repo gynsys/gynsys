@@ -37,8 +37,8 @@
     "ask_fum": "<b><i>📅 Por favor, selecciona la fecha de tu última menstruación (FUM):</i></b>",
     "ask_mac": "<b><i>🔒 ¿Usas algún método anticonceptivo (MAC) actualmente?</i></b>",
     "mac_prompt": "<b><i>📋 Por favor, selecciona el, o los método anticonceptivo usas:</i></b>",
-    "ask_prev_checkups": "<b><i>🩺 ¿Cuál es la fecha de tu último control ginecológico?</i></b>",
-    "ask_last_pap_smear": "<b><i>🔬 ¿Ahora vamos a recordar un poco. ¿Cuál es la fecha de tu última citología?</i></b>",
+    "ask_prev_checkups": "<b><i>🩺 ¿Cuál fue el mes y año de tu último control ginecológico?</i></b>",
+    "ask_last_pap_smear": "<b><i>🔬 Indica el mes y año de tu última citología</i></b>",
     "section_functional_exam": "<b><i>🔬 Paso 4: Examen Funcional</i></b>\n\n<b><i>Ahora, algunas preguntas sobre síntomas específicos.</i></b>",
     "ask_dispareunia": "<b><i>😣 ¿Presentas dolor al tener relaciones sexuales (Dispareunia)?</i></b>",
     "ask_pain_type": "<b><i>🔍 El dolor es:</i></b>",
@@ -102,7 +102,6 @@
   },
   "exam": {
     "ask_condiciones": "<b><i>🩺 Paso 1: Generales</i></b>\n\n<b><i>Condiciones generales del paciente:</i></b>",
-
     "ask_peso": "<b><i>⚖️ Peso del paciente (en kg Ej: 65):</i></b>",
     "ask_altura": "<b><i>📏 Altura del paciente (en metros Ej: 1.60):</i></b>",
     "ask_mama_derecha_simetria": "<b><i>🩺 Paso 2: Mamas</i></b>\n\n<b><i>Evaluación Mama Derecha (simetría):</i></b>",
