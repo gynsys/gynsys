@@ -44,73 +44,10 @@ async def test_hub(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(f"➕ Añadir {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_add_start")],
         [InlineKeyboardButton(f"✏️ Modificar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_modify_list")],
         [InlineKeyboardButton(f"🗑️ Eliminar {CONFIG['singular']}", callback_data=f"{CONFIG['prefix']}_delete_list")],
-        [InlineKeyboardButton("📊 Estadísticas Test", callback_data="test_statistics")],
         [InlineKeyboardButton("🔙 Volver", callback_data='doctor_panel')]
     ]
     await query.edit_message_text(
         f"🔧 <b>Gestión de {CONFIG['plural']}</b>",
-        reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode="HTML"
-    )
-
-# --- ESTADÍSTICAS ---
-@doctor_required
-async def show_test_statistics(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
-    # Verificar módulo activo
-    user_id = update.effective_user.id
-    doctor = await role_manager.get_doctor_by_telegram_id(user_id)
-    if not doctor:
-        await query.answer("❌ Error: No se encontró el doctor.", show_alert=True)
-        return
-    
-    doctor_id = doctor[0]
-    is_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'test')
-    if not is_active:
-        await query.answer("❌ El módulo Test no está activo.", show_alert=True)
-        return
-
-    bot_id = await get_tenant_id(update, context)
-    if not bot_id:
-        await query.answer("❌ Error al obtener tenant ID.", show_alert=True)
-        return
-
-    # Obtener estadísticas
-    from database.repositories.test_result_repository import TestResultRepository
-    from database.session import get_session
-    
-    async with get_session() as session:
-        repo = TestResultRepository(session)
-        total_tests = await repo.get_total_tests_count(bot_id)
-        distribution = await repo.get_result_distribution(bot_id)
-
-    # Helper para calcular porcentaje
-    def calc_pct(count, total):
-        return (count / total * 100) if total > 0 else 0
-    
-    pct_high = calc_pct(distribution['ALTA COINCIDENCIA'], total_tests)
-    pct_med = calc_pct(distribution['MODERADA COINCIDENCIA'], total_tests)
-    pct_low = calc_pct(distribution['BAJA COINCIDENCIA'], total_tests)
-    
-    from datetime import datetime
-    date_str = datetime.now().strftime("%d/%m/%Y")
-
-    text = (
-        f"📊 <b>Estadísticas del Test de Endometriosis</b>\n"
-        f"📅 <i>Al {date_str}</i>\n\n"
-        f"📝 <b>Total de Tests realizados:</b> {total_tests}\n\n"
-        f"<b>Distribución de Resultados:</b>\n"
-        f"🔴 Alta Coincidencia: <b>{pct_high:.0f}%</b>\n"
-        f"🟡 Media Coincidencia: <b>{pct_med:.0f}%</b>\n"
-        f"🟢 Baja Coincidencia: <b>{pct_low:.0f}%</b>"
-    )
-
-    keyboard = [[InlineKeyboardButton("🔙 Volver", callback_data="test_admin_hub")]]
-    
-    await query.edit_message_text(
-        text=text,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="HTML"
     )
@@ -286,7 +223,6 @@ def register(app: Application):
     app.add_handler(add_conv)
     app.add_handler(modify_conv)
     app.add_handler(CallbackQueryHandler(test_hub, pattern='^test_admin_hub$'))
-    app.add_handler(CallbackQueryHandler(show_test_statistics, pattern='^test_statistics$'))
     app.add_handler(CallbackQueryHandler(list_items_for_action, pattern=f"^{CONFIG['prefix']}_(modify|delete)_list$"))
     app.add_handler(CallbackQueryHandler(confirm_delete_item, pattern=f"^{CONFIG['prefix']}_delete_\\d+$"))
     app.add_handler(CallbackQueryHandler(execute_delete_item, pattern=f"^{CONFIG['prefix']}_delete_execute_confirm_\\d+$"))
