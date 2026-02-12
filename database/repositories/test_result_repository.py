@@ -35,14 +35,18 @@ class TestResultRepository(BaseRepository[BotTestResult]):
             return None
 
     async def get_total_tests_count(self, bot_id: int) -> int:
-        """Obtiene el número total de tests realizados en este bot."""
+        """
+        Obtiene el número de tests nuevos (con resultado detallado).
+        """
         try:
             stmt = select(func.count(BotTestResult.id)).where(BotTestResult.bot_id == bot_id)
             result = await self.session.execute(stmt)
             return result.scalar() or 0
         except Exception as e:
-            logger.error(f"Error al contar total de tests: {e}")
+            logger.error(f"Error al contar total de tests nuevos: {e}")
             return 0
+
+
 
     async def get_result_distribution(self, bot_id: int) -> dict:
         """
