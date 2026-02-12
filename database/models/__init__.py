@@ -16,6 +16,7 @@ from .contact import ContactInfo
 from .job import Cita
 from .menu import MainMenuButton, Submenu, SubmenuButton
 from .util import BotLogo, UserAction
+from .bot_test_result import BotTestResult
 
 # Exportar todos los modelos para Alembic
 __all__ = [
@@ -43,6 +44,8 @@ __all__ = [
     'Submenu',
     'SubmenuButton',
     'BotLogo',
+    'BotLogo',
     'UserAction',
+    'BotTestResult',
 ]
 

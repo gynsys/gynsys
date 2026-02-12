@@ -20,6 +20,8 @@ from database import extra_modules_db
 from utils.role_manager import RoleManager
 from config import DB_PATH
 from handlers.callback_router import handle_all_callbacks
+from database.repositories.test_result_repository import TestResultRepository
+from database.repositories.user_util_repository import BotRepository
 
 from telegram.constants import ParseMode
 from common.helpers import escape_html
@@ -263,30 +265,74 @@ async def end_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     # --- ¡LÓGICA DE NOTIFICACIÓN MODIFICADA! ---
     try:
-        # Obtener doctor desde bot_id
-        # bot_id está en la tabla bots, que tiene admin_user_id (telegram_id del doctor)
-        import aiosqlite
-        async with aiosqlite.connect(DB_PATH) as conn:
-            cursor = await conn.execute(
-                'SELECT admin_user_id FROM bots WHERE id = ?',
-                (bot_id,)
+        # Calcular el nivel de resultado para guardar en BD (replicando lógica de common/texts.py)
+        # Esto permite estadísticas agrupadas
+        score = user_data['test_score']
+        total_q = len(user_data['test_questions'])
+        percent = (score / total_q) * 100 if total_q > 0 else 0
+        
+        if percent >= 70:
+            result_level = "ALTA COINCIDENCIA"
+        elif percent >= 40:
+            result_level = "MODERADA COINCIDENCIA"
+        else:
+            result_level = "BAJA COINCIDENCIA"
+
+        # Guardar resultado y obtener estadísticas
+        async with get_session() as session:
+            test_repo = TestResultRepository(session)
+            bot_repo = BotRepository(session)
+            
+            # Guardamos el resultado detallado
+            await test_repo.save_result(
+                user_id=user_id,
+                bot_id=bot_id,
+                score=score,
+                total_questions=total_q,
+                result_level=result_level,
+                timestamp=int(time.time())
             )
-            result = await cursor.fetchone()
-            if result:
-                doctor_telegram_id = result[0]
-                doctor = await role_manager.get_doctor_by_telegram_id(doctor_telegram_id)
-                if doctor:
-                    doctor_id = doctor[0]
+            
+            # Obtenemos estadísticas actualizadas y completas
+            total_tests = await test_repo.get_total_tests_count(bot_id)
+            distribution = await test_repo.get_result_distribution(bot_id)
+            
+            # Helper para calcular porcentaje seguro
+            def calc_pct(count, total):
+                return (count / total * 100) if total > 0 else 0
+            
+            pct_high = calc_pct(distribution['ALTA COINCIDENCIA'], total_tests)
+            pct_med = calc_pct(distribution['MODERADA COINCIDENCIA'], total_tests)
+            pct_low = calc_pct(distribution['BAJA COINCIDENCIA'], total_tests)
+            
+            # Fecha actual formateada
+            from datetime import datetime
+            import pytz
+            # Usar zona horaria si es posible, o UTC/Local
+            date_str = datetime.now().strftime("%d/%m/%Y")
+
+            # Obtener doctor para notificar
+            doctor_telegram_id = await bot_repo.get_bot_admin_id(bot_id)
+            
+            if doctor_telegram_id:
+                doctor_tuple = await role_manager.get_doctor_by_telegram_id(doctor_telegram_id)
+                if doctor_tuple:
                     user = update.effective_user
                     user_info = user.full_name
                     if user.username:
                         user_info += f" (@{user.username})"
 
                     notification_text = (
-                        f"🔔 Nuevo test completado\n\n"
+                        f"🔔 <b>Nuevo test completado</b>\n"
+                        f"#{result_level.replace(' ', '')}\n\n"
                         f"👤 <b>Usuario:</b> {escape_html(user_info)}\n\n"
                         f"📝 <b>Resultado:</b>\n"
-                        f"<blockquote>{resultado_texto}</blockquote>"
+                        f"<blockquote>{resultado_texto}</blockquote>\n\n"
+                        f"📊 <b>Estadísticas Globales</b>\n"
+                        f"<i>(Total de tests: {total_tests} al {date_str})</i>\n\n"
+                        f"🔴 <b>{pct_high:.0f}%</b> Alta coincidencia\n"
+                        f"🟡 <b>{pct_med:.0f}%</b> Media coincidencia\n"
+                        f"🟢 <b>{pct_low:.0f}%</b> Baja coincidencia"
                     )
 
                     # Creamos el teclado con el botón para descartar
@@ -300,11 +346,12 @@ async def end_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                         parse_mode=ParseMode.HTML,
                         reply_markup=keyboard
                     )
-                    logger.info(f"Notificación de test completado enviada al doctor {doctor_telegram_id} para el usuario {user.id}.")
+                    logger.info(f"Notificación enriquecida enviada al doctor {doctor_telegram_id}.")
                 else:
-                    logger.warning(f"No se encontró un doctor con telegram_id {doctor_telegram_id} para el bot_id {bot_id}.")
+                    logger.warning(f"No se encontró doctor tuple para {doctor_telegram_id}")
             else:
-                logger.warning(f"No se encontró un bot_id {bot_id} en la tabla bots. No se pudo enviar la notificación del test.")
+                logger.warning(f"No se encontró admin_id para bot {bot_id}")
+
     except Exception as e:
         logger.error(f"FALLO al enviar notificación de test al admin: {e}", exc_info=True)
     # --- FIN DE LA MODIFICACIÓN ---
