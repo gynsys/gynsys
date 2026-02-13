@@ -18,16 +18,32 @@ El script:
 5. Opcionalmente elimina backups antiguos (mantiene solo los últimos 7 días)
 """
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
+from dotenv import load_dotenv
+import os
 import sqlite3
 import shutil
-import os
 from datetime import datetime, timedelta
 from pathlib import Path
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Configuración
 DB_PATH = "database/medical_bot.db"
 BACKUP_DIR = "backups"
 RETENTION_DAYS = 7  # Mantener backups de los últimos 7 días
+
+# Configuración de Correo
+SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
+SMTP_USER = os.getenv('SMTP_USER', '')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
+BACKUP_EMAIL_RECIPIENT = os.getenv('BACKUP_EMAIL_RECIPIENT', '')
 
 
 def create_backup_directory():
@@ -45,6 +61,55 @@ def generate_backup_filename() -> str:
     """
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     return f"backup-medical_bot-{timestamp}.db"
+
+
+def send_backup_email(backup_file: Path) -> bool:
+    """
+    Envía el archivo de backup por correo electrónico.
+    """
+    if not SMTP_USER or not SMTP_PASSWORD or not BACKUP_EMAIL_RECIPIENT:
+        print("⚠️  Configuración de correo incompleta. No se enviará el email.")
+        return False
+
+    print(f"📧 Enviando backup a {BACKUP_EMAIL_RECIPIENT}...")
+    
+    msg = MIMEMultipart()
+    msg['From'] = SMTP_USER
+    msg['To'] = BACKUP_EMAIL_RECIPIENT
+    msg['Subject'] = f"📦 Backup GynSys Bot - {backup_file.name}"
+    
+    body = f"""
+    Respaldo automático de la base de datos del Bot.
+    
+    Archivo: {backup_file.name}
+    Fecha: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+    Tamaño: {backup_file.stat().st_size / (1024*1024):.2f} MB
+    """
+    msg.attach(MIMEText(body, 'plain'))
+    
+    try:
+        with open(backup_file, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+        
+        encoders.encode_base64(part)
+        part.add_header(
+            "Content-Disposition",
+            f"attachment; filename= {backup_file.name}",
+        )
+        msg.attach(part)
+        
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(SMTP_USER, BACKUP_EMAIL_RECIPIENT, text)
+        server.quit()
+        print("✅ Correo enviado exitosamente")
+        return True
+    except Exception as e:
+        print(f"❌ Error enviando correo: {e}")
+        return False
 
 
 def backup_database(source_db: str, backup_path: Path) -> bool:
@@ -86,6 +151,10 @@ def backup_database(source_db: str, backup_path: Path) -> bool:
             print(f"✅ Backup creado exitosamente: {backup_filename}")
             print(f"   Ubicación: {backup_file}")
             print(f"   Tamaño: {file_size_mb:.2f} MB")
+            
+            # Intentar enviar por correo
+            send_backup_email(backup_file)
+            
             return True
         else:
             print(f"❌ Error: El archivo de backup se creó pero está vacío o no existe")
