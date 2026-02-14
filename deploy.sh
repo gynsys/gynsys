@@ -29,7 +29,7 @@ fi
 
 # Actualizar dependencias
 echo "📦 Actualizando dependencias..."
-pip install -r requirements.txt --quiet
+python3 -m pip install -r requirements.txt --quiet
 
 # 🆕 BACKUP DE BASE DE DATOS
 echo "💾 Creando backup de base de datos..."
