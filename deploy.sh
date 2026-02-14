@@ -50,12 +50,6 @@ else
     echo "⚠️  Alembic no encontrado. Verifica la instalación."
 fi
 
-# 🆕 REINICIAR SERVICIOS WEB (DOCKER)
-echo "🔄 Reiniciando servicios web (Docker)..."
-# Usamos stop y up para ser más eficientes en memoria
-docker compose stop backend || true
-docker compose up -d backend
-
 # Reiniciar el bot
 echo "🔄 Reiniciando el bot..."
 pkill -f "python main.py" || true  # No fallar si el proceso no existe
