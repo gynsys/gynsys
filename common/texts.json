@@ -79,7 +79,9 @@
     "ask_ho_table_v2": "<b><i>📊 Por favor, completa tu historial obstétrico. Selecciona la cantidad para cada categoría:</i></b>",
     "ask_child_birth_condition": "<b><i>❤️ ¿Cuál fue la condición al nacer?</i></b>",
     "ask_child_birth_type": "<b><i>🤱 Selecciona el tipo de parto:</i></b>",
-    "ask_child_complications": "<b><i>⚠️ Selecciona si hubo alguna complicación:</i></b>"
+    "ask_child_complications": "<b><i>⚠️ Selecciona si hubo alguna complicación:</i></b>",
+    "ho_table_label_single": "Partos Simples",
+    "ho_table_label_multiple": "Partos Múltiples"
   },
   "admin_consultation": {
     "list_title": "<b><i>📋 Preconsultas Completadas</i></b>\n\n<b><i>Selecciona una para ver los detalles:</i></b>",

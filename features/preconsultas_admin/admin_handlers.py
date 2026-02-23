@@ -939,7 +939,7 @@ def register(app: Application):
                 CallbackQueryHandler(handle_exam_template_choice, pattern='^exam_choice_')
             ],
             AWAITING_EXAM_INPUT: [
-                CallbackQueryHandler(process_exam_input),
+                CallbackQueryHandler(process_exam_input, pattern=r'^ASK_'),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, process_exam_input),
             ],
             AWAITING_PHYSICAL_EXAM: [MessageHandler(filters.TEXT & ~filters.COMMAND, transition_to_ultrasound)],

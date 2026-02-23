@@ -246,6 +246,10 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
     elif callback_data == "locations_admin_hub":
         from features.ubicaciones.admin_handlers import locations_hub
         await locations_hub(update, context)
+    elif callback_data == "patient_management_hub":
+        from features.preconsultas_admin.admin_handlers import patient_management_hub
+        await patient_management_hub(update, context)
+        return
     elif callback_data == "faqs_admin_hub" or callback_data == "faqs_admin_hub_v2":
         logger.info(f"[handle_admin_callback] Callback faqs_admin_hub recibido. User ID: {user_id}")
         from features.faqs.admin_handlers import faqs_hub
