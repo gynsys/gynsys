@@ -1,6 +1,6 @@
 from config import SUPER_ADMIN_ID
 from database.session import get_session
-from database.repositories.user_repository import DoctorRepository, PatientDoctorRepository
+from database.repositories.user_repository import DoctorRepository, PatientDoctorRepository, InstitutionUserRepository
 from typing import Optional, Tuple
 
 
@@ -32,14 +32,21 @@ class RoleManager:
         async with get_session() as session:
             doctor_repo = DoctorRepository(session)
             patient_doctor_repo = PatientDoctorRepository(session)
+            inst_repo = InstitutionUserRepository(session)
             
-            # 2. Verificar SIEMPRE si es médico primero (activo o inactivo)
+            # 2. Verificar SIEMPRE si es médico principal (activo o inactivo)
             doctor = await doctor_repo.get_any_doctor_by_telegram_id(telegram_id)
             if doctor:
                 if doctor.is_active:
                     return 'doctor'
                 else:
                     return 'inactive_doctor'
+                    
+            # 2.5. Verificar si es co-usuario (miembro del equipo de una institución)
+            inst_user = await inst_repo.get_institution_user(telegram_id)
+            if inst_user:
+                # Actúa como doctor de cara al sistema, ya que opera la app del tenant
+                return 'doctor'
             
             # 3. Solo si NO es médico, verificar si es paciente
             patient_doctor = await patient_doctor_repo.get_doctor_for_patient(telegram_id)
@@ -83,9 +90,13 @@ class RoleManager:
         """
         Obtiene médico por Telegram ID (activo o inactivo).
         Retorna una tupla (doctor_id, name, telegram_id, is_active, created_at) para compatibilidad.
+        Si es un usuario de institución, devuelve el médico/tenant titular.
         """
         async with get_session() as session:
             doctor_repo = DoctorRepository(session)
+            inst_repo = InstitutionUserRepository(session)
+            
+            # 1. ¿Es el médico titular?
             doctor = await doctor_repo.get_any_doctor_by_telegram_id(telegram_id)
             
             if doctor:
@@ -97,6 +108,19 @@ class RoleManager:
                     doctor.is_active,
                     doctor.created_at
                 )
+                
+            # 2. ¿Es un co-usuario miembro de una institución?
+            inst_user = await inst_repo.get_institution_user(telegram_id)
+            if inst_user:
+                titular = inst_user.institution
+                return (
+                    titular.id,
+                    titular.name,
+                    titular.telegram_id,
+                    titular.is_active,
+                    titular.created_at
+                )
+
         return None
     
     async def get_doctor_by_id(self, doctor_id: int) -> Optional[Tuple]:

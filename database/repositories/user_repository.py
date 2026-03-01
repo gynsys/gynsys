@@ -6,7 +6,7 @@ from typing import Optional, List, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
-from database.models.user import Doctor, PatientDoctor
+from database.models.user import Doctor, PatientDoctor, InstitutionUser
 from database.models.bot import Bot, UserTenant
 from database.models.content import TextContent, FAQ, Gallery, Precio
 from database.models.location import Location
@@ -468,3 +468,22 @@ class PatientDoctorRepository(BaseRepository[PatientDoctor]):
         await self.session.flush()
         return result.rowcount > 0
 
+
+class InstitutionUserRepository(BaseRepository[InstitutionUser]):
+    """
+    Repository para operaciones con co-usuarios (miembros del equipo de una institución/doctor).
+    """
+    
+    def __init__(self, session: AsyncSession):
+        super().__init__(InstitutionUser, session)
+        
+    async def get_institution_user(self, telegram_id: int) -> Optional[InstitutionUser]:
+        """
+        Obtiene un co-usuario por su telegram_id, incluyendo la relación con el doctor principal (institución).
+        """
+        result = await self.session.execute(
+            select(InstitutionUser)
+            .options(selectinload(InstitutionUser.institution))
+            .where(InstitutionUser.telegram_id == telegram_id)
+        )
+        return result.scalar_one_or_none()

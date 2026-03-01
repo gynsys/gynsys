@@ -43,9 +43,20 @@ async def get_doctor_public_keyboard(user_id: int = None):
     """
     keyboard = []
     
-    # Verificar módulos activos para el doctor
+    # Verificar módulos activos para el doctor y si es titular
     active_modules = {}
+    is_titular = True
+    
     if user_id:
+        from database.session import get_session
+        from database.repositories.user_repository import InstitutionUserRepository
+        
+        async with get_session() as session:
+            inst_repo = InstitutionUserRepository(session)
+            # Si el user_id está en institution_users, NO es titular
+            if await inst_repo.get_institution_user(user_id):
+                is_titular = False
+        
         doctor = await role_manager.get_doctor_by_telegram_id(user_id)
         if doctor:
             doctor_id = doctor[0]
@@ -96,6 +107,7 @@ async def get_doctor_public_keyboard(user_id: int = None):
     if row:
         main_buttons.append(row)
     
+    
     # Siempre mostrar estos botones (no son módulos controlables)
     main_buttons.extend([
         [
@@ -103,12 +115,14 @@ async def get_doctor_public_keyboard(user_id: int = None):
         ],
         [
             InlineKeyboardButton("🔗 Compartir link", callback_data="doctor_share_link"),
-        ],
-        [
-            InlineKeyboardButton("⚙️ Panel Admin", callback_data="doctor_panel"),
-            # ⚠️ NO AGREGAR "🏠 Inicio" AQUÍ - Ver documentación arriba
-        ],
+        ]
     ])
+    
+    # ⚠️ REGLA: El Panel Admin SOLO es para el dueño del tenant (Is Titular)
+    if is_titular:
+        main_buttons.append([
+            InlineKeyboardButton("⚙️ Panel Admin", callback_data="doctor_panel"),
+        ])
     
     keyboard.extend(main_buttons)
     return InlineKeyboardMarkup(keyboard)
@@ -262,6 +276,10 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
     elif callback_data == "test_admin_hub":
         from features.test.admin_handlers import test_hub
         await test_hub(update, context)
+        return
+    elif callback_data == "team_admin_hub" or callback_data.startswith("team_"):
+        from features.team.admin_handlers import team_action_handler
+        await team_action_handler(update, context)
         return
     elif callback_data == "precios_menu":
         from features.precios.user_handlers import show_precios_menu

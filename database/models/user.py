@@ -50,3 +50,27 @@ class PatientDoctor(Base, IDMixin):
     def __repr__(self):
         return f"<PatientDoctor(patient_telegram_id={self.patient_telegram_id}, doctor_id={self.doctor_id})>"
 
+
+class InstitutionUser(Base, IDMixin):
+    """
+    Modelo para co-usuarios/equipo de una institución o clínica.
+    Permite que múltiples cuentas de Telegram operen un mismo bot/tenant.
+    """
+    __tablename__ = 'institution_users'
+    
+    # Telegram ID del co-usuario (Ej: Secretaria, Colega)
+    telegram_id = Column(Integer, unique=True, nullable=False)
+    
+    # ID del Doctor (Tenant) propietario
+    institution_id = Column(Integer, ForeignKey('doctors.id', ondelete='CASCADE'), nullable=False)
+    
+    # Nombre del colaborador para logs y mensajes
+    name = Column(String, nullable=False)
+    
+    # Relación
+    institution = relationship("Doctor", backref="institution_users")
+    
+    def __repr__(self):
+        return f"<InstitutionUser(telegram_id={self.telegram_id}, institution_id={self.institution_id}, name='{self.name}')>"
+
+

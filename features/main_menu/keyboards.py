@@ -54,6 +54,7 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
 
         # Verificar si el módulo test está activo para mostrar "Gestionar Test"
         test_manage_button = None
+        team_manage_button = None
         if user_id:
             doctor = await role_manager.get_doctor_by_telegram_id(user_id)
             if doctor:
@@ -61,6 +62,10 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
                 is_test_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'test')
                 if is_test_active:
                     test_manage_button = InlineKeyboardButton("🧪 Gestionar Test", callback_data="test_admin_hub")
+                
+                is_team_active = await extra_modules_db.is_module_active_for_doctor(doctor_id, 'equipo')
+                if is_team_active:
+                    team_manage_button = InlineKeyboardButton("👥 Gestión Equipo", callback_data="team_admin_hub")
 
         # Fila 1
         keyboard.append([
@@ -104,6 +109,10 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
         # Fila 7 - Gestionar Test (solo si el módulo está activo)
         if test_manage_button:
             keyboard.append([test_manage_button])
+            
+        # Fila 7.5 - Gestionar Equipo (solo si el módulo está activo)
+        if team_manage_button:
+            keyboard.append([team_manage_button])
 
         # Fila 8 - IMPORTANTE: Siempre incluir botón Inicio en el Panel Admin
         # Este botón permite volver al menú principal del doctor

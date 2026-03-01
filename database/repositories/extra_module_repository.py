@@ -235,5 +235,10 @@ class ExtraModuleRepository(BaseRepository[ExtraModule]):
                 'display_name': '🎮 Aprende Jugando',
                 'description': 'Quiz educativo de mitos y verdades'
             },
+            {
+                'name': 'equipo',
+                'display_name': '👥 Gestión Equipo',
+                'description': 'Administración de accesos para Instituciones'
+            },
         ]
 
