@@ -53,6 +53,22 @@ class CustomCalendar:
         keyboard.append([InlineKeyboardButton("❌ Cancelar Agendamiento", callback_data="book_cancel")])
         return InlineKeyboardMarkup(keyboard)
 
+    def create_admin_booking_calendar(self, year: int = None, month: int = None):
+        if year is None or month is None:
+            today = date.today()
+            year, month = today.year, today.month
+
+        # Generamos el mes usando el prefijo "ad_book_cal" explícitamente
+        keyboard = self._generate_month(year, month, callback_prefix="ad_book_cal")
+        
+        # La navegación también usa la función compartida
+        keyboard.append(self._generate_year_navigation(year, month, "ad_book_cal"))
+        
+        keyboard.append([
+            InlineKeyboardButton("❌ Cancelar", callback_data=f"ad_book_cancel")
+        ])
+        return InlineKeyboardMarkup(keyboard)
+
     def create_reschedule_calendar(self, cita_id: int, filter_type: str, page_index: int, year: int = None, month: int = None, highlight_date: date = None):
         if year is None or month is None:
             today = date.today()
@@ -71,6 +87,6 @@ class CustomCalendar:
         return InlineKeyboardMarkup(keyboard)
 
     def process_selection(self, query_data: str):
-        if query_data.startswith("book_cal_day_") or query_data.startswith("resched_cal_day_"):
+        if query_data.startswith("book_cal_day_") or query_data.startswith("resched_cal_day_") or query_data.startswith("ad_book_cal_day_"):
             return date.fromisoformat(query_data.split('_')[-1])
         return None

@@ -52,6 +52,7 @@ from features.test.admin_handlers import register as register_test_admin_handler
 from features.test.user_handlers import register as register_test_user_handlers
 from features.quiz.user_handlers import register as register_quiz_handlers
 from features.welcome_message.handlers import register as register_welcome_message_handlers
+from features.team.admin_handlers import register as register_team_handlers
 from features.citas.user_handlers import (
     start_booking,
     handle_name,
@@ -102,6 +103,7 @@ def register_all_handlers(application: Application):
     register_test_user_handlers(application)
     register_quiz_handlers(application)
     register_welcome_message_handlers(application)
+    register_team_handlers(application)
     
     # ConversationHandler para agregar médicos
     add_doctor_conv_handler = ConversationHandler(
@@ -225,6 +227,9 @@ def register_all_handlers(application: Application):
     # Registrar handlers de administración de citas (incluye botones Recuérdame y Descartar)
     from features.citas.admin_handlers import register as register_citas_admin_handlers
     register_citas_admin_handlers(application)
+    
+    from features.citas.admin_manual_booking import register as register_admin_manual_booking
+    register_admin_manual_booking(application)
     
     # Registrar handlers de gestión de preconsultas (Gestión Historia)
     from features.preconsultas_admin.admin_handlers import register as register_preconsultas_admin
