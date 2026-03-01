@@ -190,7 +190,7 @@ class MedicalRepository(BaseRepository[MedicalHistory]):
         """
         return await self.delete(history_id)
     
-    async def get_latest_completed_histories(self, doctor_id: int, limit: int = 7) -> List[Dict[str, Any]]:
+    async def get_latest_completed_histories(self, doctor_id: int, offset: int = 0, limit: int = 7) -> List[Dict[str, Any]]:
         """
         Obtiene los 'limit' historiales más recientes con estado 'completed'.
         Descifra el campo full_name después de leerlo.
@@ -209,6 +209,7 @@ class MedicalRepository(BaseRepository[MedicalHistory]):
                 MedicalHistory.status == 'completed'
             )
             .order_by(MedicalHistory.created_at.desc())
+            .offset(offset)
             .limit(limit)
         )
         histories_objs = result.scalars().all()
@@ -230,6 +231,17 @@ class MedicalRepository(BaseRepository[MedicalHistory]):
             histories.append(history_dict)
         
         return histories
+
+    async def get_completed_histories_count(self, doctor_id: int) -> int:
+        """Obtiene la cantidad total de historiales completados para un doctor."""
+        result = await self.session.execute(
+            select(func.count())
+            .where(
+                MedicalHistory.doctor_id == doctor_id,
+                MedicalHistory.status == 'completed'
+            )
+        )
+        return result.scalar() or 0
     
     async def search_completed_histories_by_name(self, doctor_id: int, search_term: str) -> List[Dict[str, Any]]:
         """

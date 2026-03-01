@@ -35,7 +35,7 @@ async def _get_doctor_id(update: Update) -> int:
 @admin_required
 async def patient_archive_hub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
-    Muestra los últimos pacientes completados y ofrece la opción de buscar.
+    Muestra los últimos pacientes completados y ofrece la opción de buscar, con paginación.
     """
     query = update.callback_query
     await query.answer()
@@ -44,7 +44,18 @@ async def patient_archive_hub(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_text("❌ Error: No se pudo identificar tu perfil de médico.")
         return
 
-    latest_histories = await preconsulta_db.get_latest_completed_histories(doctor_id, limit=7)
+    # Extraer page_index
+    page_index = 0
+    if query.data.startswith("patient_archive_hub_") and query.data != "patient_archive_hub":
+        try:
+            page_index = int(query.data.split("_")[-1])
+        except ValueError:
+            pass
+
+    limit = 7
+    offset = page_index * limit
+    total_histories = await preconsulta_db.get_completed_histories_count(doctor_id)
+    latest_histories = await preconsulta_db.get_latest_completed_histories(doctor_id, offset=offset, limit=limit)
 
     text = "📂 **Archivo de Pacientes**\n\n"
     keyboard = []
@@ -63,9 +74,17 @@ async def patient_archive_hub(update: Update, context: ContextTypes.DEFAULT_TYPE
             callback_data = f"view_patient_history_{history['user_id']}"
             keyboard.append([InlineKeyboardButton(button_text, callback_data=callback_data)])
 
-    # --- ¡SINTAXIS CORREGIDA AQUÍ! ---
-    # Los dos botones de navegación van en la misma fila (lista),
-    # pero no anidados uno dentro del otro.
+    # --- Botones de Paginación ---
+    nav_row = []
+    if page_index > 0:
+        nav_row.append(InlineKeyboardButton("⬅️ Anterior", callback_data=f"patient_archive_hub_{page_index - 1}"))
+    if offset + limit < total_histories:
+        nav_row.append(InlineKeyboardButton("Siguiente ➡️", callback_data=f"patient_archive_hub_{page_index + 1}"))
+    
+    if nav_row:
+        keyboard.append(nav_row)
+
+    # --- SINTAXIS CORREGIDA ---
     keyboard.append([
         InlineKeyboardButton("🔙 ", callback_data="patient_management_hub"),
         InlineKeyboardButton("🏠 ", callback_data="main_menu")
@@ -529,7 +548,7 @@ def register(app: Application):
                 CallbackQueryHandler(select_plan_item_to_edit, pattern=r'^edit_plan_item:'),  # Nuevo handler para seleccionar item del plan
                 CallbackQueryHandler(cancel_editing, pattern=r'^main_menu$'),
                 CallbackQueryHandler(cancel_editing, pattern=r'^patient_management_hub$'),
-                CallbackQueryHandler(cancel_editing, pattern=r'^patient_archive_hub$'),
+                CallbackQueryHandler(cancel_editing, pattern=r'^patient_archive_hub(?:_\d+)?$'),
                 CallbackQueryHandler(cancel_editing, pattern=r'^list_histories_'),
                 # NUEVO: Permitir salir con view_patient_history desde EDITING_HUB
                 CallbackQueryHandler(cancel_editing, pattern=r'^view_patient_history_'),
@@ -547,14 +566,14 @@ def register(app: Application):
             CommandHandler('cancelar', cancel_editing),
             CallbackQueryHandler(cancel_editing, pattern=r'^main_menu$'),
             CallbackQueryHandler(cancel_editing, pattern=r'^patient_management_hub$'),
-            CallbackQueryHandler(cancel_editing, pattern=r'^patient_archive_hub$'),
+            CallbackQueryHandler(cancel_editing, pattern=r'^patient_archive_hub(?:_\d+)?$'),
             CallbackQueryHandler(cancel_editing, pattern=r'^list_histories_'),
             CallbackQueryHandler(cancel_editing, pattern=r'^view_patient_history_'),  # Ya existe
             # ELIMINAR: CallbackQueryHandler(view_patient_history, pattern=r'^finish_editing_')
         ]
     )
 
-    app.add_handler(CallbackQueryHandler(patient_archive_hub, pattern=r'^patient_archive_hub$'))
+    app.add_handler(CallbackQueryHandler(patient_archive_hub, pattern=r'^patient_archive_hub(?:_\d+)?$'))
     app.add_handler(search_conv)
     app.add_handler(edit_conv)
     app.add_handler(CallbackQueryHandler(view_patient_history, pattern=r'^view_patient_history_'))
