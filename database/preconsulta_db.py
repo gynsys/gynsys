@@ -29,6 +29,7 @@ __all__ = [
     'get_next_history_number',
     'save_history_number',
     'SENSITIVE_FIELDS',
+    'get_completed_histories_count',
 ]
 
 
@@ -39,11 +40,18 @@ async def delete_history(history_id: int) -> bool:
         return await repo.delete_history(history_id)
 
 
-async def get_latest_completed_histories(doctor_id: int, limit: int = 7) -> list:
+async def get_latest_completed_histories(doctor_id: int, offset: int = 0, limit: int = 7) -> list:
     """Obtiene los 'limit' historiales más recientes con estado 'completed'."""
     async with get_session() as session:
         repo = MedicalRepository(session)
-        return await repo.get_latest_completed_histories(doctor_id, limit)
+        return await repo.get_latest_completed_histories(doctor_id, offset, limit)
+
+
+async def get_completed_histories_count(doctor_id: int) -> int:
+    """Obtiene la cantidad total de historiales completados para un doctor."""
+    async with get_session() as session:
+        repo = MedicalRepository(session)
+        return await repo.get_completed_histories_count(doctor_id)
 
 
 async def search_completed_histories_by_name(doctor_id: int, search_term: str) -> list:
