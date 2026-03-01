@@ -247,8 +247,6 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
         await action_handler(update, context)
         return
     elif callback_data.startswith("resched_cal_"):
-        import logging
-        logger = logging.getLogger(__name__)
         logger.info(f"[user_handler] resched_cal callback recibido: {callback_data}")
         from features.citas.admin_handlers import calendar_handler
         await calendar_handler(update, context)
