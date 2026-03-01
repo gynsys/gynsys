@@ -108,38 +108,13 @@ async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
     logo_left = create_logo_image(logo_header_1_path)
     logo_right = create_logo_image(logo_header_2_path)
     signature_img = create_logo_image(signature_path, width=2.5*inch, height=1*inch)
-    validation_payload = {
-        "doctor": doctor_name,
-        "mpps": get_pdf_setting('mpps_number'),
-        "cmdm": get_pdf_setting('cmdm_number'),
-        "doctor_id": doctor_id,
-        "patient": {
-            "name": get_str('full_name'),
-            "ci": get_str('ci')
-        },
-        "history_number": get_str('history_number', 'N/A'),
-        "generated_at": datetime.utcnow().isoformat(),
-    }
-    qr_image = create_qr_image(validation_payload)
     
-    # Crear bloque QR con texto para el encabezado (parte superior derecha)
-    # 2mm a la derecha = 0.079 inches (anteriormente estaba -8mm, ahora +2mm = neto -6mm = -0.236 inches)
-    qr_caption_header = Paragraph(
-        "Escanea si deseas validar",
-        ParagraphStyle(name='QRHeaderNote', fontSize=7, alignment=TA_CENTER, leftIndent=-0.236*inch)
-    )
-    
-    # Columna derecha del encabezado: logo derecho arriba, QR abajo
+    # Columna derecha del encabezado: solamente el logo derecho (configurado en la interfaz)
     right_column_elements = []
     if logo_right:
         right_column_elements.append(logo_right)
-        right_column_elements.append(Spacer(1, 0.1*inch))
-    if qr_image:
-        right_column_elements.append(qr_image)
-        right_column_elements.append(Spacer(1, 0.02*inch))
-        right_column_elements.append(qr_caption_header)
     
-    # Si no hay logo derecho ni QR, usar espacio vacío
+    # Si no hay logo derecho, usar espacio vacío
     right_column_content = right_column_elements if right_column_elements else [""]
     
     # Tabla de encabezado: [logo_left, header_text, right_column]
@@ -149,7 +124,7 @@ async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ALIGN', (1,0), (1,0), 'CENTER'),
         ('LEFTPADDING', (1, 0), (1, 0), 0.197*inch),  # Mover bloque de datos del doctor 5mm a la derecha
-        ('LEFTPADDING', (2, 0), (2, 0), -0.5*inch),  # Mover QR 1/2 pulgada a la izquierda
+        ('ALIGN', (2, 0), (2, 0), 'CENTER'),         # Centrar la columna derecha
     ]))
     story.append(header_table)
 
