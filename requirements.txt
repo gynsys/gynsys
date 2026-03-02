@@ -1,5 +1,5 @@
 # Dependencias principales del bot
-python-telegram-bot>=20.0
+python-telegram-bot[job-queue]>=20.0
 httpx>=0.28.0  # Compatible con python-telegram-bot 22.5
 aiosqlite>=0.19.0
 python-dotenv>=1.0.0
