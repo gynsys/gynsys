@@ -216,15 +216,12 @@ def main():
     persistence = PicklePersistence(filepath='bot_data.pickle')
 
     import pytz
+    from telegram.ext import Defaults
     tz = pytz.timezone('America/Caracas')
+    defaults = Defaults(tzinfo=tz)
 
     # Crear aplicación con persistencia
-    
-    # IMPORTANTE: Forzar la zona horaria del job_queue desde la creación
-    from telegram.ext import JobQueue
-    jq = JobQueue()
-    jq.scheduler.timezone = tz
-    application = Application.builder().token(BOT_TOKEN).persistence(persistence).job_queue(jq).build()
+    application = Application.builder().token(BOT_TOKEN).persistence(persistence).defaults(defaults).build()
 
     # Registrar error handler
     application.add_error_handler(error_handler)
