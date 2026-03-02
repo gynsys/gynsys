@@ -36,8 +36,8 @@ def setup_jobs(application: Application):
     import pytz
     tz = pytz.timezone('America/Caracas')
         
-    # 1. Programar el backup diario a las 3:00 AM
-    backup_time = datetime.time(hour=3, minute=0, second=0, tzinfo=tz)
+    # 1. Programar el backup diario a las 8:20 AM (temporal para pruebas)
+    backup_time = datetime.time(hour=8, minute=20, second=0, tzinfo=tz)
     job_queue.run_daily(
         scheduled_db_backup,
         time=backup_time,
