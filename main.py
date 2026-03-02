@@ -106,6 +106,10 @@ def run_webhook_mode(application: Application):
     print("🔧 Inicializando Application para webhook...")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(application.initialize())
+    
+    # IMPORTANTE: Iniciar la aplicación para activar el JobQueue y otros procesos en background
+    print("🚀 Arrancando procesos internos (JobQueue)...")
+    loop.run_until_complete(application.start())
     print("✅ Application inicializada.")
 
     @flask_app.route('/', methods=['GET'])
@@ -134,7 +138,8 @@ def run_webhook_mode(application: Application):
 
             # Crear objeto Update y procesarlo
             update = Update.de_json(update_data, application.bot)
-            loop.run_until_complete(application.process_update(update))
+            # Enviar la corrutina al loop principal de forma segura entre hilos
+            asyncio.run_coroutine_threadsafe(application.process_update(update), loop)
             return jsonify({"ok": True}), 200
         except Exception as e:
             logger.error(f"Error procesando webhook: {e}", exc_info=True)
@@ -144,7 +149,8 @@ def run_webhook_mode(application: Application):
     def set_webhook():
         """Endpoint para configurar el webhook"""
         try:
-            loop.run_until_complete(application.bot.set_webhook(url=WEBHOOK_URL))
+            future = asyncio.run_coroutine_threadsafe(application.bot.set_webhook(url=WEBHOOK_URL), loop)
+            future.result(timeout=10)
             return jsonify({"ok": True, "webhook_url": WEBHOOK_URL}), 200
         except Exception as e:
             logger.error(f"Error configurando webhook: {e}", exc_info=True)
@@ -154,7 +160,8 @@ def run_webhook_mode(application: Application):
     def delete_webhook():
         """Endpoint para eliminar el webhook"""
         try:
-            loop.run_until_complete(application.bot.delete_webhook())
+            future = asyncio.run_coroutine_threadsafe(application.bot.delete_webhook(), loop)
+            future.result(timeout=10)
             return jsonify({"ok": True}), 200
         except Exception as e:
             logger.error(f"Error eliminando webhook: {e}", exc_info=True)
@@ -174,8 +181,30 @@ def run_webhook_mode(application: Application):
         logger.error(f"Error configurando webhook: {e}", exc_info=True)
         print("⚠️ No se pudo configurar el webhook automáticamente.")
 
-    # Iniciar servidor Flask
-    flask_app.run(host='0.0.0.0', port=WEBHOOK_PORT, debug=False)
+    # Iniciar servidor Flask en un hilo separado para que no bloquee el hilo principal
+    def run_flask():
+        flask_app.run(host='0.0.0.0', port=WEBHOOK_PORT, debug=False, use_reloader=False)
+
+    import threading
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    
+    # Mantener el loop principal corriendo para el JobQueue y los Updates
+    try:
+        print("🔄 Event loop corriendo (esperando tareas de fondo)...")
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("🛑 Deteniendo Application y cerrando loop...")
+        loop.run_until_complete(application.stop())
+        loop.run_until_complete(application.shutdown())
+        
+        try:
+            print("🔒 Cerrando SQLAlchemy engine...")
+            loop.run_until_complete(close_engine())
+        finally:
+            loop.close()
 
 
 def main():
