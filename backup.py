@@ -99,7 +99,7 @@ def send_backup_email(backup_file: Path) -> bool:
         )
         msg.attach(part)
         
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=15)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
         text = msg.as_string()

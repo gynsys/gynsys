@@ -1,6 +1,9 @@
 import logging
 import asyncio
 import datetime
+import os
+import glob
+from config import SUPER_ADMIN_ID
 from telegram.ext import Application, ContextTypes
 from backup import main as perform_backup
 
@@ -18,6 +21,22 @@ async def scheduled_db_backup(context: ContextTypes.DEFAULT_TYPE):
         result = await loop.run_in_executor(None, perform_backup)
         if result == 0:
             logger.info("✅ Backup automático completado exitosamente.")
+            try:
+                # Buscar el archivo más reciente en el directorio de backups
+                backups = glob.glob('backups/*.db')
+                if backups:
+                    latest_backup = max(backups, key=os.path.getctime)
+                    with open(latest_backup, 'rb') as f:
+                        await context.bot.send_document(
+                            chat_id=SUPER_ADMIN_ID,
+                            document=f,
+                            caption="✅ Backup automático diario de la base de datos."
+                        )
+                        logger.info("✅ Backup enviado por Telegram al administrador.")
+                else:
+                    logger.warning("No se encontraron archivos de backup para enviar por Telegram.")
+            except Exception as e:
+                logger.error(f"Error enviando el archivo de backup por Telegram: {e}")
         else:
             logger.error("❌ El backup automático reportó un fallo (exit code 1).")
     except Exception as e:
