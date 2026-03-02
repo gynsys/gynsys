@@ -194,7 +194,10 @@ def main():
 
     # Registrar todos los handlers
     register_all_handlers(application)
-    #application.add_handler(CallbackQueryHandler(_all_callbacks), group=2)
+    
+    # Configurar trabajos programados
+    from utils.scheduler import setup_jobs
+    setup_jobs(application)
 
     # Inicializar base de datos (crear tablas si no existen)
     print("📦 Inicializando base de datos...")

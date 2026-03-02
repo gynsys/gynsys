@@ -184,6 +184,71 @@ async def handle_superadmin_callback(update: Update, context: ContextTypes.DEFAU
     elif callback_data == "contact_preview":
         await show_contact_preview(update, context)
         return
+        
+    # === DB BACKUP ===
+    elif callback_data == "generate_db_backup":
+        await query.edit_message_text("⏳ Generando backup de la base de datos...\nPor favor, espera unos segundos.")
+        
+        import asyncio
+        import os
+        from pathlib import Path
+        import shutil
+        import datetime
+        
+        DB_PATH = Path("database/medical_bot.db")
+        BACKUPS_DIR = Path("backups")
+        
+        if not DB_PATH.exists():
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="❌ Error: No se encontró la base de datos.")
+            return
+
+        BACKUPS_DIR.mkdir(exist_ok=True)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        backup_filename = f"backup-medical_bot-{timestamp}.db"
+        backup_file = BACKUPS_DIR / backup_filename
+        
+        try:
+            import sqlite3
+            source_conn = sqlite3.connect(DB_PATH)
+            backup_conn = sqlite3.connect(backup_file)
+            source_conn.backup(backup_conn)
+            backup_conn.close()
+            source_conn.close()
+            
+            # Enviar el archivo por telegram
+            with open(backup_file, 'rb') as doc:
+                await context.bot.send_document(
+                    chat_id=update.effective_chat.id, 
+                    document=doc,
+                    filename=backup_filename,
+                    caption="✅ Backup generado y enviado exitosamente."
+                )
+                
+            # Intentar enviar también por correo
+            try:
+                from backup import send_backup_email
+                if send_backup_email(backup_file):
+                    await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text="📧 El backup también fue enviado a tu correo electrónico."
+                    )
+            except Exception as email_err:
+                logger.error(f"Error enviando email de backup desde UI: {email_err}")
+                
+        except Exception as e:
+            logger.error(f"Error generando backup: {e}", exc_info=True)
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=f"❌ Ocurrió un error al generar el backup.")
+            
+        # Volver al panel de superadmin
+        from features.main_menu.keyboards import get_main_menu_keyboard
+        keyboard = await get_main_menu_keyboard(is_superadmin=True, user_id=update.effective_user.id)
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="⚙️ *Panel Admin*\nSelecciona una opción para administrar tu bot.",
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+        return
     
     # === CALLBACK NO MANEJADO ===
     else:

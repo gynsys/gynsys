@@ -312,4 +312,5 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
     elif callback_data == "admin_panel" or callback_data == "settings_menu":
         # Redirigir al panel de administración
         await show_doctor_panel(update, context)
+
     # Edición de FAQ removida

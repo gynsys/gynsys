@@ -68,15 +68,15 @@ def send_backup_email(backup_file: Path) -> bool:
     Envía el archivo de backup por correo electrónico.
     """
     if not SMTP_USER or not SMTP_PASSWORD or not BACKUP_EMAIL_RECIPIENT:
-        print("⚠️  Configuración de correo incompleta. No se enviará el email.")
+        print("Configuración de correo incompleta. No se enviará el email.")
         return False
 
-    print(f"📧 Enviando backup a {BACKUP_EMAIL_RECIPIENT}...")
+    print(f"Enviando backup a {BACKUP_EMAIL_RECIPIENT}...")
     
     msg = MIMEMultipart()
     msg['From'] = SMTP_USER
     msg['To'] = BACKUP_EMAIL_RECIPIENT
-    msg['Subject'] = f"📦 Backup GynSys Bot - {backup_file.name}"
+    msg['Subject'] = f"Backup GynSys Bot - {backup_file.name}"
     
     body = f"""
     Respaldo automático de la base de datos del Bot.
@@ -105,10 +105,10 @@ def send_backup_email(backup_file: Path) -> bool:
         text = msg.as_string()
         server.sendmail(SMTP_USER, BACKUP_EMAIL_RECIPIENT, text)
         server.quit()
-        print("✅ Correo enviado exitosamente")
+        print("Correo enviado exitosamente")
         return True
     except Exception as e:
-        print(f"❌ Error enviando correo: {e}")
+        print(f"Error enviando correo: {e}")
         return False
 
 
@@ -124,7 +124,7 @@ def backup_database(source_db: str, backup_path: Path) -> bool:
         True si el backup fue exitoso, False en caso contrario
     """
     if not os.path.exists(source_db):
-        print(f"❌ Error: La base de datos no existe en {source_db}")
+        print(f"Error: La base de datos no existe en {source_db}")
         return False
     
     backup_filename = generate_backup_filename()
@@ -148,7 +148,7 @@ def backup_database(source_db: str, backup_path: Path) -> bool:
         # Verificar que el archivo se creó correctamente
         if backup_file.exists() and backup_file.stat().st_size > 0:
             file_size_mb = backup_file.stat().st_size / (1024 * 1024)
-            print(f"✅ Backup creado exitosamente: {backup_filename}")
+            print(f"Backup creado exitosamente: {backup_filename}")
             print(f"   Ubicación: {backup_file}")
             print(f"   Tamaño: {file_size_mb:.2f} MB")
             
@@ -157,14 +157,14 @@ def backup_database(source_db: str, backup_path: Path) -> bool:
             
             return True
         else:
-            print(f"❌ Error: El archivo de backup se creó pero está vacío o no existe")
+            print(f"Error: El archivo de backup se creó pero está vacío o no existe")
             return False
             
     except sqlite3.Error as e:
-        print(f"❌ Error de SQLite al crear el backup: {e}")
+        print(f"Error de SQLite al crear el backup: {e}")
         return False
     except Exception as e:
-        print(f"❌ Error inesperado al crear el backup: {e}")
+        print(f"Error inesperado al crear el backup: {e}")
         return False
 
 
@@ -190,51 +190,51 @@ def cleanup_old_backups(backup_path: Path, retention_days: int):
                 if file_date < cutoff_date:
                     backup_file.unlink()
                     deleted_count += 1
-                    print(f"🗑️  Eliminado backup antiguo: {backup_file.name}")
+                    print(f"Eliminado backup antiguo: {backup_file.name}")
             except ValueError:
                 # Si no se puede parsear la fecha, mantener el archivo
-                print(f"⚠️  No se pudo parsear la fecha de {backup_file.name}, se mantiene")
+                print(f"No se pudo parsear la fecha de {backup_file.name}, se mantiene")
                 continue
         
         if deleted_count > 0:
-            print(f"✅ Se eliminaron {deleted_count} backup(s) antiguo(s)")
+            print(f"Se eliminaron {deleted_count} backup(s) antiguo(s)")
         else:
-            print(f"ℹ️  No hay backups antiguos para eliminar")
+            print(f"No hay backups antiguos para eliminar")
             
     except Exception as e:
-        print(f"⚠️  Error al limpiar backups antiguos: {e}")
+        print(f"Error al limpiar backups antiguos: {e}")
 
 
 def main():
     """Función principal del script de backup."""
     print("=" * 60)
-    print("🔄 Iniciando proceso de backup de la base de datos")
+    print("Iniciando proceso de backup de la base de datos")
     print("=" * 60)
     
     # Verificar que la base de datos existe
     if not os.path.exists(DB_PATH):
-        print(f"❌ Error: La base de datos no se encuentra en {DB_PATH}")
+        print(f"Error: La base de datos no se encuentra en {DB_PATH}")
         print("   Verifica que la ruta sea correcta.")
         return 1
     
     # Crear directorio de backups
     backup_path = create_backup_directory()
-    print(f"📁 Directorio de backups: {backup_path.absolute()}")
+    print(f"Directorio de backups: {backup_path.absolute()}")
     
     # Crear el backup
-    print(f"\n📦 Creando backup de {DB_PATH}...")
+    print(f"\nCreando backup de {DB_PATH}...")
     success = backup_database(DB_PATH, backup_path)
     
     if not success:
-        print("\n❌ El proceso de backup falló.")
+        print("\nEl proceso de backup falló.")
         return 1
     
     # Limpiar backups antiguos
-    print(f"\n🧹 Limpiando backups antiguos (manteniendo últimos {RETENTION_DAYS} días)...")
+    print(f"\nLimpiando backups antiguos (manteniendo últimos {RETENTION_DAYS} días)...")
     cleanup_old_backups(backup_path, RETENTION_DAYS)
     
     print("\n" + "=" * 60)
-    print("✅ Proceso de backup completado exitosamente")
+    print("Proceso de backup completado exitosamente")
     print("=" * 60)
     
     return 0

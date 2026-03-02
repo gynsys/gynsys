@@ -75,7 +75,8 @@ def _is_callback_handled_by_router(callback_data: str, user_role: str) -> bool:
             "restrict_doctor", "delete_doctor_menu", "simple_restrict_menu",
             "simple_permit_menu", "refresh_doctors", "refresh_restricted",
             "list_restricted", "extra_modules_hub", "extra_modules_by_doctor",
-            "locations_admin_hub", "faqs_admin_hub", "faqs_admin_hub_v2", "contacto_menu", "contact_preview"
+            "locations_admin_hub", "faqs_admin_hub", "faqs_admin_hub_v2", "contacto_menu", "contact_preview",
+            "generate_db_backup"
         }
         
         superadmin_patterns = [

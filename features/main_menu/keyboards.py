@@ -25,9 +25,12 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
             [ InlineKeyboardButton("❓ FAQ", callback_data="faqs_admin_hub_v2")],
 
             [ InlineKeyboardButton("💰 Precios", callback_data="marketing_pricing")],
-            # Fila 4: Editar Mensaje de Bienvenida
+            # Fila 4: Editar Mensaje de Bienvenida y Backup
             [
                 InlineKeyboardButton("✏️ Editar msg Bienvenida", callback_data="edit_welcome_message")
+            ],
+            [
+                InlineKeyboardButton("💾 Generar Backup", callback_data="generate_db_backup")
             ],
             # Fila 5: Inicio
             [
