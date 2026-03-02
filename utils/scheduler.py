@@ -28,19 +28,39 @@ def setup_jobs(application: Application):
     """
     Configura todos los trabajos programados (cron jobs) del bot.
     """
-    job_queue = application.job_queue
     if not job_queue:
         logger.error("⚠️ El JobQueue no está inicializado. Asegúrate de tener APScheduler instalado.")
         return
         
-    # Programar el backup diario a las 3:00 AM (hora local del servidor)
-    target_time = datetime.time(hour=3, minute=0, second=0)
-    
-    # Agregar el job
+    import pytz
+    tz = pytz.timezone('America/Caracas')
+        
+    # 1. Programar el backup diario a las 3:00 AM
+    backup_time = datetime.time(hour=3, minute=0, second=0, tzinfo=tz)
     job_queue.run_daily(
         scheduled_db_backup,
-        time=target_time,
+        time=backup_time,
         name="daily_db_backup"
     )
+    logger.info(f"✅ Trabajo programado 'daily_db_backup' configurado para las {backup_time.strftime('%H:%M:%S')} diariamente.")
+
+    # 2. Programar los recordatorios de citas
+    from utils.reminder_service import send_daily_reminders
     
-    logger.info(f"✅ Trabajo programado 'daily_db_backup' configurado para las {target_time.strftime('%H:%M:%S')} diariamente.")
+    # Mañana: 7:00 AM
+    morning_time = datetime.time(hour=7, minute=0, second=0, tzinfo=tz)
+    job_queue.run_daily(
+        send_daily_reminders,
+        time=morning_time,
+        name="morning_appointment_reminders"
+    )
+    logger.info(f"✅ Recordatorio mañana configurado para las {morning_time.strftime('%H:%M:%S')} diariamente.")
+    
+    # Tarde: 1:00 PM (13:00)
+    afternoon_time = datetime.time(hour=13, minute=0, second=0, tzinfo=tz)
+    job_queue.run_daily(
+        send_daily_reminders,
+        time=afternoon_time,
+        name="afternoon_appointment_reminders"
+    )
+    logger.info(f"✅ Recordatorio tarde configurado para las {afternoon_time.strftime('%H:%M:%S')} diariamente.")
