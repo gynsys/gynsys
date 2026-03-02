@@ -28,6 +28,7 @@ def setup_jobs(application: Application):
     """
     Configura todos los trabajos programados (cron jobs) del bot.
     """
+    job_queue = application.job_queue
     if not job_queue:
         logger.error("⚠️ El JobQueue no está inicializado. Asegúrate de tener APScheduler instalado.")
         return
