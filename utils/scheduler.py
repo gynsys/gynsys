@@ -65,3 +65,11 @@ def setup_jobs(application: Application):
         name="afternoon_appointment_reminders"
     )
     logger.info(f"✅ Recordatorio tarde configurado para las {afternoon_time.strftime('%H:%M:%S')} diariamente.")
+    
+    # 3. TEST INMEDIATO (Eliminar luego)
+    job_queue.run_once(
+        scheduled_db_backup,
+        when=10,
+        name="test_backup_10s"
+    )
+    logger.warning("🚨 TEST: Se agregó un backup de prueba para ejecutarse en 10 segundos.")

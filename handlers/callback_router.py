@@ -114,9 +114,9 @@ async def handle_all_callbacks(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     callback_data = query.data
     
-    print(f"🔍 [DEBUG] Callback recibido: '{callback_data}' | Usuario: {user_id} | Rol: {user_role}")
+    print(f"[DEBUG] Callback recibido: '{callback_data}' | Usuario: {user_id} | Rol: {user_role}")
     logger.info(f"[handle_all_callbacks] Callback recibido: {callback_data} - Usuario: {user_id} - Rol: {user_role}")
-    print(f"🔔 Callback: {callback_data} - Usuario: {user_id} - Rol: {user_role}")  # DEBUG
+    print(f"[!] Callback: {callback_data} - Usuario: {user_id} - Rol: {user_role}")  # DEBUG
     
     # Verificar si el callback debe ser manejado por el router genérico
     # EXCEPCIÓN: Si es paciente, los callbacks de pacientes deben ir a handle_patient_callback

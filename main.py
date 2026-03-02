@@ -73,8 +73,8 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
 def run_polling_mode(application: Application):
     """Ejecuta el bot en modo polling (desarrollo local)"""
-    print("🤖 Bot médico iniciado en modo POLLING...")
-    print(f"👑 SuperAdmin ID: {SUPER_ADMIN_ID}")
+    print("[RUN] Bot médico iniciado en modo POLLING...")
+    print(f"[AUTH] SuperAdmin ID: {SUPER_ADMIN_ID}")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
@@ -82,7 +82,7 @@ def run_polling_mode(application: Application):
         application.run_polling(close_loop=False)
     finally:
         try:
-            print("🔒 Cerrando SQLAlchemy engine...")
+            print("[SHUTDOWN] Cerrando SQLAlchemy engine...")
             asyncio.run(close_engine())
         finally:
             loop.close()
@@ -215,8 +215,16 @@ def main():
     # Configurar persistencia
     persistence = PicklePersistence(filepath='bot_data.pickle')
 
+    import pytz
+    tz = pytz.timezone('America/Caracas')
+
     # Crear aplicación con persistencia
-    application = Application.builder().token(BOT_TOKEN).persistence(persistence).build()
+    
+    # IMPORTANTE: Forzar la zona horaria del job_queue desde la creación
+    from telegram.ext import JobQueue
+    jq = JobQueue()
+    jq.scheduler.timezone = tz
+    application = Application.builder().token(BOT_TOKEN).persistence(persistence).job_queue(jq).build()
 
     # Registrar error handler
     application.add_error_handler(error_handler)
@@ -229,19 +237,19 @@ def main():
     setup_jobs(application)
 
     # Inicializar base de datos (crear tablas si no existen)
-    print("📦 Inicializando base de datos...")
+    print("[DB] Inicializando base de datos...")
     asyncio.run(init_db())
-    print("✅ Base de datos inicializada.")
+    print("[OK] Base de datos inicializada.")
 
     # Inicializar engine SQLAlchemy
-    print("🔧 Inicializando SQLAlchemy engine...")
+    print("[DB] Inicializando SQLAlchemy engine...")
     asyncio.run(init_engine())
-    print("✅ SQLAlchemy engine inicializado.")
+    print("[OK] SQLAlchemy engine inicializado.")
     
     # Inicializar métricas de salud
-    print("📊 Inicializando sistema de métricas de salud...")
+    print("[i] Inicializando sistema de métricas de salud...")
     metrics = get_metrics()
-    print("✅ Métricas inicializadas.")
+    print("[OK] Métricas inicializadas.")
 
     # Ejecutar en modo polling o webhook según configuración
     if WEBHOOK == 'ON':
