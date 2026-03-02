@@ -426,7 +426,7 @@ class PatientDoctorRepository(BaseRepository[PatientDoctor]):
                 Doctor.is_active == True
             )
         )
-        return result.scalar_one_or_none()
+        return result.scalars().first()
     
     async def get_patients_for_doctor(self, doctor_id: int) -> List[PatientDoctor]:
         """
