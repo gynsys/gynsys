@@ -152,8 +152,8 @@ def backup_database(source_db: str, backup_path: Path) -> bool:
             print(f"   Ubicación: {backup_file}")
             print(f"   Tamaño: {file_size_mb:.2f} MB")
             
-            # Intentar enviar por correo
-            send_backup_email(backup_file)
+            # Intentar enviar por correo (Deshabilitado temporalmente por petición del usuario)
+            # send_backup_email(backup_file)
             
             return True
         else:
