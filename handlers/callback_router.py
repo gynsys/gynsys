@@ -52,8 +52,8 @@ def _is_callback_handled_by_router(callback_data: str, user_role: str) -> bool:
             "contacto_menu", "contact_preview", "doctor_pricing",
             "doctor_citas", "locations_admin_hub", "faqs_admin_hub", "faqs_admin_hub_v2",
             "prices_admin_hub", "test_admin_hub", "team_admin_hub", "precios_menu",
-            "doctor_locations", "doctor_faq", "doctor_share_link",
-            "admin_panel", "settings_menu"
+            "doctor_locations", "doctor_faq", "doctor_share_link", "doctor_preconsult_link",
+            "admin_panel", "settings_menu", "branding_hub", "change_logo", "delete_logo", "cancel_branding"
         }
         
         admin_patterns = [

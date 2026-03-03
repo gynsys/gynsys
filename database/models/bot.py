@@ -18,6 +18,9 @@ class Bot(Base, IDMixin):
     admin_user_id = Column(Integer, nullable=False)  # Telegram ID del doctor
     is_active = Column(Boolean, default=True, nullable=False)
     
+    logo_file_id = Column(String, nullable=True)
+    logo_media_type = Column(String, nullable=True, default='photo')
+    
     # Relaciones
     # Nota: La relación con Doctor se maneja por admin_user_id -> Doctor.telegram_id
     # No hay FK directo, se maneja en el repository
@@ -29,7 +32,7 @@ class Bot(Base, IDMixin):
     user_tenants = relationship("UserTenant", back_populates="bot", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<Bot(id={self.id}, doctor_name='{self.doctor_name}', admin_user_id={self.admin_user_id})>"
+        return f"<Bot(id={self.id}, doctor_name='{self.doctor_name}', admin_user_id={self.admin_user_id}, logo={self.logo_file_id})>"
 
 
 class UserTenant(Base, IDMixin):

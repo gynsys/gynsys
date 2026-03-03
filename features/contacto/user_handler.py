@@ -121,6 +121,12 @@ def build_deeplink(username: str, doctor_id: int) -> str:
     return f"https://t.me/{username}?start=medico_{doctor_id}"
 
 
+def build_preconsult_deeplink(username: str, doctor_id: int) -> str:
+    if not username:
+        return f"https://t.me/<tu_bot>?start=preconsult_{doctor_id}"
+    return f"https://t.me/{username}?start=preconsult_{doctor_id}"
+
+
 def build_contact_summary(contact: dict, doctor_name: str, doctor_id: int, bot_username: Optional[str]) -> str:
     def format_value(key, label):
         value = contact.get(key)

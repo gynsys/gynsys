@@ -140,6 +140,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
+from telegram.ext import filters
+
 def register(app: Application):
     """Registra el ConversationHandler completo de la preconsulta."""
 
@@ -155,13 +157,18 @@ def register(app: Application):
     logger.info(f"Registrando ConversationHandler con {len(states_map)} estados. Estados conocidos: {sorted(states_map.keys())}")
 
     preconsultation_conv = ConversationHandler(
-        entry_points=[CallbackQueryHandler(start_preconsultation_flow, pattern='^preconsulta_start_')],
+        entry_points=[
+            CallbackQueryHandler(start_preconsultation_flow, pattern='^preconsulta_start_'),
+            CommandHandler('start', start_preconsultation_flow, filters=filters.Regex(r'preconsult_'))
+        ],
         states=states_map,
         fallbacks=[
             CommandHandler('cancelar', cancel),
             CommandHandler('start', start_command_handler),
             CallbackQueryHandler(cancel, pattern='^cancel_conv$')
-        ]
+        ],
+        name="preconsultation_conversation",
+        persistent=True
     )
     app.add_handler(CommandHandler("debug_flow", debug_flow_jump))
     app.add_handler(preconsultation_conv)

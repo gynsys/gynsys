@@ -269,41 +269,86 @@ async def start_preconsultation_flow(update: Update, context: ContextTypes.DEFAU
         return ConversationHandler.END
 
     query = update.callback_query
-    await query.answer()
-
-    # --- INICIO DE LA LÓGICA DE CARGA DE CONTEXTO ---
-    try:
-        # Extraemos el ID de la cita del callback_data (ej. "preconsulta_start_123")
-        appointment_id = int(query.data.split('_')[-1])
-    except (ValueError, IndexError):
-        await query.message.edit_text("Error: No se pudo identificar la cita para esta preconsulta.")
-        return ConversationHandler.END
-
-    # Obtener doctor_id desde el paciente
-    user_id = update.effective_user.id
-    assigned_doctor = await role_manager.get_assigned_doctor(user_id)
-    if not assigned_doctor:
-        await query.message.edit_text("Error: No se pudo identificar tu médico.")
-        return ConversationHandler.END
     
-    doctor_id = assigned_doctor[0]
+    # 1. Obtener doctor_id y appointment_id
+    appointment_id = None
+    doctor_id = None
     
-    # Obtener datos de la cita
-    async with get_session() as session:
-        appointment_repo = AppointmentRepository(session)
-        appointment_data = await appointment_repo.get_appointment_by_id(appointment_id, doctor_id)
-
-    context.user_data.clear() # Limpiamos para la nueva preconsulta
-
-    if not appointment_data:
-        await query.message.edit_text("Error: No se encontraron los datos de tu cita.")
-        return ConversationHandler.END
-
-    # Convertir sqlite3.Row a dict para poder usar .get()
-    if hasattr(appointment_data, 'keys'):
-        appointment_dict = dict(appointment_data)
+    if query:
+        await query.answer()
+        try:
+            # Extraemos el ID de la cita del callback_data (ej. "preconsulta_start_123")
+            appointment_id = int(query.data.split('_')[-1])
+        except (ValueError, IndexError):
+            await query.message.edit_text("Error: No se pudo identificar la cita para esta preconsulta.")
+            return ConversationHandler.END
+        
+        # En el flujo por botón, el doctor_id suele estar en user_data o lo buscamos
+        doctor_id = context.user_data.get('doctor_id')
     else:
-        appointment_dict = appointment_data
+        # Si venimos de un Comando (/start preconsult_1)
+        if context.args and context.args[0].startswith('preconsult_'):
+            try:
+                doctor_id = int(context.args[0].split('_')[1])
+                # Guardamos en context para el resto del flujo
+                context.user_data['doctor_id'] = doctor_id
+            except (ValueError, IndexError):
+                pass
+        
+        if not doctor_id:
+            doctor_id = context.user_data.get('doctor_id')
+
+    # 2. Asegurar doctor_id y asignación
+    user_id = update.effective_user.id
+    if not doctor_id:
+        assigned_doctor = await role_manager.get_assigned_doctor(user_id)
+        if not assigned_doctor:
+            error_msg = "Error: No se pudo identificar tu médico."
+            if query: await query.message.edit_text(error_msg)
+            else: await context.bot.send_message(update.effective_chat.id, error_msg)
+            return ConversationHandler.END
+        doctor_id = assigned_doctor[0]
+    
+    # Auto-asignar paciente al médico si es necesario (especialmente para deep links)
+    await role_manager.assign_patient_to_doctor(user_id, doctor_id)
+    
+    # 3. Obtener appointment_id si no lo tenemos (para deep links)
+    if not appointment_id:
+        appointment_id = context.user_data.get('appointment_id')
+        
+    # Si sigue siendo None, intentamos buscar la más reciente
+    if not appointment_id:
+        async with get_session() as session:
+            appt_repo = AppointmentRepository(session)
+            appt = await appt_repo.get_latest_appointment_for_patient(user_id, doctor_id)
+            if appt:
+                appointment_id = appt['id']
+
+    # 4. Obtener datos de la cita
+    appointment_data = None
+    if appointment_id:
+        async with get_session() as session:
+            appointment_repo = AppointmentRepository(session)
+            appointment_data = await appointment_repo.get_appointment_by_id(appointment_id, doctor_id)
+
+    # Solo limpiar si no venimos de deep link (donde ya pusimos el appointment_id)
+    if query:
+        context.user_data.clear() 
+
+    # Si no hay cita (deep link directo), usamos valores por defecto
+    if not appointment_data:
+        appointment_dict = {
+            'consultation_type': 'Ginecología', # Default razonable
+            'is_first_pregnancy': False,
+            'has_been_pregnant': False,
+            'reason': 'Consulta Directa (Sin Cita)'
+        }
+    else:
+        # Convertir sqlite3.Row a dict
+        if hasattr(appointment_data, 'keys'):
+            appointment_dict = dict(appointment_data)
+        else:
+            appointment_dict = appointment_data
 
     logger.info(f"Iniciando preconsulta para cita #{appointment_id} con doctor_id {doctor_id}...")
     # Poblamos el contexto con los datos importantes de la cita
@@ -324,11 +369,19 @@ async def start_preconsultation_flow(update: Update, context: ContextTypes.DEFAU
     context.user_data['flow'] = preconsultation_flow
     start_node_id = preconsultation_flow['start_node']
 
-    try:
-        # Borra el mensaje del menú principal para empezar en limpio
-        await query.message.delete()
-    except BadRequest:
-        pass
+    if query:
+        try:
+            # Borra el mensaje del menú principal para empezar en limpio
+            await query.message.delete()
+        except BadRequest:
+            pass
+    
+    # Si no es query, borramos el /start del usuario si podemos
+    elif update.message:
+        try:
+            await update.message.delete()
+        except BadRequest:
+            pass
 
     # Preparamos el texto del primer nodo
     first_node = preconsultation_flow['nodes'][start_node_id]

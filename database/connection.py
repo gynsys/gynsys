@@ -95,7 +95,15 @@ async def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
-            CREATE TABLE IF NOT EXISTS bots (id INTEGER PRIMARY KEY AUTOINCREMENT, doctor_name TEXT NOT NULL, token TEXT NOT NULL UNIQUE, admin_user_id INTEGER NOT NULL, is_active BOOLEAN NOT NULL DEFAULT 1);
+            CREATE TABLE IF NOT EXISTS bots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                doctor_name TEXT NOT NULL, 
+                token TEXT NOT NULL UNIQUE, 
+                admin_user_id INTEGER NOT NULL, 
+                is_active BOOLEAN NOT NULL DEFAULT 1,
+                logo_file_id TEXT,
+                logo_media_type TEXT DEFAULT 'photo'
+            );
             CREATE TABLE IF NOT EXISTS text_content (key TEXT NOT NULL, value TEXT NOT NULL, bot_id INTEGER NOT NULL, PRIMARY KEY (key, bot_id), FOREIGN KEY (bot_id) REFERENCES bots (id));
             CREATE TABLE IF NOT EXISTS locations (id INTEGER PRIMARY KEY AUTOINCREMENT, bot_id INTEGER NOT NULL, name TEXT NOT NULL, address TEXT NOT NULL, schedule TEXT, Maps_url TEXT, is_active BOOLEAN NOT NULL DEFAULT 1, display_order INTEGER DEFAULT 0, FOREIGN KEY (bot_id) REFERENCES bots (id));
             CREATE TABLE IF NOT EXISTS citas (id INTEGER PRIMARY KEY AUTOINCREMENT, bot_id INTEGER NOT NULL, user_id INTEGER NOT NULL, user_name TEXT, phone TEXT, reason TEXT, fecha TEXT NOT NULL, hora TEXT NOT NULL, ubicacion TEXT NOT NULL, status TEXT DEFAULT 'pending', reminder_sent BOOLEAN NOT NULL DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (bot_id) REFERENCES bots (id));
@@ -151,6 +159,14 @@ async def init_db():
         if 'prenatal_details' not in columns:
             await conn.execute('ALTER TABLE medical_histories ADD COLUMN prenatal_details TEXT;')
             logger.info("MIGRACIÓN: Columna 'prenatal_details' añadida a 'medical_histories'.")
+
+        # Migración para la tabla bots
+        cursor = await conn.execute("PRAGMA table_info(bots)")
+        bot_columns = [row['name'] for row in await cursor.fetchall()]
+        if 'logo_file_id' not in bot_columns:
+            await conn.execute('ALTER TABLE bots ADD COLUMN logo_file_id TEXT;')
+            await conn.execute("ALTER TABLE bots ADD COLUMN logo_media_type TEXT DEFAULT 'photo';")
+            logger.info("MIGRACIÓN: Columnas de logo añadidas a 'bots'.")
 
         # Migración: Si pdf_settings existe con bot_id, crear nueva tabla con doctor_id
         # (SQLite no soporta ALTER COLUMN, así que creamos una nueva estructura)

@@ -9,6 +9,8 @@ from telegram.ext import (
     filters,
     ConversationHandler
 )
+from features.branding.handlers import branding_conv
+from features.preconsulta.main_handler import register as register_preconsulta
 
 from features.admin import (
     start_add_doctor,
@@ -84,6 +86,13 @@ def register_all_handlers(application: Application):
     """
     Registra todos los handlers del bot en la aplicación
     """
+    # ⚠️ IMPORTANTE: Registrar Preconsulta ANTES de handlers genéricos
+    # Esto permite que el ConversationHandler de preconsulta capture /start preconsult_X
+    register_preconsulta(application)
+    
+    # Branding / Identidad Visual (Registrar temprano para evitar conflictos)
+    application.add_handler(branding_conv)
+
     # Handlers de comandos básicos
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("menu", start))
@@ -220,9 +229,7 @@ def register_all_handlers(application: Application):
     )
     application.add_handler(booking_conv)
 
-    # Registrar ConversationHandler de preconsulta
-    from features.preconsulta.main_handler import register as register_preconsulta
-    register_preconsulta(application)
+    
     
     # Registrar handlers de administración de citas (incluye botones Recuérdame y Descartar)
     from features.citas.admin_handlers import register as register_citas_admin_handlers

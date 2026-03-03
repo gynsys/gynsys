@@ -3,6 +3,9 @@ from telegram import Update, InputMediaPhoto
 from telegram.ext import ContextTypes
 from telegram.error import BadRequest
 
+from database.session import get_session
+from database.repositories.bot_repository import BotRepository
+
 from config import DB_PATH
 from utils.role_manager import RoleManager
 from .keyboards import get_marketing_keyboard
@@ -42,76 +45,61 @@ ABOUT_TEXT = (
 )
 
 
+async def get_bot_logo(bot_id: int):
+    """Obtiene el logo del bot o el logo por defecto."""
+    
+    async with get_session() as session:
+        repo = BotRepository(session)
+        bot = await repo.get_bot_by_id(bot_id)
+        if bot and bot.logo_file_id:
+            return bot.logo_file_id, bot.logo_media_type
+    return LOGO_PATH, "file"
+
 async def send_marketing_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, *, is_superadmin=False, is_doctor=False):
     keyboard = get_marketing_keyboard(is_superadmin=is_superadmin, is_doctor=is_doctor)
+    bot_id = await role_manager.get_user_tenant(update.effective_user.id) or 1
+    logo, media_type = await get_bot_logo(bot_id)
 
     # Enviar imagen con caption
     message = getattr(update, 'message', None)
     if message:
-        with open(LOGO_PATH, 'rb') as photo:
+        if media_type == "file":
+            with open(logo, 'rb') as photo:
+                await message.reply_photo(
+                    photo=photo,
+                    caption=MARKETING_TEXT,
+                    reply_markup=keyboard,
+                    parse_mode="HTML",
+                )
+        else:
             await message.reply_photo(
-                photo=photo,
+                photo=logo,
                 caption=MARKETING_TEXT,
                 reply_markup=keyboard,
                 parse_mode="HTML",
             )
     elif update.callback_query:
         query = update.callback_query
-        # Transición fluida: Paso 1 - Editar a texto primero (si es posible)
-        # Paso 2 - Luego cambiar a imagen
         try:
-            # Paso 1: Intentar editar primero el texto y botones (si es texto)
-            await query.edit_message_text(
-                text=MARKETING_TEXT,
-                reply_markup=keyboard,
-                parse_mode="HTML"
-            )
-            # Paso 2: Si fue texto, ahora cambiar a imagen
-            with open(LOGO_PATH, 'rb') as photo_file:
-                media = InputMediaPhoto(media=photo_file, caption=MARKETING_TEXT, parse_mode="HTML")
-                await query.edit_message_media(
-                    media=media,
-                    reply_markup=keyboard,
-                )
-        except BadRequest as e:
-            # Si el mensaje es una imagen, intentar editar directamente
-            if "no text" in str(e).lower():
-                try:
-                    # Es una imagen, editar caption y botones
-                    with open(LOGO_PATH, 'rb') as photo_file:
-                        media = InputMediaPhoto(media=photo_file, caption=MARKETING_TEXT, parse_mode="HTML")
-                        await query.edit_message_media(
-                            media=media,
-                            reply_markup=keyboard,
-                        )
-                except (BadRequest, TypeError):
-                    # Si falla, eliminar y enviar nueva
-                    try:
-                        await query.message.delete()
-                    except:
-                        pass
-                    with open(LOGO_PATH, 'rb') as photo:
-                        await context.bot.send_photo(
-                            chat_id=query.message.chat.id,
-                            photo=photo,
-                            caption=MARKETING_TEXT,
-                            reply_markup=keyboard,
-                            parse_mode="HTML",
-                        )
+            # Intentar editar directamente con la nueva media
+            if media_type == "file":
+                with open(logo, 'rb') as photo_file:
+                    media = InputMediaPhoto(media=photo_file, caption=MARKETING_TEXT, parse_mode="HTML")
+                    await query.edit_message_media(media=media, reply_markup=keyboard)
             else:
-                # Otro error, eliminar y enviar nueva
-                try:
-                    await query.message.delete()
-                except:
-                    pass
-                with open(LOGO_PATH, 'rb') as photo:
-                    await context.bot.send_photo(
-                        chat_id=query.message.chat.id,
-                        photo=photo,
-                        caption=MARKETING_TEXT,
-                        reply_markup=keyboard,
-                        parse_mode="HTML",
-                    )
+                media = InputMediaPhoto(media=logo, caption=MARKETING_TEXT, parse_mode="HTML")
+                await query.edit_message_media(media=media, reply_markup=keyboard)
+        except BadRequest as e:
+            # Si falla, eliminar y enviar nueva
+            try: await query.message.delete()
+            except: pass
+            
+            chat_id = query.message.chat.id
+            if media_type == "file":
+                with open(logo, 'rb') as photo:
+                    await context.bot.send_photo(chat_id=chat_id, photo=photo, caption=MARKETING_TEXT, reply_markup=keyboard, parse_mode="HTML")
+            else:
+                await context.bot.send_photo(chat_id=chat_id, photo=logo, caption=MARKETING_TEXT, reply_markup=keyboard, parse_mode="HTML")
 
 
 async def handle_marketing_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):

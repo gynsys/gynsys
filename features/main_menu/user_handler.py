@@ -1,9 +1,19 @@
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+import aiosqlite
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import ContextTypes
+
+from database.session import get_session
+from database.repositories.bot_repository import BotRepository
+from database.repositories.user_repository import InstitutionUserRepository
 from features.main_menu.keyboards import get_main_menu_keyboard
-from config import DB_PATH
+from config import DB_PATH, SUPER_ADMIN_ID
 from utils.role_manager import RoleManager
+from database import extra_modules_db
+from handlers.inactive_doctor_handler import show_inactive_doctor_message
+from common.context_manager import get_tenant_id
+from common import texts
+from features.share_link.handlers import show_doctor_share_link, show_doctor_preconsult_link
 
 logger = logging.getLogger(__name__)
 from features.contacto.user_handler import (
@@ -11,6 +21,7 @@ from features.contacto.user_handler import (
     show_contact_preview,
 )
 from features.ubicaciones.user_handlers import show_doctor_locations_menu
+from features.branding.handlers import branding_hub
 # FAQ edición por inquilino removida
 
 role_manager = RoleManager(DB_PATH)
@@ -48,9 +59,6 @@ async def get_doctor_public_keyboard(user_id: int = None):
     is_titular = True
     
     if user_id:
-        from database.session import get_session
-        from database.repositories.user_repository import InstitutionUserRepository
-        
         async with get_session() as session:
             inst_repo = InstitutionUserRepository(session)
             # Si el user_id está en institution_users, NO es titular
@@ -60,7 +68,6 @@ async def get_doctor_public_keyboard(user_id: int = None):
         doctor = await role_manager.get_doctor_by_telegram_id(user_id)
         if doctor:
             doctor_id = doctor[0]
-            from database import extra_modules_db
             # Verificar todos los módulos
             module_names = ['galeria', 'contacto', 'precios', 'faqs', 'citas', 'ubicaciones', 'test', 'quiz']
             for module_name in module_names:
@@ -114,7 +121,10 @@ async def get_doctor_public_keyboard(user_id: int = None):
             InlineKeyboardButton("📋 Gestión Historia", callback_data="patient_management_hub"),
         ],
         [
-            InlineKeyboardButton("🔗 Compartir link", callback_data="doctor_share_link"),
+            InlineKeyboardButton("🔗 Link Preconsulta", callback_data="doctor_preconsult_link"),
+        ],
+        [
+            InlineKeyboardButton("🔗 Compartir bot", callback_data="doctor_share_link"),
         ]
     ])
     
@@ -131,7 +141,6 @@ async def get_doctor_public_keyboard(user_id: int = None):
 async def admin_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not await role_manager.is_doctor_active(user_id):
-        from main import show_inactive_doctor_message
         await show_inactive_doctor_message(update, context)
         return
 
@@ -139,12 +148,9 @@ async def admin_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     doctor_name = doctor[1] if doctor else "Tu perfil"
     
     # Obtener bot_id para el mensaje de bienvenida
-    from common.context_manager import get_tenant_id
     bot_id = await get_tenant_id(update, context)
     if not bot_id and doctor:
         # Fallback: obtener bot_id desde doctor
-        import aiosqlite
-        from config import DB_PATH
         async with aiosqlite.connect(DB_PATH) as conn:
             conn.row_factory = aiosqlite.Row
             cursor = await conn.execute(
@@ -156,34 +162,37 @@ async def admin_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 bot_id = result['id']
     
     # Obtener mensaje de bienvenida personalizado
-    from common import texts
-    
     user_name = update.effective_user.first_name or "Usuario"
     mensaje_bienvenida = await texts.get_mensaje_bienvenida(nombre_usuario=user_name, bot_id=bot_id if bot_id else 1)
     
-    # Construir mensaje final
-    message = (
-        #f"👋 Hello! Soy {doctor_name}</b>\n"
-        #f"👋<b> Hello! Soy 💘 {doctor_name}</b>\n {mensaje_bienvenida}\n\n"
-        f"{mensaje_bienvenida}"
-      
-        
-    )
-    
+    # Obtener logo
+    logo_file_id = None
+    if bot_id:
+        async with get_session() as session:
+            bot_repo = BotRepository(session)
+            bot = await bot_repo.get_bot_by_id(bot_id)
+            if bot:
+                logo_file_id = bot.logo_file_id
+
+    message = f"{mensaje_bienvenida}"
     keyboard = await get_doctor_public_keyboard(user_id=user_id)
 
-    if update.callback_query:
-        await update.callback_query.edit_message_text(
-            message,
-            reply_markup=keyboard,
-            parse_mode="HTML"
-        )
+    if logo_file_id:
+        if update.callback_query:
+            try:
+                media = InputMediaPhoto(media=logo_file_id, caption=message, parse_mode="HTML")
+                await update.callback_query.edit_message_media(media=media, reply_markup=keyboard)
+            except BadRequest:
+                try: await update.callback_query.message.delete()
+                except: pass
+                await context.bot.send_photo(chat_id=update.effective_chat.id, photo=logo_file_id, caption=message, reply_markup=keyboard, parse_mode="HTML")
+        else:
+            await context.bot.send_photo(chat_id=update.effective_chat.id, photo=logo_file_id, caption=message, reply_markup=keyboard, parse_mode="HTML")
     else:
-        await update.message.reply_text(
-            message,
-            reply_markup=keyboard,
-            parse_mode="HTML"
-        )
+        if update.callback_query:
+            await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="HTML")
+        else:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=keyboard, parse_mode="HTML")
 
 
 async def show_doctor_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -207,9 +216,7 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
     user_id = update.effective_user.id
 
     # Permitir acceso al superadmin
-    from config import SUPER_ADMIN_ID
     if user_id != SUPER_ADMIN_ID and not await role_manager.is_doctor_active(user_id):
-        from main import show_inactive_doctor_message
         await show_inactive_doctor_message(update, context)
         return
 
@@ -222,6 +229,8 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
         await admin_main_menu(update, context)
     elif callback_data == "doctor_panel":
         await show_doctor_panel(update, context)
+    elif callback_data == "branding_hub":
+        await branding_hub(update, context)
     elif callback_data == "doctor_contact":
         from features.contacto.user_handler import show_doctor_contact_link
         await show_doctor_contact_link(update, context)
@@ -295,8 +304,6 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
         return
     elif callback_data == "doctor_share_link":
         # Mostrar link y código para que el médico lo comparta con pacientes
-        from features.share_link.handlers import show_doctor_share_link
-        
         doctor = await role_manager.get_doctor_by_telegram_id(user_id)
         if not doctor:
             keyboard = await get_doctor_public_keyboard(user_id=user_id)
@@ -309,6 +316,19 @@ async def handle_admin_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
         doctor_id, doctor_name = doctor[0], doctor[1]
         await show_doctor_share_link(update, context, doctor_id, doctor_name)
+    elif callback_data == "doctor_preconsult_link":
+        doctor = await role_manager.get_doctor_by_telegram_id(user_id)
+        if not doctor:
+            keyboard = await get_doctor_public_keyboard(user_id=user_id)
+            await query.edit_message_text(
+                "⚠️ Solo los médicos activos pueden ver su enlace de preconsulta.",
+                reply_markup=keyboard,
+                parse_mode="HTML",
+            )
+            return
+
+        doctor_id, doctor_name = doctor[0], doctor[1]
+        await show_doctor_preconsult_link(update, context, doctor_id, doctor_name)
     elif callback_data == "admin_panel" or callback_data == "settings_menu":
         # Redirigir al panel de administración
         await show_doctor_panel(update, context)

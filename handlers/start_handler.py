@@ -10,6 +10,9 @@ from features.patient_menu.patient_handler import patient_main_menu
 from features.main_menu.user_handler import admin_main_menu
 from features.marketing.handler import send_marketing_menu
 from handlers.inactive_doctor_handler import show_inactive_doctor_message
+from database.session import get_session
+from database.repositories.appointment_repository import AppointmentRepository
+from features.preconsulta.patient_flow.generic_flow_engine import start_preconsultation_flow
 
 role_manager = RoleManager(DB_PATH)
 
@@ -41,6 +44,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except (IndexError, ValueError):
             # Si hay error en el parámetro, continuar con flujo normal
             pass
+
+    # Otros parámetros (pueden ser añadidos aquí si es necesario)
     
     user_role = await role_manager.get_user_role(user_id)
     

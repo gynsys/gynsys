@@ -5,10 +5,18 @@ from telegram.ext import ContextTypes, ConversationHandler, MessageHandler, Call
 from telegram.error import BadRequest
 from telegram.constants import ParseMode
 
-from database import content_db
+from database import content_db, user_db
 from common.context_manager import get_tenant_id
 from common.helpers import escape_html
 from common.keyboards import get_back_to_menu_keyboard
+from utils.role_manager import RoleManager
+from config import DB_PATH
+import aiosqlite
+from handlers.callback_router import handle_all_callbacks
+
+# Importación diferida para evitar circularidad si es necesario, pero B1 dice al TOP
+# Si show_doctor_panel causa circularidad, usaremos import completo en el top
+from features.main_menu.user_handler import show_doctor_panel
 
 logger = logging.getLogger(__name__)
 
@@ -83,18 +91,14 @@ async def receive_welcome_message(update: Update, context: ContextTypes.DEFAULT_
     user_id = update.effective_user.id
     
     # Obtener bot_id de forma más directa para inquilinos
-    from utils.role_manager import RoleManager
-    from config import DB_PATH
     role_manager = RoleManager(DB_PATH)
     doctor = await role_manager.get_doctor_by_telegram_id(user_id)
     
     if doctor:
         # Si es un doctor, obtener su bot_id desde user_tenants
-        from database import user_db
         bot_id = await user_db.get_user_tenant(user_id)
         if not bot_id:
             # Si no tiene bot_id en user_tenants, buscar en bots por admin_user_id
-            import aiosqlite
             async with aiosqlite.connect(DB_PATH) as conn:
                 conn.row_factory = aiosqlite.Row
                 cursor = await conn.execute(
@@ -159,8 +163,6 @@ async def receive_welcome_message(update: Update, context: ContextTypes.DEFAULT_
     
     # Determinar el callback de retorno según el rol
     user_id = update.effective_user.id
-    from utils.role_manager import RoleManager
-    from config import DB_PATH
     role_manager = RoleManager(DB_PATH)
     user_role = await role_manager.get_user_role(user_id)
     
@@ -205,15 +207,10 @@ async def cancel_edit_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE
         except:
             pass
     
-    # Determinar el callback de retorno según el rol
-    user_id = update.effective_user.id
-    from utils.role_manager import RoleManager
-    from config import DB_PATH
     role_manager = RoleManager(DB_PATH)
     user_role = await role_manager.get_user_role(user_id)
     
     if user_role == 'superadmin':
-        from handlers.callback_router import handle_all_callbacks
         msg = query.message if query else update.effective_message
         fake_query = type('obj', (object,), {
             'data': 'main_menu',
@@ -231,8 +228,6 @@ async def cancel_edit_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE
         })()
         await handle_all_callbacks(fake_update, context)
     else:
-        from features.main_menu.user_handler import show_doctor_panel
-        
         # Si no hay query (es comando) y tenemos el ID del mensaje anterior,
         # construimos un fake update para que show_doctor_panel edite ese mensaje
         if not query and context.user_data.get('welcome_message_id'):

@@ -414,3 +414,53 @@ class AppointmentRepository(BaseRepository[Appointment]):
         await self.session.flush()
         return result.rowcount > 0
 
+    async def get_latest_appointment_for_patient(
+        self, 
+        patient_telegram_id: int, 
+        doctor_id: int
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene la cita más reciente (pendiente o confirmada) de un paciente con un doctor.
+        
+        Args:
+            patient_telegram_id: ID de Telegram del paciente
+            doctor_id: ID del doctor
+            
+        Returns:
+            Diccionario con datos de la cita o None
+        """
+        result = await self.session.execute(
+            select(Appointment, Slot)
+            .join(Slot, Appointment.slot_id == Slot.id)
+            .where(
+                Appointment.patient_telegram_id == patient_telegram_id,
+                Appointment.doctor_id == doctor_id,
+                Appointment.status.in_(["pending", "confirmed"])
+            )
+            .order_by(Slot.start_ts.desc())
+            .limit(1)
+        )
+        row = result.first()
+        
+        if not row:
+            return None
+            
+        appointment, slot = row
+        return {
+            'id': appointment.id,
+            'slot_id': appointment.slot_id,
+            'doctor_id': appointment.doctor_id,
+            'patient_telegram_id': appointment.patient_telegram_id,
+            'patient_name': appointment.patient_name,
+            'consultation_type': appointment.consultation_type,
+            'reason': appointment.reason,
+            'location': appointment.location,
+            'status': appointment.status,
+            'booked_at': appointment.booked_at,
+            'is_first_pregnancy': getattr(appointment, 'is_first_pregnancy', None),
+            'has_been_pregnant': getattr(appointment, 'has_been_pregnant', None),
+            'start_ts': slot.start_ts,
+            'duration_min': slot.duration_min,
+            'note': slot.note,
+        }
+

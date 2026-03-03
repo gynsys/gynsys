@@ -1,6 +1,10 @@
-from telegram import Update
+from telegram import Update, InputMediaPhoto
 from telegram.ext import ContextTypes
 import html
+import aiosqlite
+
+from database.session import get_session
+from database.repositories.bot_repository import BotRepository
 
 from config import DB_PATH
 from utils.role_manager import RoleManager
@@ -36,8 +40,6 @@ async def patient_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     bot_id = None
     if doctor:
         doctor_telegram_id = doctor[2]  # telegram_id está en índice 2
-        import aiosqlite
-        from config import DB_PATH
         async with aiosqlite.connect(DB_PATH) as conn:
             conn.row_factory = aiosqlite.Row
             cursor = await conn.execute(
@@ -53,32 +55,34 @@ async def patient_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     user_name = update.effective_user.first_name or "Usuario"
     mensaje_bienvenida = await texts.get_mensaje_bienvenida(nombre_usuario=user_name, bot_id=bot_id if bot_id else 1)
     
-    message = (
-        f"{mensaje_bienvenida}\n\n"
-    )
-    
+    # Obtener logo
+    logo_file_id = None
+    if bot_id:
+        async with get_session() as session:
+            bot_repo = BotRepository(session)
+            bot = await bot_repo.get_bot_by_id(bot_id)
+            if bot:
+                logo_file_id = bot.logo_file_id
+
+    message = f"{mensaje_bienvenida}\n\n"
     keyboard = await get_patient_main_keyboard(doctor_id=doctor_id)
 
-    if update.callback_query:
-        await update.callback_query.edit_message_text(
-            message,
-            reply_markup=keyboard,
-            parse_mode="HTML",
-        )
-    elif update.message:
-        await update.message.reply_text(
-            message,
-            reply_markup=keyboard,
-            parse_mode="HTML",
-        )
+    if logo_file_id:
+        if update.callback_query:
+            try:
+                media = InputMediaPhoto(media=logo_file_id, caption=message, parse_mode="HTML")
+                await update.callback_query.edit_message_media(media=media, reply_markup=keyboard)
+            except BadRequest:
+                try: await update.callback_query.message.delete()
+                except: pass
+                await context.bot.send_photo(chat_id=update.effective_chat.id, photo=logo_file_id, caption=message, reply_markup=keyboard, parse_mode="HTML")
+        else:
+            await context.bot.send_photo(chat_id=update.effective_chat.id, photo=logo_file_id, caption=message, reply_markup=keyboard, parse_mode="HTML")
     else:
-        chat_id = update.effective_chat.id
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text=message,
-            reply_markup=keyboard,
-            parse_mode="HTML",
-        )
+        if update.callback_query:
+            await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="HTML")
+        else:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=keyboard, parse_mode="HTML")
 
 async def handle_patient_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

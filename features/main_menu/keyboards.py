@@ -109,6 +109,11 @@ async def get_main_menu_keyboard(is_superadmin: bool, user_id: int = None):
             InlineKeyboardButton("✏️ Editar msg Bienvenida", callback_data="edit_welcome_message")
         ])
 
+        # Fila 6.5 - Personalización de Marca (Logo)
+        keyboard.append([
+            InlineKeyboardButton("🎭 Identidad Visual", callback_data="branding_hub")
+        ])
+
         # Fila 7 - Gestionar Test (solo si el módulo está activo)
         if test_manage_button:
             keyboard.append([test_manage_button])

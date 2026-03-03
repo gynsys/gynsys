@@ -100,3 +100,41 @@ async def show_doctor_share_link(
             parse_mode="HTML",
         )
 
+
+async def show_doctor_preconsult_link(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    doctor_id: int,
+    doctor_name: str,
+):
+    """Displays direct preconsultation link for doctors."""
+    query = update.callback_query
+    from features.contacto.user_handler import build_preconsult_deeplink
+    
+    bot_username = getattr(context.bot, "username", None)
+    deeplink = build_preconsult_deeplink(bot_username, doctor_id)
+
+    share_text = (
+        "🔗 <b>Enlace Directo de Preconsulta</b>\n\n"
+        "Copia y envía este mensaje a tus pacientes:\n\n"
+        "----------------------------------\n"
+        "Por favor llena la preconsulta para agilizar el proceso de tu historia medica en dia de la consulta medica.\n\n"
+        f"🌐 Link\n{deeplink}\n"
+        "----------------------------------\n"
+    )
+
+    if query:
+        from .keyboards import get_doctor_preconsult_link_keyboard
+        await query.edit_message_text(
+            text=share_text,
+            reply_markup=get_doctor_preconsult_link_keyboard(),
+            parse_mode="HTML",
+        )
+    else:
+        from .keyboards import get_doctor_preconsult_link_keyboard
+        await update.effective_message.reply_text(
+            text=share_text,
+            reply_markup=get_doctor_preconsult_link_keyboard(),
+            parse_mode="HTML",
+        )
+
