@@ -27,36 +27,48 @@ async def decide_obstetric_flow(update: Update, context: ContextTypes.DEFAULT_TY
     is_first_pregnancy = user_data.get('is_first_pregnancy')
     has_been_pregnant = user_data.get('has_been_pregnant')
 
+    # Normalizar valores para evitar problemas con SQLite (0/1) o strings
+    is_first = bool(is_first_pregnancy) if is_first_pregnancy is not None else None
+    has_been = bool(has_been_pregnant) if has_been_pregnant is not None else None
+    
+    # Normalizar tipo de consulta (minúsculas y sin espacios)
+    c_type = str(consultation_type or "").strip().lower()
+
     logger.info(
-        f"Decidiendo flujo obstétrico: Tipo={consultation_type}, "
-        f"PrimerEmbarazo={is_first_pregnancy}, HaEstadoEmbarazada={has_been_pregnant}"
+        f"Decidiendo flujo obstétrico: Tipo='{c_type}', "
+        f"is_first={is_first}, has_been={has_been}"
     )
 
+    # CASO ESPECIAL: Link Directo (Forzamos la pregunta manual)
+    if user_data.get('is_direct_link'):
+        logger.info("Caso Link Directo: Forzando pregunta de embarazo manual.")
+        return 'ASK_PREGNANCY_BOOL_NEW'
+
     # CASO 1: Prenatal + Sin embarazos previos -> PRIMIGESTA
-    if consultation_type == 'Prenatal' and is_first_pregnancy is True:
+    if 'prenatal' in c_type and is_first is True:
         logger.info("Caso 1: Prenatal-Primigesta. Saltando bucle HO.")
         user_data['gyn_ho'] = get_primigesta_formula()
         return node['next_if_skip']
 
     # CASO 2: Prenatal + Con embarazos previos -> NECESITA HO
-    if consultation_type == 'Prenatal' and is_first_pregnancy is False:
+    if 'prenatal' in c_type and is_first is False:
         logger.info("Caso 2: Prenatal-Multigesta. Entrando a bucle HO.")
         return node['next_if_needed']
 
-    # CASO 3: Ginecológica + Sin embarazos previos -> NULIGESTA
-    if consultation_type == 'Ginecológica' and has_been_pregnant is False:
+    # CASO 3: Ginecológica/Ginecología + Sin embarazos previos -> NULIGESTA
+    if ('ginec' in c_type) and has_been is False:
         logger.info("Caso 3: Ginecológica-Nuligesta. Saltando bucle HO.")
         user_data['gyn_ho'] = get_nuligesta_formula()
         return node['next_if_skip']
 
-    # CASO 4: Ginecológica + Con embarazos previos -> NECESITA HO
-    if consultation_type == 'Ginecológica' and has_been_pregnant is True:
+    # CASO 4: Ginecológica/Ginecología + Con embarazos previos -> NECESITA HO
+    if ('ginec' in c_type) and has_been is True:
         logger.info("Caso 4: Ginecológica con historial. Entrando a bucle HO.")
         return node['next_if_needed']
 
-    # Fallback
-    logger.warning("Caso Fallback: No se pudo determinar el flujo obstétrico, se preguntará por seguridad.")
-    return node['next_if_needed']
+    # Fallback: Por seguridad, si no sabemos nada, preguntamos
+    logger.warning("Caso Fallback: No se pudo determinar el flujo obstétrico. Redirigiendo a pregunta manual.")
+    return 'ASK_PREGNANCY_BOOL_NEW'
 
 
 async def prepare_obstetric_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, node: dict):

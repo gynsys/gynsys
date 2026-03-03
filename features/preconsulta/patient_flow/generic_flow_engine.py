@@ -339,8 +339,8 @@ async def start_preconsultation_flow(update: Update, context: ContextTypes.DEFAU
     if not appointment_data:
         appointment_dict = {
             'consultation_type': 'Ginecología', # Default razonable
-            'is_first_pregnancy': False,
-            'has_been_pregnant': False,
+            'is_first_pregnancy': None,
+            'has_been_pregnant': None, # None indica que no lo sabemos (link directo)
             'reason': 'Consulta Directa (Sin Cita)'
         }
     else:
@@ -358,6 +358,9 @@ async def start_preconsultation_flow(update: Update, context: ContextTypes.DEFAU
     context.user_data['is_first_pregnancy'] = appointment_dict.get('is_first_pregnancy')
     context.user_data['has_been_pregnant'] = appointment_dict.get('has_been_pregnant')
     context.user_data['reason_for_visit'] = appointment_dict.get('reason')
+    
+    # Marcamos si es un link directo o viene de un botón de cita
+    context.user_data['is_direct_link'] = True if query is None else False
     # --- FIN DE LA LÓGICA DE CARGA DE CONTEXTO ---
     print("\n" + "="*20 + " CONTEXTO CARGADO AL INICIAR PRECONSULTA " + "="*20)
     print(f"  - Cita ID: {context.user_data.get('appointment_id')}")

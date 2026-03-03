@@ -81,7 +81,10 @@
     "ask_child_birth_type": "<b><i>🤱 Selecciona el tipo de parto:</i></b>",
     "ask_child_complications": "<b><i>⚠️ Selecciona si hubo alguna complicación:</i></b>",
     "ho_table_label_single": "Partos Simples",
-    "ho_table_label_multiple": "Partos Múltiples"
+    "ho_table_label_multiple": "Partos Múltiples",
+    "ask_pregnancy_bool": "<b><i>🤰 Para completar tu historial, ¿has estado embarazada alguna vez?</i></b>",
+    "ask_gestational_weeks": "<b><i>⏱️ ¿Cuántas semanas de gestación tienes actualmente? (Indica solo el número)</i></b>",
+    "ask_birth_resolution": "<b><i>🤱 ¿Cómo fue la resolución del nacimiento?</i></b>"
   },
   "admin_consultation": {
     "list_title": "<b><i>📋 Preconsultas Completadas</i></b>\n\n<b><i>Selecciona una para ver los detalles:</i></b>",
