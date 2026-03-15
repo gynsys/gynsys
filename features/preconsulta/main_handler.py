@@ -156,9 +156,8 @@ def register(app: Application):
     }
     logger.info(f"Registrando ConversationHandler con {len(states_map)} estados. Estados conocidos: {sorted(states_map.keys())}")
 
-    preconsultation_conv = ConversationHandler(
         entry_points=[
-            CallbackQueryHandler(start_preconsultation_flow, pattern='^start_preconsultation_'),
+            CallbackQueryHandler(start_preconsultation_flow, pattern='^(start_preconsultation_|preconsulta_start_)'),
             CommandHandler('start', start_preconsultation_flow, filters=filters.Regex(r'preconsult_'))
         ],
         states=states_map,
