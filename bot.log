@@ -1,0 +1,304 @@
+2025-11-23 16:01:43 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_1, User ID: 1035216286
+2025-11-23 16:15:36 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 16:15:38 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_1, User ID: 1035216286
+2025-11-23 16:15:41 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_1, User ID: 1035216286
+2025-11-23 16:15:41 - AdminService - INFO - Médico agregado: Mariel Herrera (ID: 1, Telegram: 5057356565)
+2025-11-23 16:15:41 - AdminService - INFO - Médico agregado: Mariel Herrera (ID: 1, Telegram: 5057356565)
+2025-11-23 17:52:50 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_2, User ID: 1035216286
+2025-11-23 17:52:50 - AdminService - INFO - Médico agregado: Ada Carrillo (ID: 2, Telegram: 5618424590)
+2025-11-23 17:52:50 - AdminService - INFO - Médico agregado: Ada Carrillo (ID: 2, Telegram: 5618424590)
+2025-11-23 17:52:50 - AdminService - WARNING - ⚠️ Error al inicializar datos por defecto para bot_id=2
+2025-11-23 17:52:50 - AdminService - WARNING - ⚠️ Error al inicializar datos por defecto para bot_id=2
+2025-11-23 18:27:28 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:27:43 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:32:58 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:33:03 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:33:12 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-11-23 18:33:17 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:33:21 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:33:24 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:33:29 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:33:36 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:33:59 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-11-23 18:34:17 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:34:20 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:34:31 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:34:34 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:42:33 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:42:36 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:42:38 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-11-23 18:49:50 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 18:49:53 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 18:49:55 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-11-23 18:50:06 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 19:03:16 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_3, User ID: 1035216286
+2025-11-23 19:03:16 - AdminService - INFO - Médico agregado: Ada3 (ID: 2, Telegram: 5618424590)
+2025-11-23 19:03:16 - AdminService - INFO - Médico agregado: Ada3 (ID: 2, Telegram: 5618424590)
+2025-11-23 19:03:16 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 2), inicializando datos por defecto...
+2025-11-23 19:03:16 - AdminService - INFO - Bot_id encontrado: 3 para telegram_id: 5618424590
+2025-11-23 19:03:16 - AdminService - INFO - Bot_id encontrado: 3 para telegram_id: 5618424590
+2025-11-23 19:03:16 - RequestService - INFO - 📦 Bot_id encontrado: 3, iniciando carga de datos...
+2025-11-23 19:03:16 - AdminService - WARNING - ⚠️ Error al inicializar datos por defecto para bot_id=3
+2025-11-23 19:03:16 - AdminService - WARNING - ⚠️ Error al inicializar datos por defecto para bot_id=3
+2025-11-23 19:03:16 - RequestService - WARNING - ⚠️ Error al inicializar datos para bot_id=3
+2025-11-23 19:03:21 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 19:13:13 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 19:13:16 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 19:13:19 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-11-23 19:13:24 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 19:14:09 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 19:14:13 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_3, User ID: 1035216286
+2025-11-23 19:14:18 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_reject_3, User ID: 1035216286
+2025-11-23 19:14:27 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 19:14:39 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 19:14:44 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-11-23 19:14:49 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_1, User ID: 1035216286
+2025-11-23 19:14:54 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 19:15:02 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 19:15:05 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_3, User ID: 1035216286
+2025-11-23 19:15:10 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 19:15:18 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_3, User ID: 1035216286
+2025-11-23 19:15:20 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-11-23 19:17:22 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_4, User ID: 1035216286
+2025-11-23 19:17:22 - AdminService - INFO - Médico agregado: maariel2 (ID: 1, Telegram: 5057356565)
+2025-11-23 19:17:22 - AdminService - INFO - Médico agregado: maariel2 (ID: 1, Telegram: 5057356565)
+2025-11-23 19:17:22 - RequestService - INFO - 📋 Doctor procesado: ID=1, is_new=True, telegram_id=5057356565
+2025-11-23 19:17:22 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 1), inicializando datos por defecto...
+2025-11-23 19:17:23 - AdminService - INFO - Bot_id encontrado: 4 para telegram_id: 5057356565
+2025-11-23 19:17:23 - AdminService - INFO - Bot_id encontrado: 4 para telegram_id: 5057356565
+2025-11-23 19:17:23 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 4
+2025-11-23 19:17:23 - RequestService - INFO - 📦 Bot_id encontrado: 4, iniciando carga de datos...
+2025-11-23 19:17:23 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=4
+2025-11-23 19:17:23 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=4
+2025-11-23 19:17:23 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=4
+2025-11-23 21:38:41 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:27:03 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:30:15 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:34:49 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:39:13 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:51:30 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:52:10 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:57:00 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 22:57:29 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 23:00:26 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 23:02:28 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 23:11:40 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 23:25:39 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 23:27:44 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-23 23:32:15 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-24 20:55:11 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-28 19:49:59 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-30 10:35:34 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-30 10:36:09 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-11-30 15:37:23 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub, User ID: 1035216286
+2025-11-30 15:37:23 - AdminRouter - INFO - [handle_superadmin_callback] ✅ Callback faqs_admin_hub detectado. User ID: 1035216286
+2025-11-30 15:37:23 - AdminRouter - INFO - [handle_superadmin_callback] Import exitoso, llamando a faqs_hub...
+2025-11-30 15:37:24 - AdminRouter - INFO - [handle_superadmin_callback] ✅ faqs_hub completado exitosamente
+2025-11-30 15:40:55 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub, User ID: 1035216286
+2025-11-30 15:50:12 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-11-30 16:28:04 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-11-30 16:34:01 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-11-30 21:57:51 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-11-30 22:04:45 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-01 00:44:16 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-01 00:46:27 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-01 00:50:49 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-01 00:52:43 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-01 01:09:46 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 01:09:53 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-01 01:09:55 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-12-01 01:18:14 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 01:18:17 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_5, User ID: 1035216286
+2025-12-01 01:18:37 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_reject_5, User ID: 1035216286
+2025-12-01 01:18:43 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 01:19:00 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 01:36:58 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 01:38:10 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_1, User ID: 1035216286
+2025-12-01 01:38:11 - AdminService - INFO - Médico agregado: Adita carrillo (ID: 2, Telegram: 5618424590)
+2025-12-01 01:38:11 - AdminService - INFO - Médico agregado: Adita carrillo (ID: 2, Telegram: 5618424590)
+2025-12-01 01:38:11 - RequestService - INFO - 📋 Doctor procesado: ID=2, is_new=True, telegram_id=5618424590
+2025-12-01 01:38:11 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 2), inicializando datos por defecto...
+2025-12-01 01:38:11 - AdminService - INFO - Bot_id encontrado: 6 para telegram_id: 5618424590
+2025-12-01 01:38:11 - AdminService - INFO - Bot_id encontrado: 6 para telegram_id: 5618424590
+2025-12-01 01:38:11 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 6
+2025-12-01 01:38:11 - RequestService - INFO - 📦 Bot_id encontrado: 6, iniciando carga de datos...
+2025-12-01 01:38:12 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=6
+2025-12-01 01:38:12 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=6
+2025-12-01 01:38:12 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=6
+2025-12-01 01:38:37 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 16:35:40 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 16:35:48 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 16:35:56 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-01 16:36:05 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-12-01 20:59:13 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_2, User ID: 1035216286
+2025-12-01 20:59:13 - AdminService - INFO - Médico agregado: tomasa carrillo (ID: 2, Telegram: 5618424590)
+2025-12-01 20:59:13 - AdminService - INFO - Médico agregado: tomasa carrillo (ID: 2, Telegram: 5618424590)
+2025-12-01 20:59:13 - RequestService - INFO - 📋 Doctor procesado: ID=2, is_new=True, telegram_id=5618424590
+2025-12-01 20:59:13 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 2), inicializando datos por defecto...
+2025-12-01 20:59:14 - AdminService - INFO - Bot_id encontrado: 7 para telegram_id: 5618424590
+2025-12-01 20:59:14 - AdminService - INFO - Bot_id encontrado: 7 para telegram_id: 5618424590
+2025-12-01 20:59:14 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 7
+2025-12-01 20:59:14 - RequestService - INFO - 📦 Bot_id encontrado: 7, iniciando carga de datos...
+2025-12-01 20:59:14 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=7
+2025-12-01 20:59:14 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=7
+2025-12-01 20:59:14 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=7
+2025-12-01 21:36:21 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 21:36:27 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-01 21:36:29 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-12-01 21:36:34 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 22:00:25 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 22:00:34 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_4, User ID: 1035216286
+2025-12-01 22:00:39 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_reject_4, User ID: 1035216286
+2025-12-01 22:00:45 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 22:25:13 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_1, User ID: 1035216286
+2025-12-01 22:25:13 - AdminService - INFO - Médico agregado: test (ID: 2, Telegram: 1235566)
+2025-12-01 22:25:13 - AdminService - INFO - Médico agregado: test (ID: 2, Telegram: 1235566)
+2025-12-01 22:25:13 - RequestService - INFO - 📋 Doctor procesado: ID=2, is_new=True, telegram_id=1235566
+2025-12-01 22:25:13 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 2), inicializando datos por defecto...
+2025-12-01 22:25:14 - AdminService - INFO - Bot_id encontrado: 8 para telegram_id: 1235566
+2025-12-01 22:25:14 - AdminService - INFO - Bot_id encontrado: 8 para telegram_id: 1235566
+2025-12-01 22:25:14 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 8
+2025-12-01 22:25:14 - RequestService - INFO - 📦 Bot_id encontrado: 8, iniciando carga de datos...
+2025-12-01 22:25:14 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=8
+2025-12-01 22:25:14 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=8
+2025-12-01 22:25:14 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=8
+2025-12-01 22:25:15 - AdminService - WARNING - No se pudo notificar al médico 1235566: Chat not found
+2025-12-01 22:25:15 - AdminService - WARNING - No se pudo notificar al médico 1235566: Chat not found
+2025-12-01 22:41:51 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_2, User ID: 1035216286
+2025-12-01 22:41:51 - AdminService - INFO - Médico agregado: hjhkh (ID: 3, Telegram: 1223333)
+2025-12-01 22:41:51 - AdminService - INFO - Médico agregado: hjhkh (ID: 3, Telegram: 1223333)
+2025-12-01 22:41:51 - RequestService - INFO - 📋 Doctor procesado: ID=3, is_new=True, telegram_id=1223333
+2025-12-01 22:41:51 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 3), inicializando datos por defecto...
+2025-12-01 22:41:52 - AdminService - INFO - Bot_id encontrado: 9 para telegram_id: 1223333
+2025-12-01 22:41:52 - AdminService - INFO - Bot_id encontrado: 9 para telegram_id: 1223333
+2025-12-01 22:41:52 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 9
+2025-12-01 22:41:52 - RequestService - INFO - 📦 Bot_id encontrado: 9, iniciando carga de datos...
+2025-12-01 22:41:52 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=9
+2025-12-01 22:41:52 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=9
+2025-12-01 22:41:52 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=9
+2025-12-01 22:41:52 - AdminService - INFO - Enviando notificación de bienvenida a 1223333...
+2025-12-01 22:41:52 - AdminService - INFO - Enviando notificación de bienvenida a 1223333...
+2025-12-01 22:46:01 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_3, User ID: 1035216286
+2025-12-01 22:46:01 - AdminService - INFO - Médico agregado: pepe (ID: 4, Telegram: 2356877)
+2025-12-01 22:46:01 - AdminService - INFO - Médico agregado: pepe (ID: 4, Telegram: 2356877)
+2025-12-01 22:46:01 - RequestService - INFO - 📋 Doctor procesado: ID=4, is_new=True, telegram_id=2356877
+2025-12-01 22:46:01 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 4), inicializando datos por defecto...
+2025-12-01 22:46:02 - AdminService - INFO - Bot_id encontrado: 10 para telegram_id: 2356877
+2025-12-01 22:46:02 - AdminService - INFO - Bot_id encontrado: 10 para telegram_id: 2356877
+2025-12-01 22:46:02 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 10
+2025-12-01 22:46:02 - RequestService - INFO - 📦 Bot_id encontrado: 10, iniciando carga de datos...
+2025-12-01 22:46:03 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=10
+2025-12-01 22:46:03 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=10
+2025-12-01 22:46:03 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=10
+2025-12-01 22:46:03 - AdminService - INFO - Enviando notificación de bienvenida a 2356877...
+2025-12-01 22:46:03 - AdminService - INFO - Enviando notificación de bienvenida a 2356877...
+2025-12-01 22:50:12 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_4, User ID: 1035216286
+2025-12-01 22:50:12 - AdminService - INFO - Médico agregado: juana (ID: 5, Telegram: 253666)
+2025-12-01 22:50:12 - AdminService - INFO - Médico agregado: juana (ID: 5, Telegram: 253666)
+2025-12-01 22:50:12 - RequestService - INFO - 📋 Doctor procesado: ID=5, is_new=True, telegram_id=253666
+2025-12-01 22:50:12 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 5), inicializando datos por defecto...
+2025-12-01 22:50:13 - AdminService - INFO - Bot_id encontrado: 11 para telegram_id: 253666
+2025-12-01 22:50:13 - AdminService - INFO - Bot_id encontrado: 11 para telegram_id: 253666
+2025-12-01 22:50:13 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 11
+2025-12-01 22:50:13 - RequestService - INFO - 📦 Bot_id encontrado: 11, iniciando carga de datos...
+2025-12-01 22:50:13 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=11
+2025-12-01 22:50:13 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=11
+2025-12-01 22:50:13 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=11
+2025-12-01 22:50:13 - AdminService - INFO - Enviando notificación de bienvenida a 253666...
+2025-12-01 22:50:13 - AdminService - INFO - Enviando notificación de bienvenida a 253666...
+2025-12-01 22:50:14 - AdminService - ERROR - No se pudo notificar al médico 253666: Chat not found
+2025-12-01 22:50:14 - AdminService - ERROR - No se pudo notificar al médico 253666: Chat not found
+2025-12-01 22:52:53 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_1, User ID: 1035216286
+2025-12-01 22:52:54 - AdminService - INFO - Médico agregado: pipi (ID: 6, Telegram: 5618424590)
+2025-12-01 22:52:54 - AdminService - INFO - Médico agregado: pipi (ID: 6, Telegram: 5618424590)
+2025-12-01 22:52:54 - RequestService - INFO - 📋 Doctor procesado: ID=6, is_new=True, telegram_id=5618424590
+2025-12-01 22:52:54 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 6), inicializando datos por defecto...
+2025-12-01 22:52:54 - AdminService - INFO - Bot_id encontrado: 12 para telegram_id: 5618424590
+2025-12-01 22:52:54 - AdminService - INFO - Bot_id encontrado: 12 para telegram_id: 5618424590
+2025-12-01 22:52:54 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 12
+2025-12-01 22:52:54 - RequestService - INFO - 📦 Bot_id encontrado: 12, iniciando carga de datos...
+2025-12-01 22:52:54 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=12
+2025-12-01 22:52:54 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=12
+2025-12-01 22:52:54 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=12
+2025-12-01 22:52:55 - AdminService - INFO - Enviando notificación de bienvenida a 5618424590...
+2025-12-01 22:52:55 - AdminService - INFO - Enviando notificación de bienvenida a 5618424590...
+2025-12-01 22:52:55 - AdminService - INFO - Notificación enviada correctamente a 5618424590
+2025-12-01 22:52:55 - AdminService - INFO - Notificación enviada correctamente a 5618424590
+2025-12-01 22:59:11 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 22:59:14 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-01 22:59:16 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_6, User ID: 1035216286
+2025-12-01 22:59:20 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_5, User ID: 1035216286
+2025-12-01 22:59:26 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_4, User ID: 1035216286
+2025-12-01 22:59:30 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_3, User ID: 1035216286
+2025-12-01 22:59:33 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_2, User ID: 1035216286
+2025-12-01 22:59:37 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_1, User ID: 1035216286
+2025-12-01 22:59:41 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 23:00:40 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_reject_1, User ID: 1035216286
+2025-12-01 23:00:52 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 23:05:32 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 23:05:50 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-01 23:05:56 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 23:10:02 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_approve_2, User ID: 1035216286
+2025-12-01 23:10:03 - AdminService - INFO - Médico agregado: Mariel Herrera (ID: 1, Telegram: 5057356565)
+2025-12-01 23:10:03 - AdminService - INFO - Médico agregado: Mariel Herrera (ID: 1, Telegram: 5057356565)
+2025-12-01 23:10:03 - RequestService - INFO - 📋 Doctor procesado: ID=1, is_new=True, telegram_id=5057356565
+2025-12-01 23:10:03 - RequestService - INFO - 🆕 Doctor nuevo creado (ID: 1), inicializando datos por defecto...
+2025-12-01 23:10:03 - AdminService - INFO - Bot_id encontrado: 13 para telegram_id: 5057356565
+2025-12-01 23:10:03 - AdminService - INFO - Bot_id encontrado: 13 para telegram_id: 5057356565
+2025-12-01 23:10:03 - RequestService - INFO - 📦 Bot_id encontrado en intento 1: 13
+2025-12-01 23:10:03 - RequestService - INFO - 📦 Bot_id encontrado: 13, iniciando carga de datos...
+2025-12-01 23:10:03 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=13
+2025-12-01 23:10:03 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=13
+2025-12-01 23:10:03 - RequestService - INFO - ✅ Datos inicializados correctamente para bot_id=13
+2025-12-01 23:10:04 - AdminService - INFO - Enviando notificación de bienvenida a 5057356565...
+2025-12-01 23:10:04 - AdminService - INFO - Enviando notificación de bienvenida a 5057356565...
+2025-12-01 23:10:04 - AdminService - INFO - Notificación enviada correctamente a 5057356565
+2025-12-01 23:10:04 - AdminService - INFO - Notificación enviada correctamente a 5057356565
+2025-12-01 23:13:11 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-01 23:15:36 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 23:15:39 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-01 23:15:41 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_delete_1, User ID: 1035216286
+2025-12-01 23:15:46 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 23:20:08 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-01 23:20:37 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-02 13:55:48 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-02 13:55:52 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-02 13:56:03 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-04 02:53:21 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-04 02:55:57 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: faqs_admin_hub_v2, User ID: 1035216286
+2025-12-04 10:41:17 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-04 10:41:28 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_1, User ID: 1035216286
+2025-12-04 10:41:33 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-13 19:22:34 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-13 19:22:44 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_permit_menu, User ID: 1035216286
+2025-12-13 19:22:53 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-13 19:22:58 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: simple_restrict_menu, User ID: 1035216286
+2025-12-13 19:23:01 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-13 19:23:27 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-13 19:24:00 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-13 19:24:05 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_1, User ID: 1035216286
+2025-12-13 19:24:09 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2025-12-13 19:24:15 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-13 19:24:19 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2025-12-13 19:24:28 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2025-12-13 19:25:19 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: delete_doctor_menu, User ID: 1035216286
+2026-01-02 17:51:22 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2026-01-02 17:51:44 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2026-01-03 00:08:59 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2026-01-03 00:09:03 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: request_detail_1, User ID: 1035216286
+2026-01-03 00:09:07 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: requests_menu, User ID: 1035216286
+2026-01-03 00:12:33 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2026-03-01 14:34:48 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2026-03-01 17:09:13 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2026-03-01 17:09:27 - AdminService - INFO - Médico agregado: santa (ID: 2, Telegram: 8546443423)
+2026-03-01 17:09:27 - AdminService - INFO - Médico agregado: santa (ID: 2, Telegram: 8546443423)
+2026-03-01 17:09:27 - AdminService - INFO - Bot_id encontrado: 14 para telegram_id: 8546443423
+2026-03-01 17:09:27 - AdminService - INFO - Bot_id encontrado: 14 para telegram_id: 8546443423
+2026-03-01 17:09:29 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=14
+2026-03-01 17:09:29 - AdminService - INFO - ✅ Datos por defecto inicializados para bot_id=14
+2026-03-01 17:09:29 - AdminService - WARNING - No se pudo enviar notificación a 8546443423: Chat not found
+2026-03-01 17:09:29 - AdminService - WARNING - No se pudo enviar notificación a 8546443423: Chat not found
+2026-03-01 17:43:50 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: doctors_menu, User ID: 1035216286
+2026-03-01 21:27:20 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: generate_db_backup, User ID: 1035216286
+2026-03-01 21:27:20 - AdminRouter - WARNING - [handle_superadmin_callback] ⚠️ Callback 'generate_db_backup' no manejado en handle_superadmin_callback
+2026-03-01 21:34:37 - AdminRouter - INFO - [handle_superadmin_callback] INICIO - Callback: generate_db_backup, User ID: 1035216286
