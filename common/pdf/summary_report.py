@@ -114,9 +114,10 @@ def _create_story(report_context, pdf_settings):
     header_data = [[content_left, Paragraph(header_text, header_text_style), content_right]]
     header_table = Table(header_data, colWidths=[1.3*inch, 4.9*inch, 1.3*inch]) 
     header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), 
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Align everything center in cells
-        ('ALIGN', (1,0), (1,0), table_align),  # Specific alignment for text cell
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'), 
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),   # Logo izquierdo a la izquierda
+        ('ALIGN', (1, 0), (1, 0), table_align), # Texto según is_centered
+        ('ALIGN', (2, 0), (2, 0), 'RIGHT'),  # Logo derecho a la derecha
         ('LEFTPADDING', (1, 0), (1, 0), 5),    # Minimal padding
         ('RIGHTPADDING', (1, 0), (1, 0), 5),
     ]))

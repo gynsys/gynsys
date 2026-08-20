@@ -42,9 +42,9 @@ async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
     doc = SimpleDocTemplate(buffer, pagesize=legal, topMargin=0.5*inch, bottomMargin=0.5*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
     story = []
 
-    styleN = ParagraphStyle(name='Normal', fontName='Helvetica', fontSize=10, leading=12)
-    styleB = ParagraphStyle(name='Bold', fontName='Helvetica-Bold', fontSize=10, leading=12)
-    styleH1 = ParagraphStyle(name='Heading1', fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6)
+    styleN = ParagraphStyle(name='Normal', fontName='Times-Roman', fontSize=10, leading=12)
+    styleB = ParagraphStyle(name='Bold', fontName='Times-Bold', fontSize=10, leading=12)
+    styleH1 = ParagraphStyle(name='Heading1', fontName='Times-Bold', fontSize=14, alignment=TA_CENTER, spaceAfter=6)
     styleJustify = ParagraphStyle(name='Justify', parent=styleN, alignment=TA_JUSTIFY)
 
     def get_str(key, default=''):
@@ -105,8 +105,9 @@ async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
     header_text = "<br/>".join(header_parts)
 
     # Logos del encabezado
-    logo_left = create_logo_image(logo_header_1_path)
-    logo_right = create_logo_image(logo_header_2_path)
+    logo_left = create_logo_image(logo_header_1_path, width=1.2*inch, height=1.2*inch)
+    left_height = logo_left.drawHeight if logo_left else 0.8*inch
+    logo_right = create_logo_image(logo_header_2_path, width=left_height, height=left_height)
     signature_img = create_logo_image(signature_path, width=2.5*inch, height=1*inch)
     
     # Columna derecha del encabezado: solamente el logo derecho (configurado en la interfaz)
@@ -161,7 +162,12 @@ async def generate_medical_report(report_data: dict, doctor_id: int) -> bytes:
     family_history_formatted = format_family_history(get_str('family_history_mother'), get_str('family_history_father'))
     personal_history_formatted = format_simple_antecedente(get_str('personal_history'))
     supplements_formatted = format_simple_antecedente(get_str('supplements'))
-    surgical_history_formatted = format_simple_antecedente(get_str('surgical_history'))
+    surgical_history = get_str('surgical_history')
+    surgery_year = get_str('surgery_year')
+    if surgical_history.lower() not in ['no', '', 'niega']:
+        if surgery_year:
+            surgical_history = f"{surgical_history} (Año: {surgery_year})"
+    surgical_history_formatted = format_simple_antecedente(surgical_history)
 
     sections = [
         ("Motivo de consulta", get_str('reason_for_visit'), styleN),

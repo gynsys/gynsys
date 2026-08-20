@@ -22,6 +22,7 @@
     "supplements_prompt": "<b><i>📝 Por favor, escribe cuáles:</i></b>",
     "ask_surgical_history": "<b><i>🔪 ¿Has tenido cirugías previas?</i></b>",
     "surgical_history_prompt": "<b><i>📝 Por favor, describe qué cirugías has tenido:</i></b>",
+    "ask_surgery_year": "<b><i>📅 Indica el año de la cirugía (ej: 2015):</i></b>",
     "section_gyn_history": "<b><i>👩‍⚕️ Paso 3: Antecedentes Obstétricos y Ginecológicos</i></b>",
     "ask_menarche": "<b><i>🩸 ¿A qué edad tuviste tu primera menstruación (Menarquia)?</i></b>",
     "ask_fertility_intent": "<b><i>👶 Entiendo. Para conocerte mejor, ¿te importaría contarme si has estado buscando un embarazo por mas de un año?</i></b>",

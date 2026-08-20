@@ -72,3 +72,11 @@ async def check_functional_exam_enabled(update: Update, context: ContextTypes.DE
         logger.error(f"Error verificando configuración de examen funcional: {e}")
         return node.get('next_if_enabled', 'ASK_DISPAREUNIA_BOOL')
 
+async def combine_surgery_info(update: Update, context: ContextTypes.DEFAULT_TYPE, node: dict):
+    """Combina el año de la cirugía con los antecedentes quirúrgicos."""
+    surgery_name = context.user_data.get('surgical_history', 'Sí')
+    year = context.user_data.get('surgery_year', '')
+    if year:
+        context.user_data['surgical_history'] = f"{surgery_name} (Año: {year})"
+    return node.get('next_node')
+

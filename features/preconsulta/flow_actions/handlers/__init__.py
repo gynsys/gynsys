@@ -30,6 +30,7 @@ from .functional_handlers import (
     combine_dischezia_info,
     combine_urinary_pain_info,
     check_functional_exam_enabled,
+    combine_surgery_info,
 )
 from .habits_handlers import (
     combine_activity_info,
@@ -63,6 +64,7 @@ __all__ = [
     'combine_dischezia_info',
     'combine_urinary_pain_info',
     'check_functional_exam_enabled',
+    'combine_surgery_info',
     'combine_activity_info',
     'finish_preconsultation',
     'check_if_pregnant_for_fertility',

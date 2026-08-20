@@ -21,19 +21,22 @@
       "next_node": "ASK_ADDRESS"
     },
     "ASK_ADDRESS": { "type": "text_input", "text_key": "preconsulta.ask_address", "save_to": "address", "next_node": "ASK_OCCUPATION" },
-    "ASK_OCCUPATION": { "type": "text_input", "text_key": "preconsulta.ask_occupation", "save_to": "occupation", "next_node": "SHOW_SUMMARY" },
-    "SHOW_SUMMARY": { "type": "action", "handler": "show_personal_info_summary", "next_node": "ASK_MOTHER_HISTORY_BOOL" },
+    "ASK_OCCUPATION": { "type": "text_input", "text_key": "preconsulta.ask_occupation", "save_to": "occupation", "next_node": "ASK_REASON_FOR_VISIT" },
+    "ASK_REASON_FOR_VISIT": { "type": "text_input", "text_key": "preconsulta.ask_gyn_reason", "save_to": "reason_for_visit", "next_node": "SHOW_SUMMARY" },
+    "SHOW_SUMMARY": { "type": "action", "handler": "show_personal_info_summary", "next_node": "ASK_PERSONAL_HISTORY_BOOL" },
 
     "ASK_MOTHER_HISTORY_BOOL": { "type": "yes_no", "section_header_key": "preconsulta.section_medical_history", "text_key": "preconsulta.ask_mother_history", "save_to": "family_history_mother", "value_on_no": "No", "next_on_yes": "ASK_MOTHER_CHECKLIST", "next_on_no": "ASK_FATHER_HISTORY_BOOL" },
     "ASK_MOTHER_CHECKLIST": { "type": "checklist", "text_key": "preconsulta.checklist_title_mother", "keyboard_type": "pathologies", "save_to": "family_history_mother", "other_prompt_key": "preconsulta.other_prompt_mother", "next_node": "ASK_FATHER_HISTORY_BOOL" },
     "ASK_FATHER_HISTORY_BOOL": { "type": "yes_no", "text_key": "preconsulta.ask_father_history", "save_to": "family_history_father", "value_on_no": "No", "next_on_yes": "ASK_FATHER_CHECKLIST", "next_on_no": "ASK_PERSONAL_HISTORY_BOOL" },
     "ASK_FATHER_CHECKLIST": { "type": "checklist", "text_key": "preconsulta.checklist_title_father", "keyboard_type": "pathologies", "save_to": "family_history_father", "other_prompt_key": "preconsulta.other_prompt_father", "next_node": "ASK_PERSONAL_HISTORY_BOOL" },
-    "ASK_PERSONAL_HISTORY_BOOL": { "type": "yes_no", "text_key": "preconsulta.ask_personal_history", "save_to": "personal_history", "value_on_no": "No", "next_on_yes": "ASK_PERSONAL_CHECKLIST", "next_on_no": "ASK_SUPPLEMENTS" },
+    "ASK_PERSONAL_HISTORY_BOOL": { "type": "yes_no", "section_header_key": "preconsulta.section_medical_history", "text_key": "preconsulta.ask_personal_history", "save_to": "personal_history", "value_on_no": "No", "next_on_yes": "ASK_PERSONAL_CHECKLIST", "next_on_no": "ASK_SUPPLEMENTS" },
     "ASK_PERSONAL_CHECKLIST": { "type": "checklist", "text_key": "preconsulta.checklist_title_personal", "keyboard_type": "pathologies", "save_to": "personal_history", "other_prompt_key": "preconsulta.other_prompt_personal","next_node": "ASK_SUPPLEMENTS" },
     "ASK_SUPPLEMENTS": { "type": "yes_no", "text_key": "preconsulta.ask_supplements", "save_to": "supplements", "value_on_no": "No", "next_on_yes": "ASK_SUPPLEMENTS_TEXT", "next_on_no": "ASK_SURGICAL_HISTORY" },
     "ASK_SUPPLEMENTS_TEXT": { "type": "text_input", "text_key": "preconsulta.supplements_prompt", "save_to": "supplements", "next_node": "ASK_SURGICAL_HISTORY" },
     "ASK_SURGICAL_HISTORY": { "type": "yes_no", "text_key": "preconsulta.ask_surgical_history", "save_to": "surgical_history", "value_on_no": "No", "next_on_yes": "ASK_SURGICAL_HISTORY_TEXT", "next_on_no": "ASK_MENARCHE" },
-    "ASK_SURGICAL_HISTORY_TEXT": { "type": "text_input", "text_key": "preconsulta.surgical_history_prompt", "save_to": "surgical_history", "next_node": "ASK_MENARCHE" },
+    "ASK_SURGICAL_HISTORY_TEXT": { "type": "text_input", "text_key": "preconsulta.surgical_history_prompt", "save_to": "surgical_history", "next_node": "ASK_SURGERY_YEAR" },
+    "ASK_SURGERY_YEAR": { "type": "year_picker", "text_key": "preconsulta.ask_surgery_year", "save_to": "surgery_year", "next_node": "COMBINE_SURGERY_INFO" },
+    "COMBINE_SURGERY_INFO": { "type": "action", "handler": "combine_surgery_info", "next_node": "ASK_MENARCHE" },
 
     "DECIDE_OBSTETRIC_FLOW": {
         "type": "action",

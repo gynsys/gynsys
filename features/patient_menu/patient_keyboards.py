@@ -74,6 +74,11 @@ async def get_patient_main_keyboard(doctor_id: int = None):
     if row:
         main_buttons.append(row)
     
+    # Botón de enlace a la web (siempre visible)
+    main_buttons.append([
+        InlineKeyboardButton("🌐 Visita nuestra web", url="https://www.gynsys.net/mariel-herrera")
+    ])
+
     # Botón de compartir link (siempre visible, no es un módulo controlable)
     main_buttons.append([
         InlineKeyboardButton("🔗 Compartir link de mi médico", callback_data="patient_share_link")

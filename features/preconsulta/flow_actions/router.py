@@ -36,6 +36,7 @@ from .handlers import (
     combine_dischezia_info,
     combine_urinary_pain_info,
     check_functional_exam_enabled,
+    combine_surgery_info,
     # Hábitos
     combine_activity_info,
     # Ciclo de vida
@@ -87,6 +88,7 @@ async def render(update: Update, context: ContextTypes.DEFAULT_TYPE, node: dict)
         "combine_leg_pain_info": combine_leg_pain_info,
         "combine_dischezia_info": combine_dischezia_info,
         "combine_urinary_pain_info": combine_urinary_pain_info,
+        "combine_surgery_info": combine_surgery_info,
         "combine_activity_info": combine_activity_info,
         "prepare_prenatal_flow": prepare_prenatal_flow,
         "prepare_birth_details_loop": prepare_birth_details_loop,
